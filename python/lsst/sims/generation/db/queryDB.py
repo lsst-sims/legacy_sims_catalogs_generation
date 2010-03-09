@@ -23,6 +23,7 @@ class queryDB(object):
     stars = Star.query.add_column(mags).filter("point @ scircle \'<(%f,%f),%fd>\'"%(os.fieldra, os.fielddec, 2.1)).slice(self._start, self._start+self.chunksize).all()
     
     nic = ic.InstanceCatalog()
+    nic.catalogType = filetypes
     ids = []
     ras = []
     decs = []

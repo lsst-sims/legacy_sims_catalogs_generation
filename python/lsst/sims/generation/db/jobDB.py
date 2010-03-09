@@ -9,7 +9,11 @@ class jobDB(object):
     setup_all()
     self._tasknumber = None
     if jobid is None:
-      self._jobid = session.query(func.max(JobLog.jobid)).one()[0] + 1
+      jobid = session.query(func.max(JobLog.jobid)).one()[0]
+      if jobid is None:
+        self._jobid = 1
+      else:
+        self._jobid = jobid
     else:
       self._jobid = jobid
     self._jobdescription = jobdescription
