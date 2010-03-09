@@ -1,6 +1,6 @@
 #!/usr/bin/env python
-import jobDB as j
-mj = j.jobDB()
+from lsst.sims.generation.db import jobDB
+mj = jobDB()
 mj.registerTaskStart()
 for i in range(100):
   if(i%5 == 0):

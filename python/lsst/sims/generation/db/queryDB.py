@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 from cosmoDBModel import *
-from lsst.sims.measurement.instance import instanceCatalog as ic
+from lsst.sims.measures.instance import instanceCatalog as ic
 
 class queryDB(object):
   def __init__(self, chunksize=100000):
