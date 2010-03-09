@@ -11,7 +11,7 @@ class queryDB(object):
     self.columns['star'] = ('id', 'ra', 'decl')
 
   def getInstanceCatalogById(self, id, objtype='star', filetypes=("TRIM",), opsim="3_61", add_columns=()):
-    os = OpSim3_61.query.filter("obshistid=%i"%(id)).first()
+    os = OpSim3_61.query.filter("obshistid=%s"%(id)).first()
     fscale = schema.Column('flux_scale')
     lcid = schema.Column('isvar')
     t0 = schema.Column('t0')

@@ -20,14 +20,14 @@ class JobAllocator:
     fileName = None #???
     directory = None #???
     
-    def __init__(self, workDir='/local/tmp/jobAllocator'):
+    def __init__(self, workDir='/local/tmp/jobAllocator/', chunkSize=1000):
         self.nJobs = None
         self.catalogTypes = None
         self.chunkSize = None
         self.metaDataManager = MetaDataManager()
         self.catalogTypeManager = CatalogTypeManager()
         self.uIToDBManager = UIToDBManager()
-        self.DBManager = db.queryDB(chunksize=10)
+        self.DBManager = db.queryDB(chunksize=chunkSize)
         self.executionDBManager = ExecutionDBInterface()
         if not os.path.exists(workDir):
             os.system('mkdir %s' % workDir)
@@ -80,7 +80,7 @@ class JobAllocator:
                 raise RuntimeError, '*** Could not find a unique file number.'
         return self.nextFileNum
 
-    def startCatalogs(self, catalogTypes, query, obsHistID, chunkSize=1000):
+    def startCatalogs(self, catalogTypes, query, obsHistID):
         nFN = self.getNextGoodFileNum()
         jobNum = 0
         jobTypes = []; jobNums = []; jobDataFiles = []
@@ -89,13 +89,17 @@ class JobAllocator:
         curMD = instanceCat.metadata
         while instanceCat:
             t0 = self.WorkDir + 'catData%i_%i.ja' % (nFN, jobNum)
-            instanceCat.writeCatalogData(t0, catalogTypes)
-            jobTypes.append(t)
-            jobNums.append(jobNum)
-            jobDataFiles.append(t0)
-            jobNum += 1
-            instanceCat = self.DBManager.getNextChunk()
-            curMD.merge(instanceCat.metadata)
+            for t in catalogTypes:
+                print 'Now writing catalog type: %s' % t
+                instanceCat.writeCatalogData(t0, t)
+                jobTypes.append(t)
+                jobNums.append(jobNum)
+                jobDataFiles.append(t0)
+                jobNum += 1
+            # RRG:  No getNextChunk() yet
+            instanceCat = None
+            #instanceCat = self.DBManager.getNextChunk()
+            #curMD.merge(instanceCat.metadata)
         mFName = self.WorkDir + 'metaData%i_%s.ja' % (nFN, t)
         self.metaDataManager.writeToFile(t, mFName)
         
@@ -104,8 +108,10 @@ class JobAllocator:
             jobId = '%i_%i' % (nFN, jobNums[i])
             self.executionDBManager.addNewJob(jobId)
             print 'Added job: %s' % jobId
-            os.system('python jobAllocatorRun.py %s %s %s &' % (
-                jobId, jobTypes[i], jobDataFiles[i]))
+            t0 = '/astro/apps/pkg/python64/bin/python jobAllocatorRun.py %s %s %s &' % (
+                jobId, jobTypes[i], jobDataFiles[i])
+            print t0
+            os.system(t0)
 
         # Check that everything started within a certain time limit
         # On athena, jobs may be queued indefinitely, so this won't work

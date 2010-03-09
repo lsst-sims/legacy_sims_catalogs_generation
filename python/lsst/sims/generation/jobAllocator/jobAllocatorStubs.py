@@ -148,7 +148,7 @@ class DBQuery:
         return DBRsp(t0)
 
 class ExecutionDBInterface:
-    def __init__(self, stubDir='/local/tmp/'):
+    def __init__(self, stubDir='/local/tmp/jobAllocator/'):
         self.stubDir = stubDir.rstrip('/') + '/'
         self.isCleared = True
 

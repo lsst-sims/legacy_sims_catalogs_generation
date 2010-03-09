@@ -60,8 +60,9 @@ class JobAllocatorTest(unittest.TestCase):
         # Testing beyond this level is up to the MetaData class
 
     def teststartCatalogs(self):
-        j = jobAllocator.JobAllocator()
-        j.startCatalogs(('catType0', 'catType1'), 'TEST QUERY', '85748128', 1000)
+        j = jobAllocator.JobAllocator(chunkSize=10)
+        # For some reason, need to use square brackets
+        j.startCatalogs(['STUB'], 'TEST QUERY', '85748128')
 
 if __name__ == '__main__':
     unittest.main()
