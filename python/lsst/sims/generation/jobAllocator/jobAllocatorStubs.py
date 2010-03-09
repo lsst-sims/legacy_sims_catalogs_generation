@@ -1,7 +1,7 @@
 import random, os, numpy
 import getFileNameWC
 
-class MetaDataManager():
+class MetaDataManager:
     def __init__(self):
         self.isCleared = True
         self.dict = {}
@@ -66,7 +66,7 @@ class MetaDataManager():
 
         
 
-class CatalogType():
+class CatalogType:
     def __init__(self):
         self.isCleared = True
 
@@ -76,7 +76,7 @@ class CatalogType():
     """Like an enum of catalog types."""
     pass
 
-class CatalogTypeManager():
+class CatalogTypeManager:
     def __init__(self):
         self.isCleared = True
 
@@ -86,7 +86,7 @@ class CatalogTypeManager():
     def verifyMetaData(self, catalogType, metaData):
         """Check that all the needed values are present."""
 
-class UIToDBManager():
+class UIToDBManager:
     def __init__(self):
         self.isCleared = True
 
@@ -98,7 +98,7 @@ class UIToDBManager():
         dBQuery = None
         return dBQuery
 
-class InstanceCatalog():
+class InstanceCatalog:
     def __init__(self, obsHistID, list, catalogType):
         self.ObsHistID = obsHistID
         self.List = list
@@ -114,7 +114,7 @@ class InstanceCatalog():
     def getMetaData(self):
         return self.MetaData
 
-class DBRsp():
+class DBRsp:
     def __init__(self, list, chunkSize=1000):
         self.List = list
         self.ChunkSize = chunkSize
@@ -134,7 +134,7 @@ class DBRsp():
             return InstanceCatalog(ObsHistID, self.List[t0], catalogType)
 
 
-class DBQuery():
+class DBQuery:
     def __init__(self):
         self.isCleared = True
 
@@ -147,7 +147,7 @@ class DBQuery():
             t0[i] = random.random()
         return DBRsp(t0)
 
-class ExecutionDBInterface():
+class ExecutionDBInterface:
     def __init__(self, stubDir='/local/tmp/'):
         self.stubDir = stubDir.rstrip('/') + '/'
         self.isCleared = True

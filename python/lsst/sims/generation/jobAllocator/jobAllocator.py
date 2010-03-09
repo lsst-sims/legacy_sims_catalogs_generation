@@ -1,8 +1,9 @@
 import os, sys, time
 from jobAllocatorStubs import *
 import getFileNameWC
+import lsst.sims.generation.db as db
 
-class JobAllocator():
+class JobAllocator:
 
     nJobs = None
     catalogTypes = None
@@ -11,7 +12,7 @@ class JobAllocator():
     metaDataManager = None
     catalogTypeManager = None
     uIToDBManager = None
-    dBManager = None
+    DBManager = None
     executionDBManager = None
 
     # I don't remember what these are for...
@@ -26,7 +27,7 @@ class JobAllocator():
         self.metaDataManager = MetaDataManager()
         self.catalogTypeManager = CatalogTypeManager()
         self.uIToDBManager = UIToDBManager()
-        self.dBManager = DBQuery()
+        self.DBManager = db.queryDB(chunksize=10)
         self.executionDBManager = ExecutionDBInterface()
         if not os.path.exists(workDir):
             os.system('mkdir %s' % workDir)
@@ -43,8 +44,8 @@ class JobAllocator():
             self.catalogTypeManager.reset()
         if self.uIToDBManager:
             self.uIToDBManager.reset()
-        if self.dBManager:
-            self.dBManager.reset()
+        #if self.DBManager:
+        #    self.DBManager.reset()
         if self.executionDBManager:
             self.executionDBManager.reset()
         self.WorkDir = None
@@ -83,22 +84,20 @@ class JobAllocator():
         nFN = self.getNextGoodFileNum()
         jobNum = 0
         jobTypes = []; jobNums = []; jobDataFiles = []
-        for t in catalogTypes:
-            print 'Catalog type: ', t
-            self.metaDataManager.reset()
-            q = self.dBManager.query(query, chunksize=chunkSize)
-            instanceCat = q.getInstanceCatalogByID(obsHistID, t)
-            while instanceCat:
-                self.metaDataManager.merge(instanceCat.getMetaData())
-                t0 = self.WorkDir + 'catData%i_%i.ja' % (nFN, jobNum)
-                instanceCat.writeToFile(t0)
-                jobTypes.append(t)
-                jobNums.append(jobNum)
-                jobDataFiles.append(t0)
-                jobNum += 1
-                instanceCat = q.getNextChunk()
-            mFName = self.WorkDir + 'metaData%i_%s.ja' % (nFN, t)
-            self.metaDataManager.writeToFile(t, mFName)
+        self.metaDataManager.reset()
+        instanceCat = self.DBManager.getInstanceCatalogById(obsHistID, filetypes=catalogTypes)
+        curMD = instanceCat.metadata
+        while instanceCat:
+            t0 = self.WorkDir + 'catData%i_%i.ja' % (nFN, jobNum)
+            instanceCat.writeCatalogData(t0, catalogTypes)
+            jobTypes.append(t)
+            jobNums.append(jobNum)
+            jobDataFiles.append(t0)
+            jobNum += 1
+            instanceCat = self.DBManager.getNextChunk()
+            curMD.merge(instanceCat.metadata)
+        mFName = self.WorkDir + 'metaData%i_%s.ja' % (nFN, t)
+        self.metaDataManager.writeToFile(t, mFName)
         
         # Now fire off the jobs
         for i in range(len(jobNums)):

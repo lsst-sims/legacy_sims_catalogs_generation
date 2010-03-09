@@ -61,7 +61,7 @@ class JobAllocatorTest(unittest.TestCase):
 
     def teststartCatalogs(self):
         j = jobAllocator.JobAllocator()
-        j.startCatalogs(('catType0', 'catType1'), 'TEST QUERY', 'TESTOBSHISTID', 1000)
+        j.startCatalogs(('catType0', 'catType1'), 'TEST QUERY', '85748128', 1000)
 
 if __name__ == '__main__':
     unittest.main()
