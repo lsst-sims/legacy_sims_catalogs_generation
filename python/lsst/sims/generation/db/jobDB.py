@@ -1,21 +1,22 @@
 #!/usr/bin/env python
-from jobModel import *
+from dbModel import *
 from sqlalchemy import func
 import datetime as dt
+from pytz import timezone
 import socket
 
-class jobDB(object):
-  def __init__(self, jobid=None, jobdescription="", ip = None):
+class LogEvents(object):
+  def __init__(self, jobdescription="", ip = None):
     setup_all()
+    create_all()
     self._tasknumber = None
+    self._jobid = None
+    jobid = b_session.query(func.max(CatalogEventLog.jobid)).one()[0]
+    print "my Jobid is",jobid
     if jobid is None:
-      jobid = session.query(func.max(JobLog.jobid)).one()[0]
-      if jobid is None:
-        self._jobid = 1
-      else:
-        self._jobid = jobid
+      self._jobid = 1
     else:
-      self._jobid = jobid
+      self._jobid = jobid + 1
     self._jobdescription = jobdescription
     if ip is None:
       self._ip = socket.gethostbyname(socket.gethostname())
@@ -24,13 +25,17 @@ class jobDB(object):
 
   def persist(self, key, value, description):
     print "Persisting Task number %s"%(str(self._tasknumber))
-    JobLog(jobid=self._jobid, pkey=key, pvalue=value, time=dt.datetime(1,1,1).now(), taskNumber=self._tasknumber, ip=self._ip, description=description)
-    session.commit()
+    CatalogEventLog(jobid=self._jobid, pkey=unicode(key),
+            pvalue=unicode(value),
+            time=dt.datetime(1,1,1).now(timezone('US/Pacific')),
+            taskNumber=self._tasknumber, ip=self._ip,
+            description=unicode(description))
+    b_session.commit()
 
   def registerTaskStart(self, tasknumber=None):
     key = "TASK_START" 
     if tasknumber is None:
-      tasknumber = session.query(func.max(JobLog.taskNumber)).one()[0]
+      tasknumber = b_session.query(func.max(CatalogEventLog.taskNumber)).one()[0]
       print "Task number %s"%(str(tasknumber))
       if tasknumber is None:
         tasknumber = 1
@@ -51,4 +56,29 @@ class jobDB(object):
     value = "Task number %s stopped with term value %s"%(str(self._tasknumber), str(exitvalue))
     self.persist(key, value, self._jobdescription)
 
-  
+class JobState(object):
+  def __init__(self):
+    setup_all()
+    self._jobid = None
+    jobid = b_session.query(func.max(JobStateLog.jobid)).one()[0]
+    self._states = {}
+    if jobid is None:
+      self._jobid = 1
+    else:
+      self._jobid = jobid + 1
+
+  def updateState(self, key, state):
+    if self._states.has_key(key):
+      self._states[key].pvalue = unicode(state)
+      self._states[key].time = dt.datetime(1,1,1).now(timezone('US/Pacific'))
+      b_session.commit()
+    else:
+      self._states[key] = JobStateLog(jobid=self._jobid, pkey=unicode(key),
+              pvalue=unicode(state),
+              time=dt.datetime(1,1,1).now(timezone('US/Pacific')))
+      b_session.commit()
+  def queryState(self, key):
+    if self._states.has_key(key):
+      return self._states[key].pvalue
+    else:
+      return None

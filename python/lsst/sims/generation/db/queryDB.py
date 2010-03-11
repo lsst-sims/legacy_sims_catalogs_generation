@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-from cosmoDBModel import *
+from dbModel import *
 from lsst.sims.measures.instance import instanceCatalog as ic
 from lsst.sims.measures.instance import Metadata
 
@@ -28,7 +28,8 @@ class queryDB(object):
 
   def getInstanceCatalogById(self, id,  opsim="3_61", add_columns=()):
     os = OpSim3_61.query.filter("obshistid=%s"%(id)).first()
-    if objtype = 'star':
+    objtype = self.objtype
+    if objtype == 'star':
       fscale = schema.Column('flux_scale')
       lcid = schema.Column('isvar')
       t0 = schema.Column('t0')
@@ -43,7 +44,7 @@ class queryDB(object):
       """
       #mags = fscale.label('magNorm')
       self.query = Star.query.add_column(mags).filter("point @ scircle \'<(%f,%f),%fd>\'"%(os.fieldra, os.fielddec, 2.1))
-    elif objtype = 'wd':
+    elif objtype == 'wd':
       fscale = schema.Column('flux_scale')
       lcid = schema.Column('isvar')
       t0 = schema.Column('t0')
@@ -58,9 +59,9 @@ class queryDB(object):
       """
       #mags = fscale.label('magNorm')
       self.query = WD.query.add_column(mags).filter("point @ scircle \'<(%f,%f),%fd>\'"%(os.fieldra, os.fielddec, 2.1))
-    elif objtype = 'ssm':
+    elif objtype == 'ssm':
       pass
-    elif objtype = 'galaxy':
+    elif objtype == 'galaxy':
       pass
     else:
       raise Exception('getInstanceCatalogById', 'Did not give valid object type')
