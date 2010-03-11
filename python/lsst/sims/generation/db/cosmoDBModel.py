@@ -2,7 +2,7 @@
 from elixir import *
 from sqlalchemy import func
 from sqlalchemy import schema
-metadata.bind = "postgresql://cosmouser:cosmouser@deathray/cosmoDB.11.19.2009"
+metadata.bind = "postgresql://cosmouser:cosmouser@deathray/cosmoDB.11.19.2009?server_side_cursors"
 metadata.bind.echo = False
 class Star(Entity):
   using_options(tablename="stars", autoload=True)

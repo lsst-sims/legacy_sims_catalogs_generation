@@ -1,29 +1,86 @@
 #!/usr/bin/env python
 from cosmoDBModel import *
 from lsst.sims.measures.instance import instanceCatalog as ic
+from lsst.sims.measures.instance import Metadata
 
 class queryDB(object):
-  def __init__(self, chunksize=100000):
+  def __init__(self, objtype = 'star', filetypes=("TRIM",), chunksize=100000):
     setup_all()
     self._start=0
+    self.filetypes = filetypes
+    self.objtype = objtype
     self.chunksize=chunksize
     self.columns = {}
     self.columns['star'] = ('id', 'ra', 'decl')
 
-  def getInstanceCatalogById(self, id, objtype='star', filetypes=("TRIM",), opsim="3_61", add_columns=()):
+  def getNextChunk(self):
+    try:
+      result = self.query.slice(self._start, self._start+self.chunksize).all()
+      self._start += self.chunksize
+      if len(result) == 0:
+        return None
+      else:
+        return self.makeCatalogFromQuery(result)
+    except Exception as e:
+      print "Exception of type: %s"%(type(e))
+      raise Exception(e)
+
+
+  def getInstanceCatalogById(self, id,  opsim="3_61", add_columns=()):
     os = OpSim3_61.query.filter("obshistid=%s"%(id)).first()
-    fscale = schema.Column('flux_scale')
-    lcid = schema.Column('isvar')
-    t0 = schema.Column('t0')
-    obsDate = os.expmjd
-    duration = schema.Column('timescale')
-    fpeak = schema.Column('varfluxpeak')
-    filter = os.filter
-    mags  = func.toMag(fscale*func.flux_ratio_from_lc(lcid,t0,obsDate,duration,fpeak,filter)).label('magNorm')
-    stars = Star.query.add_column(mags).filter("point @ scircle \'<(%f,%f),%fd>\'"%(os.fieldra, os.fielddec, 2.1)).slice(self._start, self._start+self.chunksize).all()
-    
+    if objtype = 'star':
+      fscale = schema.Column('flux_scale')
+      lcid = schema.Column('isvar')
+      t0 = schema.Column('t0')
+      obsDate = os.expmjd
+      duration = schema.Column('timescale')
+      fpeak = schema.Column('varfluxpeak')
+      bandpass = os.filter
+      mags = func.toMag(fscale*func.flux_ratio_from_lc(lcid,t0,obsDate,duration,fpeak,bandpass)).label('magNorm')
+      """The following was for testing.  In the case where all stars are variable,
+      this is very slow (1 hour for 300K points), but when the mag calculation
+      is not done it takes ~1min.
+      """
+      #mags = fscale.label('magNorm')
+      self.query = Star.query.add_column(mags).filter("point @ scircle \'<(%f,%f),%fd>\'"%(os.fieldra, os.fielddec, 2.1))
+    elif objtype = 'wd':
+      fscale = schema.Column('flux_scale')
+      lcid = schema.Column('isvar')
+      t0 = schema.Column('t0')
+      obsDate = os.expmjd
+      duration = schema.Column('timescale')
+      fpeak = schema.Column('varfluxpeak')
+      bandpass = os.filter
+      mags = func.toMag(fscale*func.flux_ratio_from_lc(lcid,t0,obsDate,duration,fpeak,bandpass)).label('magNorm')
+      """The following was for testing.  In the case where all stars are variable,
+      this is very slow (1 hour for 300K points), but when the mag calculation
+      is not done it takes ~1min.
+      """
+      #mags = fscale.label('magNorm')
+      self.query = WD.query.add_column(mags).filter("point @ scircle \'<(%f,%f),%fd>\'"%(os.fieldra, os.fielddec, 2.1))
+    elif objtype = 'ssm':
+      pass
+    elif objtype = 'galaxy':
+      pass
+    else:
+      raise Exception('getInstanceCatalogById', 'Did not give valid object type')
+    self.metadata = Metadata()
+    for k in (os.__dict__.keys()):
+      self.metadata.addMetadata(k,os.__dict__[k],"")
+    try:
+      result = self.query.slice(self._start, self._start+self.chunksize).all()
+      self._start += self.chunksize
+      if len(result) == 0:
+        return None
+      else:
+        return self.makeCatalogFromQuery(result)
+    except Exception as e:
+      print "Exception of type: %s"%(type(e))
+      raise Exception(e)
+
+  def makeCatalogFromQuery(self, result):
     nic = ic.InstanceCatalog()
-    nic.catalogType = filetypes
+    nic.catalogType = self.filetypes
     ids = []
     ras = []
     decs = []
@@ -31,8 +88,8 @@ class queryDB(object):
     sedFilenames = []
     Rvs = []
     Avs = []
-    eModels = [] 
-    for s in stars:
+    eModels = []
+    for s in result:
       ids.append(s.Star.id)
       ras.append(s.Star.ra)
       decs.append(s.Star.decl)
@@ -49,7 +106,5 @@ class queryDB(object):
     nic.addColumn(eModels, 'galacticExtinctionModel')
     nic.addColumn(Avs, 'galacticAv')
     nic.addColumn(Rvs, 'galacticRv')
-    for k in (os.__dict__.keys()):
-      nic.metadata.addMetadata(k,os.__dict__[k],"")
-    print nic.metadata.parameters
+    nic.metadata = self.metadata
     return nic
