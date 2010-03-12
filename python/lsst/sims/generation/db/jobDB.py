@@ -57,15 +57,28 @@ class LogEvents(object):
     self.persist(key, value, self._jobdescription)
 
 class JobState(object):
-  def __init__(self):
+  def __init__(self, jobid=None):
     setup_all()
     self._jobid = None
-    jobid = b_session.query(func.max(JobStateLog.jobid)).one()[0]
     self._states = {}
     if jobid is None:
-      self._jobid = 1
+      jobid = b_session.query(func.max(JobStateLog.jobid)).one()[0]
+      if jobid is None:
+        self._jobid = 1
+      else:
+        self._jobid = jobid + 1
     else:
-      self._jobid = jobid + 1
+      try:
+        jobid = int(jobid)
+      except:
+        raise Exception("The jobid could not be cast as an int")
+      self._jobid = jobid
+      statearr = JobStateLog.query.filter("jobid = %i"%jobid).all()
+      for state in statearr:
+        self._states[state.pkey] = state
+
+  def getJobId(self):
+    return self._jobid
 
   def updateState(self, key, state):
     if self._states.has_key(key):
