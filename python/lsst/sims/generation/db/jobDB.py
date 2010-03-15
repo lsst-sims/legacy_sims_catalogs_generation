@@ -92,6 +92,7 @@ class JobState(object):
       b_session.commit()
   def queryState(self, key):
     if self._states.has_key(key):
+      b_session.refresh(self._states[key])
       return self._states[key].pvalue
     else:
       return None
