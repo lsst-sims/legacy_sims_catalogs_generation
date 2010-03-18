@@ -1,7 +1,8 @@
 import os, sys, time
 from jobAllocatorStubs import *
 import getFileNameWC
-import lsst.sims.generation.db as db
+from lsst.sims.generation.db import queryDB
+from lsst.sims.generation.db import jobDB
 
 class JobAllocator:
 
@@ -27,8 +28,8 @@ class JobAllocator:
         self.metaDataManager = MetaDataManager()
         self.catalogTypeManager = CatalogTypeManager()
         self.uIToDBManager = UIToDBManager()
-        self.DBManager = db.queryDB(chunksize=chunkSize)
-        self.executionDBManager = ExecutionDBInterface()
+        self.DBManager = queryDB.queryDB(chunksize=chunkSize)
+        self.executionDBManager = jobDB.JobState()
         if not os.path.exists(workDir):
             os.system('mkdir %s' % workDir)
         self.WorkDir = workDir.rstrip('/') + '/'
@@ -46,8 +47,8 @@ class JobAllocator:
             self.uIToDBManager.reset()
         #if self.DBManager:
         #    self.DBManager.reset()
-        if self.executionDBManager:
-            self.executionDBManager.reset()
+        #if self.executionDBManager:
+        #    self.executionDBManager.reset()
         self.WorkDir = None
         self.nextFileNum = 0
 
@@ -81,35 +82,44 @@ class JobAllocator:
         return self.nextFileNum
 
     def startCatalogs(self, catalogTypes, query, obsHistID):
-        nFN = self.getNextGoodFileNum()
+        #nFN = self.getNextGoodFileNum()
+        nFN = self.executionDBManager.getJobId()
+        print 'Using job ID: %i' % nFN
         jobNum = 0
-        jobTypes = []; jobNums = []; jobDataFiles = []
+        jobTypes = []; jobNums = []; jobDataFiles = []; useTypes = []
         self.metaDataManager.reset()
-        instanceCat = self.DBManager.getInstanceCatalogById(obsHistID, filetypes=catalogTypes)
+        instanceCat = self.DBManager.getInstanceCatalogById(obsHistID)
         curMD = instanceCat.metadata
+        numCats = 0; maxCats = 3
         while instanceCat:
             t0 = self.WorkDir + 'catData%i_%i.ja' % (nFN, jobNum)
             for t in catalogTypes:
+                if t not in useTypes: useTypes.append(t)
                 print 'Now writing catalog type: %s' % t
+                instanceCat.validateData(t)
                 instanceCat.writeCatalogData(t0, t)
                 jobTypes.append(t)
                 jobNums.append(jobNum)
                 jobDataFiles.append(t0)
                 jobNum += 1
             # RRG:  No getNextChunk() yet
-            instanceCat = None
-            #instanceCat = self.DBManager.getNextChunk()
-            #curMD.merge(instanceCat.metadata)
-        mFName = self.WorkDir + 'metaData%i_%s.ja' % (nFN, t)
-        self.metaDataManager.writeToFile(t, mFName)
+            #instanceCat = None
+            instanceCat = self.DBManager.getNextChunk()
+            curMD.mergeMetadata(instanceCat.metadata)
+            numCats += 1
+            if numCats >= maxCats: break
+        for t in useTypes:
+            curMD.validateMetadata(t)
+            mFName = self.WorkDir + 'metaData%i_%s.ja' % (nFN, t)
+            curMD.writeMetadata(mFName, t)
         
         # Now fire off the jobs
         for i in range(len(jobNums)):
             jobId = '%i_%i' % (nFN, jobNums[i])
-            self.executionDBManager.addNewJob(jobId)
+            self.executionDBManager.updateState(jobId, 'JAAdded')
             print 'Added job: %s' % jobId
-            t0 = '/astro/apps/pkg/python64/bin/python jobAllocatorRun.py %s %s %s &' % (
-                jobId, jobTypes[i], jobDataFiles[i])
+            t0 = '/astro/apps/pkg/python64/bin/python jobAllocatorRun.py %i %s %s %s &' % (
+                nFN, jobId, jobTypes[i], jobDataFiles[i])
             print t0
             os.system(t0)
 
@@ -118,11 +128,15 @@ class JobAllocator:
         for i in range(len(jobNums)):
             jobId = '%i_%i' % (nFN, jobNums[i])
             tryNum = 0
-            while not self.executionDBManager.checkJobStarted(jobId):
+            t0 = self.executionDBManager.queryState(jobId)
+            while t0 == 'JAAdded':
+                print 'JA sees state for %s: %s' % (jobId, t0)
                 time.sleep(1)
                 if tryNum > 3:
                     raise RuntimeError, '*** Job not started: %s' % jobId
                 tryNum += 1
+                t0 = self.executionDBManager.queryState(jobId)
+            print 'JA sees state for %s: %s' % (jobId, t0)
 
     # Private
     def _setnJobs(self, nJobs):
