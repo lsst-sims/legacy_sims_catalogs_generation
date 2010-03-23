@@ -84,7 +84,7 @@ class queryDB(object):
       catalogDescriptionPath = os.environ["CATALOG_DESCRIPTION_PATH"]
     else:
       raise Exception("Environment variable CATALOG_DESCRIPTION_PATH not set to location of the catalog description files")
-    nic = InstanceCatalog.InstanceCatalog()
+    nic = InstanceCatalog()
     nic.catalogDescription = CatalogDescription.CatalogDescription(
                    catalogDescriptionPath+"requiredMetadata.dat",
                    catalogDescriptionPath+"requiredSchemaFields.dat",
