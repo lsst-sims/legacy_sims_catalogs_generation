@@ -1,17 +1,21 @@
 #!/usr/bin/env python
 from dbModel import *
-from lsst.sims.measures.instance import instanceCatalog as ic
+from catalogDbMap import catalogDbMap
+import os
+from lsst.sims.measures.instance import InstanceCatalog
+from lsst.sims.measures.instance import CatalogDescription
 from lsst.sims.measures.instance import Metadata
+from lsst.sims.measures.instance import CatalogType
+
 
 class queryDB(object):
-  def __init__(self, objtype = 'star', filetypes=("TRIM",), chunksize=100000):
+  def __init__(self, objtype = 'star', filetypes=CatalogType.TRIM, chunksize=100000):
     setup_all()
     self._start=0
     self.filetypes = filetypes
     self.objtype = objtype
     self.chunksize=chunksize
-    self.columns = {}
-    self.columns['star'] = ('id', 'ra', 'decl')
+    self.cdm = catalogDbMap()
 
   def getNextChunk(self):
     try:
@@ -66,46 +70,54 @@ class queryDB(object):
     else:
       raise Exception('getInstanceCatalogById', 'Did not give valid object type')
     self.metadata = Metadata()
-    for k in (os.__dict__.keys()):
-      self.metadata.addMetadata(k,os.__dict__[k],"")
-    try:
-      result = self.query.slice(self._start, self._start+self.chunksize).all()
-      self._start += self.chunksize
-      if len(result) == 0:
-        return None
-      else:
-        return self.makeCatalogFromQuery(result)
-    except Exception as e:
-      print "Exception of type: %s"%(type(e))
-      raise Exception(e)
+    for k in self.cdm.metadataMap.keys():
+      self.metadata.addMetadata(k,os.__dict__[self.cdm.metadataMap[k]['opsim3_61']],"")
+    result = self.query.slice(self._start, self._start+self.chunksize).all()
+    self._start += self.chunksize
+    if len(result) == 0:
+      return None
+    else:
+      return self.makeCatalogFromQuery(result)
 
   def makeCatalogFromQuery(self, result):
-    nic = ic.InstanceCatalog()
+    if os.environ.has_key("CATALOG_DESCRIPTION_PATH"):
+      catalogDescriptionPath = os.environ["CATALOG_DESCRIPTION_PATH"]
+    else:
+      raise Exception("Environment variable CATALOG_DESCRIPTION_PATH not set to location of the catalog description files")
+    nic = InstanceCatalog()
+    nic.catalogDescription = CatalogDescription.CatalogDescription(
+                   catalogDescriptionPath+"requiredMetadata.dat",
+                   catalogDescriptionPath+"requiredSchemaFields.dat",
+                   catalogDescriptionPath+"requiredDerivedFields.dat",
+                   catalogDescriptionPath+"outputFormat.dat")
+    nic.metadata.catalogDescription =  nic.catalogDescription
     nic.catalogType = self.filetypes
-    ids = []
-    ras = []
-    decs = []
-    magNorms = []
-    sedFilenames = []
-    Rvs = []
-    Avs = []
-    eModels = []
+    data = {}
+    for k in self.cdm.objectTypes['POINT'].keys():
+      data[k] = []
     for s in result:
-      ids.append(s.Star.id)
-      ras.append(s.Star.ra)
-      decs.append(s.Star.decl)
-      sedFilenames.append(s.Star.sedfilename)
-      Rvs.append(3.1)
-      Avs.append(s.Star.ebv*Rvs[-1])
-      eModels.append('CCM')
-      magNorms.append(s.magNorm)
-    nic.addColumn(ids, 'id')
-    nic.addColumn(ras, 'ra')
-    nic.addColumn(decs, 'dec')
-    nic.addColumn(magNorms, 'magNorm')
-    nic.addColumn(sedFilenames, 'sedFilename')
-    nic.addColumn(eModels, 'galacticExtinctionModel')
-    nic.addColumn(Avs, 'galacticAv')
-    nic.addColumn(Rvs, 'galacticRv')
+      for k in self.cdm.objectTypes['POINT'].keys():
+	if k == 'magNorm':
+          data[k].append(s.magNorm)
+        elif k == 'shearXX':
+          data[k].append(self.cdm.objectTypes['POINT'][k]['star'])
+        elif k == 'shearYY':
+          data[k].append(self.cdm.objectTypes['POINT'][k]['star'])
+        elif k == 'magnification':
+          data[k].append(self.cdm.objectTypes['POINT'][k]['star'])
+        elif k == 'spatialmodel':
+          data[k].append(self.cdm.objectTypes['POINT'][k]['star'])
+        elif k == 'galacticExtinctionModel':
+          data[k].append(self.cdm.objectTypes['POINT'][k]['star'])
+        elif k == 'galacticRv':
+          data[k].append(self.cdm.objectTypes['POINT'][k]['star'])
+        elif k == 'internalExtinctionModel':
+          data[k].append(self.cdm.objectTypes['POINT'][k]['star'])
+        elif k == 'galacticAv':
+          data[k].append(s.Star.ebv*3.1)
+	else:
+          data[k].append(s.Star.__dict__[self.cdm.objectTypes['POINT'][k]['star']])
+    for k in self.cdm.objectTypes['POINT'].keys():
+      nic.addColumn(data[k], k)
     nic.metadata = self.metadata
     return nic
