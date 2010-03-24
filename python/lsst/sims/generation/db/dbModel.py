@@ -1,4 +1,5 @@
 from sqlalchemy.orm import scoped_session, sessionmaker
+from sqlalchemy.sql import expression
 from sqlalchemy import create_engine
 from sqlalchemy import ThreadLocalMetaData
 import sqlalchemy.databases as sd 
