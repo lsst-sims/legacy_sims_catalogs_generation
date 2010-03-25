@@ -32,8 +32,8 @@ class catalogDbMap (object):
         self.objectTypes['POINT']['shearXX'] = {'star':'0'}
         self.objectTypes['POINT']['shearYY'] = {'star':'0'}
         self.objectTypes['POINT']['magnification'] = {'star':'0'}
-        self.objectTypes['POINT']['properMotionRa'] = {'star':'mudecl*3600.*PI()/180.'}
-        self.objectTypes['POINT']['properMotionDec'] = {'star':'mura*3600.*PI()/180.'}
+        self.objectTypes['POINT']['properMotionRa'] = {'star':'(mudecl/(1000.*3600.))*PI()/180.'}
+        self.objectTypes['POINT']['properMotionDec'] = {'star':'(mura/(1000.*3600.))*PI()/180.'}
         self.objectTypes['POINT']['spatialmodel'] = {'star':"'Juric'"}
         self.objectTypes['POINT']['galacticExtinctionModel'] = {'star':"'CCM'"}
         self.objectTypes['POINT']['galacticAv'] = {'star':'ebv*3.1'}
