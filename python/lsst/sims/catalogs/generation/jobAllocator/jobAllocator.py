@@ -1,8 +1,8 @@
-import os, sys, time
+import os, sys, time, cPickle
 from jobAllocatorStubs import *
 import getFileNameWC
-from lsst.sims.generation.db import queryDB
-from lsst.sims.generation.db import jobDB
+from lsst.sims.catalogs.generation.db import queryDB
+from lsst.sims.catalogs.generation.db import jobDB
 
 class JobAllocator:
 
@@ -86,25 +86,32 @@ class JobAllocator:
         nFN = self.executionDBManager.getJobId()
         print 'Using job ID: %i' % nFN
         jobNum = 0
-        jobTypes = []; jobNums = []; jobDataFiles = []; useTypes = []
+        jobTypes = []; jobNums = []; jobPickleFiles = []; useTypes = []
         self.metaDataManager.reset()
         instanceCat = self.DBManager.getInstanceCatalogById(obsHistID)
+        # RRG:  Hack; have Simon incorporate
+        instanceCat.objectType = 'POINT'
         curMD = instanceCat.metadata
         numCats = 0; maxCats = 3
         while instanceCat:
             t0 = self.WorkDir + 'catData%i_%i.ja' % (nFN, jobNum)
+            t1 = self.WorkDir + 'catData%i_%i.p' % (nFN, jobNum)
             for t in catalogTypes:
                 if t not in useTypes: useTypes.append(t)
-                print 'Now writing catalog type: %s' % t
-                instanceCat.validateData(t)
-                instanceCat.writeCatalogData(t0, t)
+                print 'Now pickling catalog type: %s' % t
+                # Store job data files in instance
+                instanceCat.jobAllocatorDataFile = t0
+                instanceCat.jobAllocatorCatalogType = t
+                cPickle.dump(instanceCat, open(t1, 'w'))
                 jobTypes.append(t)
                 jobNums.append(jobNum)
-                jobDataFiles.append(t0)
+                jobPickleFiles.append(t1)
                 jobNum += 1
             # RRG:  No getNextChunk() yet
             #instanceCat = None
             instanceCat = self.DBManager.getNextChunk()
+            # RRG:  Hack; have Simon incorporate
+            instanceCat.objectType = 'POINT'
             curMD.mergeMetadata(instanceCat.metadata)
             numCats += 1
             if numCats >= maxCats: break
@@ -118,8 +125,8 @@ class JobAllocator:
             jobId = '%i_%i' % (nFN, jobNums[i])
             self.executionDBManager.updateState(jobId, 'JAAdded')
             print 'Added job: %s' % jobId
-            t0 = '/astro/apps/pkg/python64/bin/python jobAllocatorRun.py %i %s %s %s &' % (
-                nFN, jobId, jobTypes[i], jobDataFiles[i])
+            t0 = '/astro/apps/pkg/python64/bin/python jobAllocatorRun.py %i %s %s&' % (
+                nFN, jobId, jobPickleFiles[i])
             print t0
             os.system(t0)
 

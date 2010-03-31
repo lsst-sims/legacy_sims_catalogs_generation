@@ -59,10 +59,15 @@ class JobAllocatorTest(unittest.TestCase):
             self.assert_(d.has_key(str(i)))
         # Testing beyond this level is up to the MetaData class
 
-    def teststartCatalogs(self):
+    #def teststartStubCatalog(self):
+    #    j = jobAllocator.JobAllocator(chunkSize=10)
+    #    # For some reason, need to use square brackets
+    #    j.startCatalogs(['STUB'], 'TEST QUERY', '85748128')
+
+    def teststartTrimCatalog(self):
         j = jobAllocator.JobAllocator(chunkSize=10)
         # For some reason, need to use square brackets
-        j.startCatalogs(['STUB'], 'TEST QUERY', '85748128')
+        j.startCatalogs(['TRIM'], 'TEST QUERY', '85748128')
 
 if __name__ == '__main__':
     unittest.main()
