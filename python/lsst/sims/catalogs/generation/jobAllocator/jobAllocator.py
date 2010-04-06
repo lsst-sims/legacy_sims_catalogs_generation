@@ -125,8 +125,13 @@ class JobAllocator:
             jobId = '%i_%i' % (nFN, jobNums[i])
             self.executionDBManager.updateState(jobId, 'JAAdded')
             print 'Added job: %s' % jobId
-            t0 = '/astro/apps/pkg/python64/bin/python jobAllocatorRun.py %i %s %s&' % (
-                nFN, jobId, jobPickleFiles[i])
+            #t0 = '/astro/apps/pkg/python64/bin/python jobAllocatorRun.py %i %s %s&' % (nFN, jobId, jobPickleFiles[i])
+            #t0 = 'qsub ./runOneAthena.csh %i %s %s&' % (nFN, jobId, jobPickleFiles[i])
+            #t0 = 'ssh athena0 "(cd $PBS_O_WORKDIR; qsub ./runOneAthena.csh %i %s %s)"' % (nFN, jobId, jobPickleFiles[i])
+            f0 = open('tmpJA%s.csh' % jobId, 'w')
+	    f0.write('#!/bin/csh\n#PBS -N jA%s\n#PBS -l walltime=1:00:00\n#PBS -e jA%s.err\n#PBS -o jA%s.out\ncd /share/home/rgibson/sims/catalogs/generation/trunk/python/lsst/sims/catalogs/generation/jobAllocator\nsource setupAthena.csh\npython jobAllocatorRun.py %i %s %s\necho Finished.' % (jobId, jobId, jobId, nFN, jobId, jobPickleFiles[i]))
+            f0.close()
+            t0 = 'ssh athena0 "(cd /share/home/rgibson/sims/catalogs/generation/trunk/python/lsst/sims/catalogs/generation/jobAllocator; qsub tmpJA%s.csh)"' % (jobId)
             print t0
             os.system(t0)
 
@@ -136,10 +141,10 @@ class JobAllocator:
             jobId = '%i_%i' % (nFN, jobNums[i])
             tryNum = 0
             t0 = self.executionDBManager.queryState(jobId)
-            while t0 == 'JAAdded':
+            while t0 != 'JAFinished':
                 print 'JA sees state for %s: %s' % (jobId, t0)
                 time.sleep(1)
-                if tryNum > 3:
+                if tryNum > 3000:
                     raise RuntimeError, '*** Job not started: %s' % jobId
                 tryNum += 1
                 t0 = self.executionDBManager.queryState(jobId)

@@ -3,6 +3,7 @@ import jobAllocatorStubs
 from lsst.sims.catalogs.generation.db import jobDB as jobDB
 
 if __name__ == '__main__':
+    print 'Started.'
     jobId = int(sys.argv[1])
     d = jobDB.JobState(jobId)
     procId = sys.argv[2]
@@ -13,18 +14,22 @@ if __name__ == '__main__':
     print 'Started job: %i %s %s' % (
         jobId, procId, sys.argv[3])
 
-    t0 = '%s: ' % (procId)
-    print t0, 'Unpickling...'
+    jobIdStr = '%s: ' % (procId)
+    print jobIdStr, 'Unpickling...'
     instanceCat = cPickle.load(open(pickleFile))
     dataFile = instanceCat.jobAllocatorDataFile
     catalogType = instanceCat.jobAllocatorCatalogType
 
-    print t0, 'makeHelio...'
+    print jobIdStr, 'makeHelio...'
     instanceCat.makeHelio()
-    print t0, 'makeTrimCoords...'
+    print jobIdStr, 'makeTrimCoords...'
     instanceCat.makeTrimCoords()
-    print t0, 'validateData...'
+    print jobIdStr, 'validateData...'
     instanceCat.validateData(catalogType)
-    print t0, 'writeCatalogData... %s %s' % (dataFile, catalogType)
+    print jobIdStr, 'writeCatalogData... %s %s' % (dataFile, catalogType)
     instanceCat.writeCatalogData(dataFile, catalogType)
 
+    t0 = 'mv %s /share/sdata1/rgibson/catOut/' % dataFile
+    print t0
+    os.system(t0)
+    d.updateState(procId, 'JAFinished')

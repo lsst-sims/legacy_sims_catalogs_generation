@@ -1,6 +1,7 @@
 #unsetenv PYTHONPATH
 lsst
 setup numpy
+setup subversion
 
 setenv CS /share/home/rgibson/catalogs_share
 setenv LD_LIBRARY_PATH ${LD_LIBRARY_PATH}:${CS}/postgres.8.4.1/lib:${HOME}/shared

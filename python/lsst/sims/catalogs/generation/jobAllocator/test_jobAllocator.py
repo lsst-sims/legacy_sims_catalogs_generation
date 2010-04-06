@@ -5,8 +5,8 @@ class JobAllocatorTest(unittest.TestCase):
     def testinit(self):
         if os.path.exists('/local/tmp/'):
             workDir = '/local/tmp/jobAllocator/'
-        elif os.path.exists('/state/partition1/'):
-            workDir = '/state/partition1/jobAllocator/'
+        elif os.path.exists('/share/sdata1/rgibson/'):
+            workDir = '/share/sdata1/rgibson/jobAllocator/'
         else:
             raise RuntimeError, '*** No place for workDir.'
         j = jobAllocator.JobAllocator(workDir=workDir)
@@ -20,8 +20,8 @@ class JobAllocatorTest(unittest.TestCase):
     def testreset(self):
         if os.path.exists('/local/tmp/'):
             workDir = '/local/tmp/jobAllocator/'
-        elif os.path.exists('/state/partition1/'):
-            workDir = '/state/partition1/jobAllocator/'
+        elif os.path.exists('/share/sdata1/rgibson/'):
+            workDir = '/share/sdata1/rgibson/jobAllocator/'
         else:
             raise RuntimeError, '*** No place for workDir.'
         j = jobAllocator.JobAllocator(workDir=workDir)
@@ -46,8 +46,8 @@ class JobAllocatorTest(unittest.TestCase):
     def testclearMetaData(self):
         if os.path.exists('/local/tmp/'):
             workDir = '/local/tmp/jobAllocator/'
-        elif os.path.exists('/state/partition1/'):
-            workDir = '/state/partition1/jobAllocator/'
+        elif os.path.exists('/share/sdata1/rgibson/'):
+            workDir = '/share/sdata1/rgibson/jobAllocator/'
         else:
             raise RuntimeError, '*** No place for workDir.'
         j = jobAllocator.JobAllocator(workDir=workDir)
@@ -59,8 +59,8 @@ class JobAllocatorTest(unittest.TestCase):
     def testAddMetaData0(self):
         if os.path.exists('/local/tmp/'):
             workDir = '/local/tmp/jobAllocator/'
-        elif os.path.exists('/state/partition1/'):
-            workDir = '/state/partition1/jobAllocator/'
+        elif os.path.exists('/share/sdata1/rgibson/'):
+            workDir = '/share/sdata1/rgibson/jobAllocator/'
         else:
             raise RuntimeError, '*** No place for workDir.'
         j = jobAllocator.JobAllocator(workDir=workDir)
@@ -75,8 +75,8 @@ class JobAllocatorTest(unittest.TestCase):
     def testAddMetaDataN(self):
         if os.path.exists('/local/tmp/'):
             workDir = '/local/tmp/jobAllocator/'
-        elif os.path.exists('/state/partition1/'):
-            workDir = '/state/partition1/jobAllocator/'
+        elif os.path.exists('/share/sdata1/rgibson/'):
+            workDir = '/share/sdata1/rgibson/jobAllocator/'
         else:
             raise RuntimeError, '*** No place for workDir.'
         j = jobAllocator.JobAllocator(workDir=workDir)
@@ -97,8 +97,8 @@ class JobAllocatorTest(unittest.TestCase):
     def teststartTrimCatalog(self):
         if os.path.exists('/local/tmp/'):
             workDir = '/local/tmp/jobAllocator/'
-        elif os.path.exists('/state/partition1/'):
-            workDir = '/state/partition1/jobAllocator/'
+        elif os.path.exists('/share/sdata1/rgibson/'):
+            workDir = '/share/sdata1/rgibson/jobAllocator/'
         else:
             raise RuntimeError, '*** No place for workDir.'
         j = jobAllocator.JobAllocator(workDir=workDir, chunkSize=10)
