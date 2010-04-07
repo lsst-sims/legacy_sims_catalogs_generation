@@ -88,12 +88,18 @@ class JobAllocator:
         jobNum = 0
         jobTypes = []; jobNums = []; jobPickleFiles = []; useTypes = []
         self.metaDataManager.reset()
+        print 'Querying DB for first chunk.'
         instanceCat = self.DBManager.getInstanceCatalogById(obsHistID)
+        print 'Got first chunk.'
         # RRG:  Hack; have Simon incorporate
-        instanceCat.objectType = 'POINT'
-        curMD = instanceCat.metadata
-        numCats = 0; maxCats = 3
+        curMD = None
+        numCats = 0; maxCats = 100
         while instanceCat:
+            # RRG:  Hack; have Simon incorporate
+            instanceCat.objectType = 'POINT'
+            if curMD == None: curMD = instanceCat.metadata
+            else:
+                curMD.mergeMetadata(instanceCat.metadata)
             t0 = self.WorkDir + 'catData%i_%i.ja' % (nFN, jobNum)
             t1 = self.WorkDir + 'catData%i_%i.p' % (nFN, jobNum)
             for t in catalogTypes:
@@ -107,12 +113,10 @@ class JobAllocator:
                 jobNums.append(jobNum)
                 jobPickleFiles.append(t1)
                 jobNum += 1
-            # RRG:  No getNextChunk() yet
             #instanceCat = None
+            print 'Querying DB for next chunk.'
             instanceCat = self.DBManager.getNextChunk()
-            # RRG:  Hack; have Simon incorporate
-            instanceCat.objectType = 'POINT'
-            curMD.mergeMetadata(instanceCat.metadata)
+            print 'Got next chunk or end.'
             numCats += 1
             if numCats >= maxCats: break
         for t in useTypes:

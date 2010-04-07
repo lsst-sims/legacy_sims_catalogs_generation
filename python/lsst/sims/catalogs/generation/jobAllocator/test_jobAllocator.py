@@ -101,7 +101,7 @@ class JobAllocatorTest(unittest.TestCase):
             workDir = '/share/sdata1/rgibson/jobAllocator/'
         else:
             raise RuntimeError, '*** No place for workDir.'
-        j = jobAllocator.JobAllocator(workDir=workDir, chunkSize=10)
+        j = jobAllocator.JobAllocator(workDir=workDir, chunkSize=100000)
         # For some reason, need to use square brackets
         j.startCatalogs(['TRIM'], 'TEST QUERY', '85748128')
 
