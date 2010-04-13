@@ -1,4 +1,4 @@
-import os, sys, time, cPickle
+import os, sys, time, cPickle, time, copy
 from jobAllocatorStubs import *
 import getFileNameWC
 from lsst.sims.catalogs.generation.db import queryDB
@@ -24,7 +24,7 @@ class JobAllocator:
     def __init__(self, workDir='/local/tmp/jobAllocator/', chunkSize=1000):
         self.nJobs = None
         self.catalogTypes = None
-        self.chunkSize = None
+        self.chunkSize = chunkSize
         self.metaDataManager = MetaDataManager()
         self.catalogTypeManager = CatalogTypeManager()
         self.uIToDBManager = UIToDBManager()
@@ -88,12 +88,17 @@ class JobAllocator:
         jobNum = 0
         jobTypes = []; jobNums = []; jobPickleFiles = []; useTypes = []
         self.metaDataManager.reset()
-        print 'Querying DB for first chunk.'
+        os.system('free -m')
+        print 'Getting first instance catalog of size %i...' % self.chunkSize
+        t0 = time.time()
         instanceCat = self.DBManager.getInstanceCatalogById(obsHistID)
-        print 'Got first chunk.'
+        print '   ...got catalog, took %i sec.' % (time.time() - t0)
+        os.system('free -m')
         # RRG:  Hack; have Simon incorporate
-        curMD = None
-        numCats = 0; maxCats = 100
+        instanceCat.objectType = 'POINT'
+        # Deep copy so we can store this after instanceCat disappears
+        curMD = copy.deepcopy(instanceCat.metadata)
+        numCats = 0; maxCats = 300
         while instanceCat:
             # RRG:  Hack; have Simon incorporate
             instanceCat.objectType = 'POINT'
@@ -113,10 +118,18 @@ class JobAllocator:
                 jobNums.append(jobNum)
                 jobPickleFiles.append(t1)
                 jobNum += 1
-            #instanceCat = None
+            # *** RRG:  Free up memory somehow here for instanceCat...
+            del(instanceCat); instanceCat = None
+            os.system('free -m')
+            print 'Getting next instance catalog chunk...'
+            t0 = time.time()
             print 'Querying DB for next chunk.'
             instanceCat = self.DBManager.getNextChunk()
-            print 'Got next chunk or end.'
+            print '   ...took %i sec.' % (time.time() - t0)
+            os.system('free -m')
+            # RRG:  Hack; have Simon incorporate
+            instanceCat.objectType = 'POINT'
+            curMD.mergeMetadata(copy.deepcopy(instanceCat.metadata))
             numCats += 1
             if numCats >= maxCats: break
         for t in useTypes:
