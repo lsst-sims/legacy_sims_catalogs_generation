@@ -35,6 +35,8 @@ class JobAllocator:
         self.WorkDir = workDir.rstrip('/') + '/'
         self.nextFileNum = 0
         self.maxCats = maxCats
+        if self.maxCats < 1 and self.chunkSize < 100000:
+            raise RuntimeError, '*** You are not allowed to swamp the network.'
         
     def reset(self):
         self.nJobs = None
