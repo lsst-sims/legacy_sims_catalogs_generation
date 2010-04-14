@@ -21,7 +21,7 @@ class JobAllocator:
     fileName = None #???
     directory = None #???
     
-    def __init__(self, workDir='/local/tmp/jobAllocator/', chunkSize=1000):
+    def __init__(self, workDir='/local/tmp/jobAllocator/', chunkSize=1000, maxCats=-1):
         self.nJobs = None
         self.catalogTypes = None
         self.chunkSize = chunkSize
@@ -34,6 +34,7 @@ class JobAllocator:
             os.system('mkdir %s' % workDir)
         self.WorkDir = workDir.rstrip('/') + '/'
         self.nextFileNum = 0
+        self.maxCats = maxCats
         
     def reset(self):
         self.nJobs = None
@@ -98,17 +99,16 @@ class JobAllocator:
         instanceCat.objectType = 'POINT'
         # Deep copy so we can store this after instanceCat disappears
         curMD = copy.deepcopy(instanceCat.metadata)
-        numCats = 0; maxCats = 300
+        numCats = 0
         while instanceCat:
             # RRG:  Hack; have Simon incorporate
             instanceCat.objectType = 'POINT'
-            if curMD == None: curMD = instanceCat.metadata
-            else:
+            if numCats > 0:
                 curMD.mergeMetadata(instanceCat.metadata)
-            t0 = self.WorkDir + 'catData%i_%i.ja' % (nFN, jobNum)
-            t1 = self.WorkDir + 'catData%i_%i.p' % (nFN, jobNum)
             for t in catalogTypes:
                 if t not in useTypes: useTypes.append(t)
+                t0 = self.WorkDir + 'catData%i_%i.ja' % (nFN, jobNum)
+                t1 = self.WorkDir + 'catData%i_%i.p' % (nFN, jobNum)
                 print 'Now pickling catalog type: %s' % t
                 # Store job data files in instance
                 instanceCat.jobAllocatorDataFile = t0
@@ -120,18 +120,14 @@ class JobAllocator:
                 jobNum += 1
             # *** RRG:  Free up memory somehow here for instanceCat...
             del(instanceCat); instanceCat = None
-            os.system('free -m')
-            print 'Getting next instance catalog chunk...'
             t0 = time.time()
-            print 'Querying DB for next chunk.'
-            instanceCat = self.DBManager.getNextChunk()
             print '   ...took %i sec.' % (time.time() - t0)
             os.system('free -m')
-            # RRG:  Hack; have Simon incorporate
-            instanceCat.objectType = 'POINT'
-            curMD.mergeMetadata(copy.deepcopy(instanceCat.metadata))
             numCats += 1
-            if numCats >= maxCats: break
+            if self.maxCats >= 0 and numCats >= self.maxCats: break
+            print 'Querying DB for next chunk.'
+            instanceCat = self.DBManager.getNextChunk()
+
         for t in useTypes:
             curMD.validateMetadata(t)
             mFName = self.WorkDir + 'metaData%i_%s.ja' % (nFN, t)

@@ -12,7 +12,6 @@ class JobAllocatorTest(unittest.TestCase):
         j = jobAllocator.JobAllocator(workDir=workDir)
         self.assertEqual(j.nJobs, None)
         self.assertEqual(j.catalogTypes, None)
-        self.assertEqual(j.chunkSize, testChunkSize)
         self.assertNotEqual(j.metaDataManager, None)
         self.assertNotEqual(j.catalogTypeManager, None)
         self.assertNotEqual(j.uIToDBManager, None)
@@ -101,7 +100,7 @@ class JobAllocatorTest(unittest.TestCase):
             workDir = '/share/sdata1/rgibson/jobAllocator/'
         else:
             raise RuntimeError, '*** No place for workDir.'
-        j = jobAllocator.JobAllocator(workDir=workDir, chunkSize=100000)
+        j = jobAllocator.JobAllocator(workDir=workDir, chunkSize=100000, maxCats=-1)
         # For some reason, need to use square brackets
         j.startCatalogs(['TRIM'], 'TEST QUERY', '85748128')
 
