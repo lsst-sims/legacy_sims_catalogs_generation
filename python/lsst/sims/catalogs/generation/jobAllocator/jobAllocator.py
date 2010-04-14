@@ -141,10 +141,11 @@ class JobAllocator:
             #t0 = '/astro/apps/pkg/python64/bin/python jobAllocatorRun.py %i %s %s&' % (nFN, jobId, jobPickleFiles[i])
             #t0 = 'qsub ./runOneAthena.csh %i %s %s&' % (nFN, jobId, jobPickleFiles[i])
             #t0 = 'ssh athena0 "(cd $PBS_O_WORKDIR; qsub ./runOneAthena.csh %i %s %s)"' % (nFN, jobId, jobPickleFiles[i])
+            cwd0 = os.getcwd()
             f0 = open('tmpJA%s.csh' % jobId, 'w')
-	    f0.write('#!/bin/csh\n#PBS -N jA%s\n#PBS -l walltime=1:00:00\n#PBS -e jA%s.err\n#PBS -o jA%s.out\ncd /share/home/rgibson/sims/catalogs/generation/trunk/python/lsst/sims/catalogs/generation/jobAllocator\nsource setupAthena.csh\npython jobAllocatorRun.py %i %s %s\necho Finished.' % (jobId, jobId, jobId, nFN, jobId, jobPickleFiles[i]))
+	    f0.write('#!/bin/csh\n#PBS -N jA%s\n#PBS -l walltime=1:00:00\n#PBS -e jA%s.err\n#PBS -o jA%s.out\ncd %s\nsource setupAthena.csh\npython jobAllocatorRun.py %i %s %s\necho Finished.' % (jobId, jobId, jobId, cwd0, nFN, jobId, jobPickleFiles[i]))
             f0.close()
-            t0 = 'ssh athena0 "(cd /share/home/rgibson/sims/catalogs/generation/trunk/python/lsst/sims/catalogs/generation/jobAllocator; qsub tmpJA%s.csh)"' % (jobId)
+            t0 = 'ssh athena0 "(cd %s; qsub tmpJA%s.csh)"' % (cwd0, jobId)
             print t0
             os.system(t0)
 
