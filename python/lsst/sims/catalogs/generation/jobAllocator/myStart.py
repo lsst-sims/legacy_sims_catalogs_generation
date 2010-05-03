@@ -13,6 +13,7 @@ def howManyInQueue(eM, jobId, maxJobs):
 def addJob(eM, tableId):
     tableStr = str(tableId)
     t0 = eM.queryState(tableStr + 'NumJobs')
+    if t0 == None: t0 = 0
     print 'Current num: ', t0
     t1 = int(t0) + 1
     em.updateState(jobKey + 'NumJobs', str(t1))
