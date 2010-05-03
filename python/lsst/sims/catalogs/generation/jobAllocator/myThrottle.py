@@ -43,7 +43,7 @@ def throttle(eM, tableId, maxNumJobs, throttleTime):
 
 tableId = sys.argv[1]
 print 'Using tableId: ', tableId
-eM = jobDB.JobState()
+eM = jobDB.JobState(tableId)
 
 for i in range(100):
     howManyJobs(eM, tableId)
