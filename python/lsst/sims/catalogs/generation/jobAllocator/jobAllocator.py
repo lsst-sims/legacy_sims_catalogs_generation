@@ -102,6 +102,7 @@ class JobAllocator:
         # Deep copy so we can store this after instanceCat disappears
         curMD = copy.deepcopy(instanceCat.metadata)
         numCats = 0
+        allOutputFiles = []
         while instanceCat:
             # RRG:  Hack; have Simon incorporate
             instanceCat.objectType = 'POINT'
@@ -114,6 +115,7 @@ class JobAllocator:
                 print 'Now pickling catalog type: %s' % t
                 # Store job data files in instance
                 instanceCat.jobAllocatorDataFile = t0
+                allOutputFiles.append(t0) # Order is important
                 instanceCat.jobAllocatorCatalogType = t
                 cPickle.dump(instanceCat, open(t1, 'w'))
                 jobTypes.append(t)
@@ -165,6 +167,19 @@ class JobAllocator:
                 tryNum += 1
                 t0 = self.executionDBManager.queryState(jobId)
             print 'JA sees state for %s: %s' % (jobId, t0)
+
+        # Finally, merge the output trim file
+        trimFile = self.WorkDir + 'trim%i_%s.ja' % (nFN, t)
+        t0 = 'cat %s > %s' % (mFName, trimFile)
+        print t0
+        os.system(t0)
+        for f in allOutputFiles:
+            t0 = 'cat %s >> %s' % (f, trimFile)
+            print t0
+            os.system(t0)
+        print 'Finished catting trim file: ', trimFile
+
+        
 
     # Private
     def _setnJobs(self, nJobs):
