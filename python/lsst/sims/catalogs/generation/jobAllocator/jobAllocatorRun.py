@@ -29,7 +29,8 @@ if __name__ == '__main__':
     print jobIdStr, 'writeCatalogData... %s %s' % (dataFile, catalogType)
     instanceCat.writeCatalogData(dataFile, catalogType)
 
-    t0 = 'mv %s /share/sdata1/rgibson/catOut/' % dataFile
-    print t0
-    os.system(t0)
+    # Don't move the file; I want to find it and cat it to a trim file
+    #t0 = 'mv %s /share/sdata1/rgibson/catOut/' % dataFile
+    #print t0
+    #os.system(t0)
     d.updateState(procId, 'JAFinished')
