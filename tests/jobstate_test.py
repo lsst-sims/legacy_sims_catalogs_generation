@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-from lsst.sims.generation.db import jobDB
+from lsst.sims.catalogs.generation.db import jobDB
 import sys
 
 js = jobDB.JobState()
