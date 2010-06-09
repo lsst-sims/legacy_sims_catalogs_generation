@@ -102,7 +102,7 @@ class JobAllocatorTest(unittest.TestCase):
             raise RuntimeError, '*** No place for workDir.'
         j = jobAllocator.JobAllocator(workDir=workDir, chunkSize=10, maxCats=3)
         # For some reason, need to use square brackets
-        j.startCatalogs(['TRIM'], 'TEST QUERY', '85748128')
+        j.startCatalogs(['TRIM'], 'STARS', '85748128')
 
 if __name__ == '__main__':
     unittest.main()

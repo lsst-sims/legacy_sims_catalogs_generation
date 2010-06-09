@@ -92,36 +92,38 @@ class JobAllocator:
         jobTypes = []; jobNums = []; jobPickleFiles = []; useTypes = []
         self.metaDataManager.reset()
         os.system('free -m')
-        print 'Getting first instance catalog of size %i...' % self.chunkSize
-        t0 = time.time()
-        instanceCat = self.DBManager.getInstanceCatalogById(obsHistID)
-        print '   ...got catalog, took %i sec.' % (time.time() - t0)
-        os.system('free -m')
-        # RRG:  Hack; have Simon incorporate
-        instanceCat.objectType = 'POINT'
-        # Deep copy so we can store this after instanceCat disappears
-        curMD = copy.deepcopy(instanceCat.metadata)
-        numCats = 0
-        allOutputFiles = []
-        while instanceCat:
+        for t in catalogTypes:
+            if t not in useTypes: useTypes.append(t)
+            print 'Getting first %s instance catalog of size %i...' % (
+                t, self.chunkSize)
+            myQDB = queryDB.queryDB(chunkSize=self.chunkSize, objtype=t)
+            t0 = time.time()
+            instanceCat = self.DBManager.getInstanceCatalogById(obsHistID)
+            print '   ...got catalog, took %i sec.' % (time.time() - t0)
+            os.system('free -m')
             # RRG:  Hack; have Simon incorporate
             instanceCat.objectType = 'POINT'
-            if numCats > 0:
-                curMD.mergeMetadata(instanceCat.metadata)
-            for t in catalogTypes:
-                if t not in useTypes: useTypes.append(t)
-                t0 = self.WorkDir + 'catData%i_%i.ja' % (nFN, jobNum)
-                t1 = self.WorkDir + 'catData%i_%i.p' % (nFN, jobNum)
-                print 'Now pickling catalog type: %s' % t
-                # Store job data files in instance
-                instanceCat.jobAllocatorDataFile = t0
-                allOutputFiles.append(t0) # Order is important
-                instanceCat.jobAllocatorCatalogType = t
-                cPickle.dump(instanceCat, open(t1, 'w'))
-                jobTypes.append(t)
-                jobNums.append(jobNum)
-                jobPickleFiles.append(t1)
-                jobNum += 1
+            # Deep copy so we can store this after instanceCat disappears
+            curMD = copy.deepcopy(instanceCat.metadata)
+            numCats = 0
+            allOutputFiles = []
+            while instanceCat:
+                # RRG:  Hack; have Simon incorporate
+                instanceCat.objectType = 'POINT'
+                if numCats > 0:
+                    curMD.mergeMetadata(instanceCat.metadata)
+                    t0 = self.WorkDir + 'catData%i_%i.ja' % (nFN, jobNum)
+                    t1 = self.WorkDir + 'catData%i_%i.p' % (nFN, jobNum)
+                    print 'Now pickling catalog type: %s' % t
+                    # Store job data files in instance
+                    instanceCat.jobAllocatorDataFile = t0
+                    allOutputFiles.append(t0) # Order is important
+                    instanceCat.jobAllocatorCatalogType = t
+                    cPickle.dump(instanceCat, open(t1, 'w'))
+                    jobTypes.append(t)
+                    jobNums.append(jobNum)
+                    jobPickleFiles.append(t1)
+                    jobNum += 1
             # *** RRG:  Free up memory somehow here for instanceCat...
             del(instanceCat); instanceCat = None
             t0 = time.time()
