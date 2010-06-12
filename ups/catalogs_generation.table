@@ -1,8 +1,13 @@
 setupRequired(numpy >=1.2.1)
 setupRequired(throughputs 1.0)
 
+envSet(OORB_CONF, ${CAT_SHARE_DATA}/oorb/main/oorb.conf)
+envSet(OORB_DATA, ${CAT_SHARE_DATA}/oorb/data)
+
 envAppend(LD_LIBRARY_PATH, ${PRODUCT_DIR}/lib)
 envAppend(LD_LIBRARY_PATH, ${CAT_SHARE_DATA}/postgres.8.4.1/lib)
+envAppend(LD_LIBRARY_PATH, ${CAT_SHARE_DATA})
+envPrepend(LD_LIBRARY_PATH, ${CAT_SHARE_DATA}/py_mods/lib/python2.5/site-packages/pyoorb)
 envAppend(DYLD_LIBRARY_PATH, ${PRODUCT_DIR}/lib)
 envAppend(PYTHONPATH, ${PRODUCT_DIR}/python)
 envAppend(PYTHONPATH, ${CAT_SHARE_DATA}/py_mods/lib/python2.5/site-packages/)
