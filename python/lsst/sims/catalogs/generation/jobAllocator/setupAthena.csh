@@ -1,4 +1,4 @@
-lsst
+source /share/data1/lsst/lsst_home/loadLSST.csh
 setenv CAT_SHARE_DATA /share/pogo1/dC3b/pT2/simsSharedAthena/
 #setenv CAT_SHARE_DATA /share/sdata1/krughoff/catalogs_share
 setup throughputs
