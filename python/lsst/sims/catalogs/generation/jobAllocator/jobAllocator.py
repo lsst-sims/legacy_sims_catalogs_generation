@@ -22,13 +22,13 @@ class JobAllocator:
     directory = None #???
     
     def __init__(self, workDir='/local/tmp/jobAllocator/', chunkSize=1000, maxCats=-1):
+        print 'In JA __init__()'
         self.nJobs = None
         self.catalogTypes = None
         self.chunkSize = chunkSize
         self.metaDataManager = MetaDataManager()
         self.catalogTypeManager = CatalogTypeManager()
         self.uIToDBManager = UIToDBManager()
-        self.DBManager = queryDB.queryDB(chunksize=chunkSize)
         self.executionDBManager = jobDB.JobState()
         if not os.path.exists(workDir):
             os.system('mkdir %s' % workDir)
@@ -37,8 +37,10 @@ class JobAllocator:
         self.maxCats = maxCats
         if self.maxCats < 1 and self.chunkSize < 100000:
             raise RuntimeError, '*** You are not allowed to swamp the network.'
+        print 'Leaving JA __init()__'
         
     def reset(self):
+        print 'In JA reset()'
         self.nJobs = None
         self.catalogTypes = None
         self.chunkSize = None
@@ -48,12 +50,11 @@ class JobAllocator:
             self.catalogTypeManager.reset()
         if self.uIToDBManager:
             self.uIToDBManager.reset()
-        #if self.DBManager:
-        #    self.DBManager.reset()
         #if self.executionDBManager:
         #    self.executionDBManager.reset()
         self.WorkDir = None
         self.nextFileNum = 0
+        print 'Leaving JA reset()'
 
     def clearMetaData(self):
         """Flush the current metaData."""
@@ -84,29 +85,35 @@ class JobAllocator:
                 raise RuntimeError, '*** Could not find a unique file number.'
         return self.nextFileNum
 
-    def startCatalogs(self, catalogTypes, query, obsHistID):
+    def startCatalogs(self, catalogTypes, queryTypes, obsHistID):
+        for ct in catalogTypes:
+            self.doOneCatalogType(ct, queryTypes, obsHistID)
+
+    def doOneCatalogType(self, catalogType, queryTypes, obsHistID):
         #nFN = self.getNextGoodFileNum()
         nFN = self.executionDBManager.getJobId()
         print 'Using job ID: %i' % nFN
+        print 'queryTypes:', queryTypes
         jobNum = 0
         jobTypes = []; jobNums = []; jobPickleFiles = []; useTypes = []
+        allOutputFiles = []; curMD = None
         self.metaDataManager.reset()
         os.system('free -m')
-        for t in catalogTypes:
+        for t in queryTypes:
             if t not in useTypes: useTypes.append(t)
             print 'Getting first %s instance catalog of size %i...' % (
                 t, self.chunkSize)
-            myQDB = queryDB.queryDB(chunkSize=self.chunkSize, objtype=t)
+            myQDB = queryDB.queryDB(chunksize=self.chunkSize, objtype=t)
             t0 = time.time()
-            instanceCat = self.DBManager.getInstanceCatalogById(obsHistID)
+            instanceCat = myQDB.getInstanceCatalogById(obsHistID)
             print '   ...got catalog, took %i sec.' % (time.time() - t0)
             os.system('free -m')
             # RRG:  Hack; have Simon incorporate
             instanceCat.objectType = 'POINT'
             # Deep copy so we can store this after instanceCat disappears
-            curMD = copy.deepcopy(instanceCat.metadata)
+            if curMD == None: curMD = copy.deepcopy(instanceCat.metadata)
+            else: curMD.mergeMetadata(instanceCat.metadata)
             numCats = 0
-            allOutputFiles = []
             while instanceCat:
                 # RRG:  Hack; have Simon incorporate
                 instanceCat.objectType = 'POINT'
@@ -114,36 +121,39 @@ class JobAllocator:
                     curMD.mergeMetadata(instanceCat.metadata)
                     t0 = self.WorkDir + 'catData%i_%i.ja' % (nFN, jobNum)
                     t1 = self.WorkDir + 'catData%i_%i.p' % (nFN, jobNum)
-                    print 'Now pickling catalog type: %s' % t
+                    print 'Now pickling query type: %s' % t
                     # Store job data files in instance
                     instanceCat.jobAllocatorDataFile = t0
                     allOutputFiles.append(t0) # Order is important
-                    instanceCat.jobAllocatorCatalogType = t
+                    instanceCat.jobAllocatorCatalogType = catalogType 
                     cPickle.dump(instanceCat, open(t1, 'w'))
-                    jobTypes.append(t)
+                    jobTypes.append(catalogType)
                     jobNums.append(jobNum)
                     jobPickleFiles.append(t1)
                     jobNum += 1
-            # *** RRG:  Free up memory somehow here for instanceCat...
-            del(instanceCat); instanceCat = None
-            t0 = time.time()
-            print '   ...took %i sec.' % (time.time() - t0)
-            os.system('free -m')
-            numCats += 1
-            if self.maxCats >= 0 and numCats >= self.maxCats: break
-            print 'Querying DB for next chunk.'
-            instanceCat = self.DBManager.getNextChunk()
+                # *** RRG:  Free up memory somehow here for instanceCat...
+                del(instanceCat); instanceCat = None
+                t0 = time.time()
+                os.system('free -m')
+                if self.maxCats >= 0 and numCats >= self.maxCats:
+                    instanceCat = None
+                else:
+                    print 'Querying DB for next chunk.'
+                    instanceCat = myQDB.getNextChunk()
+                    print '   ...took %i sec.' % (time.time() - t0)
+                    os.system('free -m')
+                    numCats += 1
 
         for t in useTypes:
-            curMD.validateMetadata(t)
-            mFName = self.WorkDir + 'metaData%i_%s.ja' % (nFN, t)
-            curMD.writeMetadata(mFName, t)
+            curMD.validateMetadata(catalogType)
+            mFName = self.WorkDir + 'metaData%i_%s.ja' % (nFN, catalogType)
+            curMD.writeMetadata(mFName, catalogType)
         
         # Now fire off the jobs
         for i in range(len(jobNums)):
             jobId = '%i_%i' % (nFN, jobNums[i])
             self.executionDBManager.updateState(jobId, 'JAAdded')
-            print 'Added job: %s' % jobId
+            print 'Added job to execution DB: %s' % jobId
             #t0 = '/astro/apps/pkg/python64/bin/python jobAllocatorRun.py %i %s %s&' % (nFN, jobId, jobPickleFiles[i])
             #t0 = 'qsub ./runOneAthena.csh %i %s %s&' % (nFN, jobId, jobPickleFiles[i])
             #t0 = 'ssh athena0 "(cd $PBS_O_WORKDIR; qsub ./runOneAthena.csh %i %s %s)"' % (nFN, jobId, jobPickleFiles[i])
@@ -171,7 +181,7 @@ class JobAllocator:
             print 'JA sees state for %s: %s' % (jobId, t0)
 
         # Finally, merge the output trim file
-        trimFile = self.WorkDir + 'trim%i_%s.ja' % (nFN, t)
+        trimFile = self.WorkDir + 'trim%i_%s.ja' % (nFN, catalogType)
         t0 = 'cat %s > %s' % (mFName, trimFile)
         print t0
         os.system(t0)
