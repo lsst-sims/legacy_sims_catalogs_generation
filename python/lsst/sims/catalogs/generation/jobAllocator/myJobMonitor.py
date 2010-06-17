@@ -9,7 +9,7 @@ def howManyJobs(eM, tableId):
     print 'howManyJobs: Current num: ', t0
     return t0
 
-def qsubJob(eM, tableId, jobId):
+def qsubJob(eM, tableId, jobId, jobName):
     tableStr = str(tableId)
     t0 = eM.queryState(tableStr + 'NumJobs')
     if t0 == None: t0 = 0
@@ -20,6 +20,8 @@ def qsubJob(eM, tableId, jobId):
     jobKey = tableId + '_' + jobId + 'JS'
     eM.updateState(jobKey, 'QSUBBED')
     eM.updateState(jobKey + 'QT', time.ctime())
+    jobKeyN = tableId + '_' + jobId + 'N'
+    eM.updateState(jobKeyN, jobName)
     eM.showStates()
 
 def jobRunning(eM, tableId, jobId):
@@ -65,7 +67,7 @@ for i in range(10):
     howManyJobs(eM, tableId)
     print '--------'
     print '%s: qsubbing Job (for pretend)' % jobId
-    qsubJob(eM, tableId, jobId)
+    qsubJob(eM, tableId, jobId, 'MyJobNameForJob%i' % i)
     print '%s: Job running (for pretend)' % jobId
     jobRunning(eM, tableId, jobId)
     print '%s: Job finished (for pretend)' % jobId
