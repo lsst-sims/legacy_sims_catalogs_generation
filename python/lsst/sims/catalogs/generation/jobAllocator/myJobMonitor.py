@@ -17,15 +17,15 @@ def qsubJob(eM, tableId, jobId):
     t1 = int(t0) + 1
     eM.updateState(tableStr + 'NumJobs', str(t1))
     print 'addJob: New num: ', t1
-    jobKey = tableId + '_' + jobId + '_JobState'
+    jobKey = tableId + '_' + jobId + 'JS'
     eM.updateState(jobKey, 'QSUBBED')
-    eM.updateState(jobKey + 'qsubTime', time.ctime())
+    eM.updateState(jobKey + 'QT', time.ctime())
     eM.showStates()
 
 def jobRunning(eM, tableId, jobId):
-    jobKey = tableId + '_' + jobId + '_JobState'
+    jobKey = tableId + '_' + jobId + 'JS'
     eM.updateState(jobKey, 'RUNNING')
-    eM.updateState(jobKey + 'RunningTime', time.ctime())
+    eM.updateState(jobKey + 'RT', time.ctime())
     eM.showStates()
 
 def jobFinished(eM, tableId, jobId):
@@ -35,9 +35,9 @@ def jobFinished(eM, tableId, jobId):
     t1 = int(t0) - 1
     eM.updateState(tableStr + 'NumJobs', str(t1))
     print 'addJob: New num: ', t1
-    jobKey = tableId + '_' + jobId + '_JobState'
+    jobKey = tableId + '_' + jobId + 'JS'
     eM.updateState(jobKey, 'FINISHED')
-    eM.updateState(jobKey + 'finishedTime', time.ctime())
+    eM.updateState(jobKey + 'FT', time.ctime())
     eM.showStates()
 
     
@@ -61,10 +61,9 @@ eM = jobDB.JobState(tableId)
 
 for i in range(10):
     jobId = 'Job' + str(i)
-    print '%i:  Current num jobs'
+    print '%i:  Current num jobs' % i
     howManyJobs(eM, tableId)
     print '--------'
-    throttle(eM, tableId, 5, 10)
     print '%s: qsubbing Job (for pretend)' % jobId
     qsubJob(eM, tableId, jobId)
     print '%s: Job running (for pretend)' % jobId
