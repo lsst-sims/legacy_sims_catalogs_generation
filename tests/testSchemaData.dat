@@ -1,0 +1,21 @@
+# Returned fields required for output 
+
+#Trim file information
+[TRIM]
+  [[GALACTIC]]
+    [[[POINT]]]
+      id = long,'id'
+      ra = float, 'ra*PI()/180.'
+      dec = float,'decl*PI()/180.'
+      glon = float,'gal_l*PI()/180.'
+  [[EXTRAGALACTIC]]
+    [[[SERSIC2D]]]
+      id = long,'id'
+      ra = 'float,ra'
+      dec = float,'dec'
+      glon = float,'0::real'
+      glat = float,'0::real'
+      magNorm = float,'0.0::real'
+      sedFilename = str,"'None'"
+      redshift = float,'redshift'
+      shearXX = float,'0.0::real'

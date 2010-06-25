@@ -1,0 +1,8 @@
+#Metadata the needs to be returned by the db
+
+#Trim file information
+[TRIM]
+  SIM_SEED = long, 'expdate'
+  Unrefracted_RA = float, 'fieldradeg'
+  Unrefracted_Dec = float, 'fielddecdeg'
+  Opsim_moonra = float, 'moonra'
