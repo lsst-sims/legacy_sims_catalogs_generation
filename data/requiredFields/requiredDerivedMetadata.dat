@@ -1,0 +1,8 @@
+#Metadata the needs to be derived by the instance class
+#Trim file information
+[TRIM]
+  SIM_SEED long
+  Unrefracted_Altitude float
+  Unrefracted_Azimuth float
+  Slalib_date str
+
