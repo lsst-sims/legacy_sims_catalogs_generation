@@ -20,3 +20,4 @@
 
 #Trim file information
 [STUB]
+  Test1 = str, ''

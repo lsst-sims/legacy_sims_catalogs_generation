@@ -1,0 +1,10 @@
+#Metadata the needs to be derived by the instance class
+
+#Trim file information
+[TRIM]
+  Unrefracted_Altitude = float, ''
+  Unrefracted_Azimuth = float, ''
+  Slalib_date = str, ''
+
+[STUB]
+  TEST3 = str, ''

@@ -1,0 +1,6 @@
+[CATALOG]
+  formatFile = "format.dat"
+  requiredMetadataFile = "requiredMetadata.dat"
+  derivedMetadataFile = "derivedMetadata.dat"
+  requiredFieldsFile = "requiredFields.dat"
+  derivedFieldsFile = "derivedFields.dat"

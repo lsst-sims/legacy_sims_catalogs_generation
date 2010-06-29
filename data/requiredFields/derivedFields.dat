@@ -1,0 +1,29 @@
+[TRIM]
+  [[GALACTIC]]
+    [[[POINT]]]
+      raHelio =float
+      decHelio =  float
+  [[SOLAR]]
+    [[[MOVINGPOINT]]]
+      raHelio = float
+      decHelio = float
+  [[EXTRAGALCTIC]]
+    [[[SERSIC2D]]]
+      raHelio = float
+      decHelio = float
+    [[[SERSIC2D_BULGE]]]
+      raHelio = float
+      decHelio = float
+    [[[SERSIC2D_DISK]]]
+      raHelio = float
+      decHelio = float
+    [[[POINT]]]
+      raHelio = float
+      decHelio = float
+
+
+[STUB]
+  [[GALACTIC]]
+    [[[POINT]]]
+      raHelio = float
+      decHelio = float
