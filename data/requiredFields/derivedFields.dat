@@ -3,23 +3,35 @@
     [[[POINT]]]
       raHelio =float
       decHelio =  float
+      raTrim = float
+      decTrim = float
   [[SOLAR]]
     [[[MOVINGPOINT]]]
       raHelio = float
       decHelio = float
+      raTrim = float
+      decTrim = float
   [[EXTRAGALCTIC]]
     [[[SERSIC2D]]]
       raHelio = float
       decHelio = float
+      raTrim = float
+      decTrim = float
     [[[SERSIC2D_BULGE]]]
       raHelio = float
       decHelio = float
+      raTrim = float
+      decTrim = float
     [[[SERSIC2D_DISK]]]
       raHelio = float
       decHelio = float
+      raTrim = float
+      decTrim = float
     [[[POINT]]]
       raHelio = float
       decHelio = float
+      raTrim = float
+      decTrim = float
 
 
 [STUB]

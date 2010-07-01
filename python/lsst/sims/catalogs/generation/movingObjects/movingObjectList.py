@@ -124,7 +124,7 @@ class MovingObjectList(object):
                                  elements.gettimePeri(),
                                  n.double(2),
                                  elements.getepoch(),
-                                 elements.gettimescale(),
+                                 elements.getorb_timescale(),
                                  movingobj.getmagHv(),
                                  movingobj.getphaseGv()]
         # we don't need a covariance matrix for ssm objects (=0) 
@@ -136,6 +136,9 @@ class MovingObjectList(object):
         # timescale; 1 = UTC. 2 = UT1.  3= TT. 4 = TAI 
 
         # now do ephemeris generation for all objects on all dates
+        ephem_datfile = ""
+        oo.pyoorb.oorb_init(ephemeris_fname=ephem_datfile)
+
         ephems, err = oo.pyoorb.oorb_ephemeris(in_orbits = orbitsArray,
                                                in_obscode = obscode,
                                                in_date_ephems = ephem_dates)
@@ -180,7 +183,7 @@ class MovingObjectList(object):
                 outputList.append(movingobj)        
         return MovingObjectList(outputList)
 
-
+    '''
     def calcAllMags(self, filt, mjdTaiList, rootSEDdir, withErrors=True, fiveSigmaLimitingMag=None):
         """ Calculate the magnitude of all objects in the movingObjectList """
         """  - Given the filter, the mjd (to find the ephemeris info) and the root directory of SEDS/thruputs """
@@ -282,7 +285,7 @@ class MovingObjectList(object):
                     movingobj.Ephemerides[mjdTaiStr].setmagErr(mag_error)
             # end of mjdTaiList loop
         return
-
+    '''
     def cutAllSNR(self, fiveSigmaLimitingMag, SNRcutoff, mjdTai):
         """calculate SNR for each object and create new moving object list of objects above the SNR cutoff """
         """ Given five sigma limiting mag for image and SNR cutoff """

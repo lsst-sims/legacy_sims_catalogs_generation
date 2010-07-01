@@ -35,7 +35,7 @@ A class to be used in source catalog generation.  Holds an orbit/MJD (epoch for 
 
 from DayMOPSObject import DayMOPSObject  
 import numpy as n
-import lsst_mags as lm
+#import lsst_mags as lm
 import pyoorb as oo
 
 
@@ -305,7 +305,7 @@ class Ephemeris(DayMOPSObject):
         """Update V_mag with variability information"""
         # TBD - LJ
         pass
-        
+    ''' 
     # series of functions to calculate magnitude and SN information for this time
     def setupBandpass(self, rootSEDdir, filtername):
         """ Instantiate a teleThruput object for a filter. """
@@ -315,6 +315,7 @@ class Ephemeris(DayMOPSObject):
         filterfile = rootSEDdir + filtername
         bandpass = lm.teleThruput(filterfile)
         return bandpass
+    '''
 
     def calcMagFilter(self, bandpassFilter, bandpassV, asteroidSED):
         """Calculate the magnitude of the movingObject at ephemeris['mjdTai'] in 'filter'"""

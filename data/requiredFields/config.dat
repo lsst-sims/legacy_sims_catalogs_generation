@@ -4,3 +4,7 @@
   derivedMetadataFile = "derivedMetadata.dat"
   requiredFieldsFile = "requiredFields.dat"
   derivedFieldsFile = "derivedFields.dat"
+[DATABASE]
+  requiredMetadataFile = "requiredMetadata.dat"
+  requiredFieldsFile = "requiredFields.dat"
+  physicalObjectMapFile = "objectMap.dat"

@@ -1,0 +1,71 @@
+# Mapping of object types to their database repr
+
+#Start mapping
+[STARS]
+  [[MSSTARS]]
+    table = 'Star'
+    component = 'GALACTIC'
+    ptype = 'POINT'
+    idkey = 'id'
+    constraint =
+  [[WDSTARS]]
+    table = 'Wd'
+    component = 'GALACTIC'
+    ptype = 'POINT'
+    idkey = 'id'
+    constraint =
+[MSSTARS]
+  [[MSSTARS]]
+    table = 'Star'
+    component = 'GALACTIC'
+    ptype = 'POINT'
+    idkey = 'id'
+    constraint =
+[WDSTARS]
+  [[WDSTARS]]
+    table = 'Wd'
+    component = 'GALACTIC'
+    ptype = 'POINT'
+    idkey = 'id'
+    constraint =
+[GALAXY]
+  [[BULGE]]
+    table = 'Galaxy'
+    component = 'EXTRAGALACTIC'
+    ptype = 'SERSIC2D_BULGE'
+    formatas = 'SERSIC2D'
+    idkey = 'id'
+    constraint = 'flux_scale_bulge is not NULL'
+  [[DISK]]
+    table = 'Galaxy'
+    component = 'EXTRAGALACTIC'
+    ptype = 'SERSIC2D_DISK'
+    formatas = 'SERSIC2D'
+    idkey = 'id'
+    constraint = 'flux_scale_disk is not NULL'
+[AGN]
+  [[AGN]]
+    table = 'GALAXY'
+    component = 'EXTRAGALACTIC'
+    ptype = 'POINT'
+    idkey = 'id'
+    constraint = 'isagn > 0'
+[SSM]
+  [[EPHEMS]]
+    table = 'Ephems'
+    component = 'SOLARSYSTEM'
+    ptype = 'MOVINGPOINT'
+    idkey = 'id'
+    constraint = "'obsdate between %f - 0.5 and %f + 0.5'%(self.opsimmeta.expmjd, self.opsimmeta.expmjd)"
+  [[ORBIT]]
+    table = 'Orbits'
+    component = 'SOLARSYSTEM'
+    ptype = 'ORBIT'
+    idkey = 'objid'
+    constraint =
+[METADATA]
+  [[OPSIM361]]
+    table = 'OpSim3_61'
+    component = 'OPSIM361'
+    idkey = 'Opsim_obshistid'
+    constraint =

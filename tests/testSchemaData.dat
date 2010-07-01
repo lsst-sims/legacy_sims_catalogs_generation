@@ -11,7 +11,7 @@
   [[EXTRAGALACTIC]]
     [[[SERSIC2D]]]
       id = long,'id'
-      ra = 'float,ra'
+      ra = float,'ra'
       dec = float,'dec'
       glon = float,'0::real'
       glat = float,'0::real'

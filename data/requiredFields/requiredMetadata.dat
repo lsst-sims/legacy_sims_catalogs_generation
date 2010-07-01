@@ -2,21 +2,22 @@
 
 #Trim file information
 [TRIM]
-  SIM_SEED = long, 'expdate'
-  Unrefracted_RA = float, 'fieldradeg'
-  Unrefracted_Dec = float, 'fielddecdeg'
-  Opsim_moonra = float, 'moonra'
-  Opsim_moondec = float, 'moondec'
-  Opsim_rotskypos = float, 'rotskypos'
-  Opsim_rottelpos = float, 'rottelpos'
-  Opsim_filter = int, 'filter'
-  Opsim_rawseeing = float, 'rawseeing'
-  Opsim_sunalt = float, 'sunalt'
-  Opsim_moonalt = float, 'moonalt'
-  Opsim_dist2moon = float, 'dist2moon'
-  Opsim_moonphase = float, 'moonphase'
-  Opsim_obshistid = long, 'obshistid'
-  Opsim_expmjd = float, 'expmjd'
+  [[OPSIM361]]
+    SIM_SEED = long, 'expdate'
+    Unrefracted_RA = float, 'fieldradeg'
+    Unrefracted_Dec = float, 'fielddecdeg'
+    Opsim_moonra = float, 'moonra'
+    Opsim_moondec = float, 'moondec'
+    Opsim_rotskypos = float, 'rotskypos'
+    Opsim_rottelpos = float, 'rottelpos'
+    Opsim_filter = int, 'filter'
+    Opsim_rawseeing = float, 'rawseeing'
+    Opsim_sunalt = float, 'sunalt'
+    Opsim_moonalt = float, 'moonalt'
+    Opsim_dist2moon = float, 'dist2moon'
+    Opsim_moonphase = float, 'moonphase'
+    Opsim_obshistid = long, 'obshistid'
+    Opsim_expmjd = float, 'expmjd'
 
 #Trim file information
 [STUB]
