@@ -3,18 +3,19 @@ import jobAllocatorStubs
 from lsst.sims.catalogs.generation.db import jobDB as jobDB
 
 if __name__ == '__main__':
-    print 'Started.'
-    jobId = int(sys.argv[1])
+    print 'Started with arg:', sys.argv[1], sys.argv[2], sys.argv[3]
+    t0 = sys.argv[1].split('_')
+    jobId = jobDB.JobId(int(t0[1]), owner=t0[0])
     d = jobDB.JobState(jobId)
     procId = sys.argv[2]
     pickleFile = sys.argv[3]
     t0 = time.time()
     d.updateState(procId, 'jARRunning')
     print 'Update to JARunning: %i' % (time.time() - t0)
-    print 'JAR: State %i %s %s' % (
-        d._jobid, procId, d.queryState(procId))
-    print 'Started job: %i %s %s' % (
-        jobId, procId, sys.argv[3])
+    print 'JAR: State %s %s' % (
+        procId, d.queryState(procId))
+    print 'Started job: %s %s' % (
+        procId, sys.argv[3])
 
     jobIdStr = '%s: ' % (procId)
     print jobIdStr, 'Unpickling...'

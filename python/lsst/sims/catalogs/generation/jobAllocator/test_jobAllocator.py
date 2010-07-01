@@ -93,15 +93,27 @@ class JobAllocatorTest(unittest.TestCase):
     #    # For some reason, need to use square brackets
     #    j.startCatalogs(['STUB'], 'TEST QUERY', '85748128')
 
-    def teststartTrimCatalog(self):
-        print 'In teststartTrimCatalog()'
+    #def testSmallTrimCatalog(self):
+    #    print 'In testSmallTrimCatalog()'
+    #    if os.path.exists('/local/tmp/'):
+    #        workDir = '/local/tmp/jobAllocator/'
+    #    elif os.path.exists('/share/sdata1/rgibson/'):
+    #        workDir = '/share/sdata1/rgibson/jobAllocator/'
+    #    else:
+    #        raise RuntimeError, '*** No place for workDir.'
+    #    j = jobAllocator.JobAllocator(workDir=workDir, chunkSize=10, maxCats=3)
+    #    # For some reason, need to use square brackets
+    #    j.startCatalogs(['TRIM'], ['GALAXY'], '85748128')
+
+    def testFullTrimCatalog(self):
+        print 'In testFullTrimCatalog()'
         if os.path.exists('/local/tmp/'):
             workDir = '/local/tmp/jobAllocator/'
         elif os.path.exists('/share/sdata1/rgibson/'):
             workDir = '/share/sdata1/rgibson/jobAllocator/'
         else:
             raise RuntimeError, '*** No place for workDir.'
-        j = jobAllocator.JobAllocator(workDir=workDir, chunkSize=10, maxCats=3)
+        j = jobAllocator.JobAllocator(workDir=workDir, chunkSize=200000, maxCats=-1)
         # For some reason, need to use square brackets
         j.startCatalogs(['TRIM'], ['GALAXY'], '85748128')
 

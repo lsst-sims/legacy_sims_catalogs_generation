@@ -23,13 +23,14 @@ class JobAllocator:
     
     def __init__(self, workDir='/local/tmp/jobAllocator/', chunkSize=1000, maxCats=-1):
         print 'In JA __init__()'
+        print 'Creating JA with chunkSize: %i, maxCats: %i' % (chunkSize, maxCats)
         self.nJobs = None
         self.catalogTypes = None
         self.chunkSize = chunkSize
         self.metaDataManager = MetaDataManager()
         self.catalogTypeManager = CatalogTypeManager()
         self.uIToDBManager = UIToDBManager()
-        self.executionDBManager = jobDB.JobState()
+        #self.executionDBManager = jobDB.JobState()
         if not os.path.exists(workDir):
             os.system('mkdir %s' % workDir)
         self.WorkDir = workDir.rstrip('/') + '/'
@@ -91,8 +92,11 @@ class JobAllocator:
 
     def doOneCatalogType(self, catalogType, queryTypes, obsHistID):
         #nFN = self.getNextGoodFileNum()
-        nFN = self.executionDBManager.getJobId()
-        print 'Using job ID: %i' % nFN
+        self.executionDBManager = jobDB.JobState()
+        t0 = self.executionDBManager.getJobId()
+
+        nFN = '%s_%s' % (t0.getOwner(), t0.getId())
+        print 'Using job ID: %s' % nFN
         print 'queryTypes:', queryTypes
         jobNum = 0
         jobTypes = []; jobNums = []; jobPickleFiles = []; useTypes = []
@@ -119,8 +123,8 @@ class JobAllocator:
                 instanceCat.objectType = 'POINT'
                 if numCats > 0:
                     curMD.mergeMetadata(instanceCat.metadata)
-                    t0 = self.WorkDir + 'catData%i_%i.ja' % (nFN, jobNum)
-                    t1 = self.WorkDir + 'catData%i_%i.p' % (nFN, jobNum)
+                    t0 = self.WorkDir + 'catData%s_%i.ja' % (nFN, jobNum)
+                    t1 = self.WorkDir + 'catData%s_%i.p' % (nFN, jobNum)
                     print 'Now pickling query type: %s' % t
                     # Store job data files in instance
                     instanceCat.jobAllocatorDataFile = t0
@@ -146,12 +150,12 @@ class JobAllocator:
 
         for t in useTypes:
             curMD.validateMetadata(catalogType)
-            mFName = self.WorkDir + 'metaData%i_%s.ja' % (nFN, catalogType)
+            mFName = self.WorkDir + 'metaData%s_%s.ja' % (nFN, catalogType)
             curMD.writeMetadata(mFName, catalogType)
         
         # Now fire off the jobs
         for i in range(len(jobNums)):
-            jobId = '%i_%i' % (nFN, jobNums[i])
+            jobId = '%s_%i' % (nFN, jobNums[i])
             self.executionDBManager.updateState(jobId, 'JAAdded')
             print 'Added job to execution DB: %s' % jobId
             #t0 = '/astro/apps/pkg/python64/bin/python jobAllocatorRun.py %i %s %s&' % (nFN, jobId, jobPickleFiles[i])
@@ -159,7 +163,7 @@ class JobAllocator:
             #t0 = 'ssh athena0 "(cd $PBS_O_WORKDIR; qsub ./runOneAthena.csh %i %s %s)"' % (nFN, jobId, jobPickleFiles[i])
             cwd0 = os.getcwd()
             f0 = open('tmpJA%s.csh' % jobId, 'w')
-	    f0.write('#!/bin/csh\n#PBS -N jA%s\n#PBS -l walltime=1:00:00\n#PBS -e jA%s.err\n#PBS -o jA%s.out\ncd %s\nsource setupAthena.csh\npython jobAllocatorRun.py %i %s %s\necho Finished.' % (jobId, jobId, jobId, cwd0, nFN, jobId, jobPickleFiles[i]))
+	    f0.write('#!/bin/csh\n#PBS -N jA%s\n#PBS -l walltime=1:00:00\n#PBS -e jA%s.err\n#PBS -o jA%s.out\ncd %s\nsource setupAthena.csh\npython jobAllocatorRun.py %s %s %s\necho Finished.' % (jobId, jobId, jobId, cwd0, nFN, jobId, jobPickleFiles[i]))
             f0.close()
             t0 = 'ssh athena0 "(cd %s; qsub tmpJA%s.csh)"' % (cwd0, jobId)
             print t0
@@ -168,7 +172,7 @@ class JobAllocator:
         # Check that everything started within a certain time limit
         # On athena, jobs may be queued indefinitely, so this won't work
         for i in range(len(jobNums)):
-            jobId = '%i_%i' % (nFN, jobNums[i])
+            jobId = '%s_%i' % (nFN, jobNums[i])
             tryNum = 0
             t0 = self.executionDBManager.queryState(jobId)
             while t0 != 'JAFinished':
@@ -181,7 +185,7 @@ class JobAllocator:
             print 'JA sees state for %s: %s' % (jobId, t0)
 
         # Finally, merge the output trim file
-        trimFile = self.WorkDir + 'trim%i_%s.ja' % (nFN, catalogType)
+        trimFile = self.WorkDir + 'trim%s_%s.ja' % (nFN, catalogType)
         t0 = 'cat %s > %s' % (mFName, trimFile)
         print t0
         os.system(t0)
