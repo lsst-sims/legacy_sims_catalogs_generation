@@ -146,31 +146,34 @@
 
   [[SOLARSYSTEM]]
     [[[MOVINGPOINT]]]
-      id = long, 'objid'
-      ra = float, 'ra'
-      dec = float, 'decl'
-      magNorm = float, 'magNorm'
-      sedFilename = str, 'sedFilename'
-      redshift = float, '0.0::real'
-      shearXX = float, '0.0::real'
-      shearYY = float, '0.0::real'
-      magnification = float, '0.0real::'
-      properMotionRa = float, 'muRa'
-      properMotionDec = float, 'muDec'
-      spatialmodel = float, "'None'"
-      galacticExtinctionModel = float, "'None'"
-      internalExtinctionModel = float, "'None'"
-    [[ORBIT]]
+      dbid = long, 'objid'
+      id = long, '_objid'
+      ra = float, 'Ephemerides[thismjd]._ra'
+      dec = float, 'Ephemerides[thismjd]._dec'
+      magNorm = float, 'Ephemerides[thismjd]._magImsim'
+      sedFilename = str, '_sedname'
+      redshift = float, '%%"0.0"'
+      shearXX = float, '%%"0.0"'
+      shearYY = float, '%%"0.0"'
+      magnification = float, '%%"0.0"'
+      properMotionRa = float, 'Ephemerides[thismjd]._dradt'
+      properMotionDec = float, 'Ephemerides[thismjd]._ddecdt'
+      parallax = float, '%%"0.0"'
+      radialVelocity = float, '%%"0.0"'
+      spatialmodel = float, "%%'None'"
+      galacticExtinctionModel = float, "%%'None'"
+      internalExtinctionModel = float, "%%'None'"
+    [[[ORBIT]]]
       id = long, 'objid'
       q = float, 'q'
       e = float, 'e'
-      i = float, 'i'
+      i = float, 'inclination'
       node = float, 'node'
       argPeri = float, 'argperi'
       timePeri = float, 't_peri'
       epoch = float, 'epoch'
       magHv = float, 'h_g'
-      phaseGv = float, 'g'
+      phaseGv = float, 'phasegv'
       index = float, 'index'
       n_par = float, 'n_par'
       moid = float, 'moid'

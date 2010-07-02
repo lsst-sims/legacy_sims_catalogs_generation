@@ -3,10 +3,10 @@ import pyoorb
 from lsst.sims.catalogs.generation.db import queryDB
 
 if __name__ == "__main__":
-  myqdb = queryDB.queryDB(chunksize=10,objtype="GALAXY")
+  #myqdb = queryDB.queryDB(chunksize=10,objtype="GALAXY")
   #myqdb = queryDB.queryDB(chunksize=10,objtype="WDSTARS")
-  #myqdb = queryDB.queryDB(chunksize=10,objtype="")
-  #myqdb = queryDB.queryDB(chunksize=10,objtype="SSM")
+  #myqdb = queryDB.queryDB(chunksize=10,objtype="STARS")
+  myqdb = queryDB.queryDB(chunksize=10,objtype="SSM")
   ic = myqdb.getInstanceCatalogById(85748128)
   ic.makeTrimCoords()
   print ic.metadata.parameters

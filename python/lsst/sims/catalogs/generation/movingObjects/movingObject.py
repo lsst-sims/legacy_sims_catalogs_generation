@@ -118,7 +118,7 @@ class MovingObject(DayMOPSObject):
                                  self.Orbit.gettimePeri(),
                                  n.double(2),
                                  self.Orbit.getepoch(),
-                                 self.Orbit.gettimescale(),
+                                 self.Orbit.getorb_timescale(),
                                  self.getmagHv(),
                                  self.getphaseGv()] 
             return orbitsArray

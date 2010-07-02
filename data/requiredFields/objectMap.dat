@@ -2,6 +2,7 @@
 
 #Start mapping
 [STARS]
+  formatas = 'POINT'
   [[MSSTARS]]
     table = 'Star'
     component = 'GALACTIC'
@@ -15,6 +16,7 @@
     idkey = 'id'
     constraint =
 [MSSTARS]
+  formatas = 'POINT'
   [[MSSTARS]]
     table = 'Star'
     component = 'GALACTIC'
@@ -22,6 +24,7 @@
     idkey = 'id'
     constraint =
 [WDSTARS]
+  formatas = 'POINT'
   [[WDSTARS]]
     table = 'Wd'
     component = 'GALACTIC'
@@ -29,21 +32,21 @@
     idkey = 'id'
     constraint =
 [GALAXY]
+  formatas = 'SERSIC2D'
   [[BULGE]]
     table = 'Galaxy'
     component = 'EXTRAGALACTIC'
     ptype = 'SERSIC2D_BULGE'
-    formatas = 'SERSIC2D'
     idkey = 'id'
     constraint = 'flux_scale_bulge is not NULL'
   [[DISK]]
     table = 'Galaxy'
     component = 'EXTRAGALACTIC'
     ptype = 'SERSIC2D_DISK'
-    formatas = 'SERSIC2D'
     idkey = 'id'
     constraint = 'flux_scale_disk is not NULL'
 [AGN]
+  formatas = 'POINT'
   [[AGN]]
     table = 'GALAXY'
     component = 'EXTRAGALACTIC'
@@ -51,17 +54,20 @@
     idkey = 'id'
     constraint = 'isagn > 0'
 [SSM]
+  formatas = 'MOVINGPOINT'
   [[EPHEMS]]
     table = 'Ephems'
     component = 'SOLARSYSTEM'
     ptype = 'MOVINGPOINT'
-    idkey = 'id'
-    constraint = "'obsdate between %f - 0.5 and %f + 0.5'%(self.opsimmeta.expmjd, self.opsimmeta.expmjd)"
-  [[ORBIT]]
+    idkey = 'dbid'
+    constraint = "%%'obsdate between %f - 0.5 and %f + 0.5'%(self.opsimmeta.Opsim_expmjd, self.opsimmeta.Opsim_expmjd)"
+[ORBIT]
+  formatas = 'ORBIT'
+  [[ORBIT0]]
     table = 'Orbits'
     component = 'SOLARSYSTEM'
     ptype = 'ORBIT'
-    idkey = 'objid'
+    idkey = 'id'
     constraint =
 [METADATA]
   [[OPSIM361]]
