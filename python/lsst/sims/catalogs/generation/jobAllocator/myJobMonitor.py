@@ -2,6 +2,7 @@ import sys, random, time
 from lsst.sims.catalogs.generation.db import jobDB
 
 def howManyJobs(eM, tableId):
+    eM = jobDB.JobState(tableId)
     tableStr = str(tableId)
     t0 = eM.queryState(tableStr + 'NumJobs')
     if t0 == None: t0 = 0
@@ -9,7 +10,8 @@ def howManyJobs(eM, tableId):
     print 'howManyJobs: Current num: ', t0
     return t0
 
-def qsubJob(eM, tableId, jobId, jobName):
+def qsubJob(tableId, jobId, jobName):
+    eM = jobDB.JobState(tableId)
     tableStr = str(tableId)
     t0 = eM.queryState(tableStr + 'NumJobs')
     if t0 == None: t0 = 0
@@ -57,22 +59,39 @@ def throttle(eM, tableId, maxNumJobs, throttleTime):
             done = True
 
 
-tableId = sys.argv[1]
+
+
+usage = "usage: %prog obsid rx ry sx sy ex datadir"
+parser = OptionParser(usage=usage)
+(options, args) = parser.parse_args()
+
+tableId = args[0]
+state = args[1]
+jobId = args[2]
 print 'Using tableId: ', tableId
-eM = jobDB.JobState(tableId)
 
-for i in range(10):
-    jobId = 'Job' + str(i)
-    print '%i:  Current num jobs' % i
-    howManyJobs(eM, tableId)
-    print '--------'
-    print '%s: qsubbing Job (for pretend)' % jobId
-    qsubJob(eM, tableId, jobId, 'MyJobNameForJob%i' % i)
-    print '%s: Job running (for pretend)' % jobId
+
+## for i in range(10):
+##     jobId = 'Job' + str(i)
+##     print '%i:  Current num jobs' % i
+##     howManyJobs(eM, tableId)
+##     print '--------'
+##     print '%s: qsubbing Job (for pretend)' % jobId
+##     qsubJob(eM, tableId, jobId, 'MyJobNameForJob%i' % i)
+##     print '%s: Job running (for pretend)' % jobId
+##     jobRunning(eM, tableId, jobId)
+##     print '%s: Job finished (for pretend)' % jobId
+##     jobFinished(eM, tableId, jobId)
+##     print '--------'
+
+## print 'The final state of the table:'
+## eM.showStates()
+
+if state == 'running':
+    eM = jobDB.JobState(tableId)
     jobRunning(eM, tableId, jobId)
-    print '%s: Job finished (for pretend)' % jobId
-    jobFinished(eM, tableId, jobId)
-    print '--------'
 
-print 'The final state of the table:'
-eM.showStates()
+if state == 'finished':
+    eM = jobDB.JobState(tableId)
+    jobFinished(eM, tableId, jobId) 
+
