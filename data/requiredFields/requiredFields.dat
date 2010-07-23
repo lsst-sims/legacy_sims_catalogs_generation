@@ -9,7 +9,7 @@
       dec = float,'decl*PI()/180.'
       glon = float,'gal_l*PI()/180.'
       glat = float,'gal_b*PI()/180.'
-      magNorm = float,"%%'toMag(flux_scale*flux_ratio_from_lc(isvar,t0,%f,timescale,varfluxpeak,\'%c\'))'%(self.opsimmeta.Opsim_expmjd, self.opsimmeta.Opsim_filter)"
+      magNorm = float,"%%'toMag(flux_scale*flux_ratio_from_lc(isvar,t0,%f,timescale,varfluxpeak,\'%c\'))'%(self.expmjd, self.filter)"
       fluxNorm = float,'flux_scale'
       sedFilename = str,'sedfilename'
       redshift = float,'0.0::real'

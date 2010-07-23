@@ -60,7 +60,7 @@
     component = 'SOLARSYSTEM'
     ptype = 'MOVINGPOINT'
     idkey = 'dbid'
-    constraint = "%%'obsdate between %f - 0.5 and %f + 0.5'%(self.opsimmeta.Opsim_expmjd, self.opsimmeta.Opsim_expmjd)"
+    constraint = "%%'obsdate between %f - 0.5 and %f + 0.5'%(self.expmjd, self.expmjd)"
 [ORBIT]
   formatas = 'ORBIT'
   [[ORBIT0]]
@@ -74,4 +74,8 @@
     table = 'OpSim3_61'
     component = 'OPSIM361'
     idkey = 'Opsim_obshistid'
+    radegkey = 'Unrefracted_RA'
+    decdegkey = 'Unrefracted_Dec'
+    expmjdkey = 'Opsim_expmjd'
+    filterkey = 'Opsim_filter'
     constraint =
