@@ -35,7 +35,8 @@
       rSDSS = float,'sdssr'
   [[EXTRAGALACTIC]]
     [[[SERSIC2D]]]
-      id = long,'id'
+      id = long, 'id'
+      galtileid = long,'%%"(id||\'_\'||%i::varchar)"%(self.curtile["tid"])'
       ra = float,'ra'
       dec = float,'dec'
       glon = float,'0::real'
@@ -68,9 +69,10 @@
       lsst_z = float, 'z'
       lsst_y = float, 'y'
     [[[SERSIC2D_BULGE]]]
-      id = ong, 'id'
-      ra = float, 'bra'
-      dec = float, 'bdec'
+      id = long, 'id'
+      galtileid = long,'%%"(id||\'_\'||%i::varchar)"%(self.curtile["tid"])'
+      ra = float, '%%"long (spoint(bra*PI()/180.,bdec*PI()/180.) + strans(%f*PI()/180., %f*PI()/180.,0.,\'YZX\'))*180./PI()"%(-self.curtile["decmid"], self.curtile["ramid"])'
+      dec = float, '%%"lat (spoint(bra*PI()/180.,bdec*PI()/180.) + strans(%f*PI()/180., %f*PI()/180.,0.,\'YZX\'))*180./PI()"%(-self.curtile["decmid"], self.curtile["ramid"])'
       glon = float, '0::real'
       glat = float, '0::real'
       magNorm = float, 'toMag(flux_scale_bulge)'
@@ -95,7 +97,8 @@
       galacticRv = float, '3.1::real'
       radialVelocity = float, '0.0::real'
     [[[SERSIC2D_DISK]]]
-      id = ong, 'id'
+      id = long, 'id'
+      galtileid = long,'%%"(id||\'_\'||%i::varchar)"%(self.curtile["tid"])'
       glon = float, '0::real'
       glat = float, '0::real'
       redshift = float, 'redshift'
@@ -110,8 +113,8 @@
       galacticAv = float, '0.0::real'
       galacticRv = float, '3.1::real'
       radialVelocity = float, '0.0::real'
-      ra = float, 'dra'
-      dec = float, 'ddec'
+      ra = float, '%%"long (spoint(dra*PI()/180.,ddec*PI()/180.) + strans(%f*PI()/180., %f*PI()/180.,0.,\'YZX\'))*180./PI()"%(-self.curtile["decmid"], self.curtile["ramid"])'
+      dec = float, '%%"lat (spoint(dra*PI()/180.,ddec*PI()/180.) + strans(%f*PI()/180., %f*PI()/180.,0.,\'YZX\'))*180./PI()"%(-self.curtile["decmid"], self.curtile["ramid"])'
       magNorm = float, 'toMag(flux_scale_disk)'
       fluxNorm = float, 'flux_scale_disk'
       sedFilename = str,'lookupGalaxySedFromId(sedid_disk)'
@@ -122,7 +125,8 @@
       internalAv = float, 'av_d'
       internalRv = float, 'r_vd'
     [[[POINT]]]
-      id = long,'id'
+      id = long, 'id'
+      galtileid = long,'%%"(id||\'_\'||%i::varchar)"%(self.curtile["tid"])'
       glon = float, '0::real'
       glat = float, '0::real'
       redshift = float,'redshift'
@@ -198,3 +202,33 @@
       id = long, 'objid'
       ra = float, 'ra'
       dec = float, 'decl'
+[TEST]
+  [[EXTRAGALACTIC]]
+    [[[ASSEMBLEDGALAXY]]]
+      id = long, 'id'
+      galtileid = long,'%%"(id||\'_\'||%i::varchar)"%(self.curtile["tid"])'
+      ra = float, '%%"long (spoint(ra*PI()/180.,decl*PI()/180.) + strans(%f*PI()/180., %f*PI()/180.,0.,\'YZX\'))*180./PI()"%(-self.curtile["decmid"], self.curtile["ramid"])'
+      dec = float, '%%"lat (spoint(ra*PI()/180.,decl*PI()/180.) + strans(%f*PI()/180., %f*PI()/180.,0.,\'YZX\'))*180./PI()"%(-self.curtile["decmid"], self.curtile["ramid"])'
+      bulgeRa = float, '%%"long (spoint(bra*PI()/180.,bdec*PI()/180.) + strans(%f*PI()/180., %f*PI()/180.,0.,\'YZX\'))*180./PI()"%(-self.curtile["decmid"], self.curtile["ramid"])'
+      bulgeDec = float, '%%"lat (spoint(bra*PI()/180.,bdec*PI()/180.) + strans(%f*PI()/180., %f*PI()/180.,0.,\'YZX\'))*180./PI()"%(-self.curtile["decmid"], self.curtile["ramid"])'
+      bulgeMagNorm = float, 'toMag(flux_scale_bulge)'
+      bulgeFluxNorm = float, 'flux_scale_bulge'
+      bulgeSedFilename = str,'lookupGalaxySedFromId(sedid_bulge)'
+      diskRa = float, '%%"long (spoint(dra*PI()/180.,ddec*PI()/180.) + strans(%f*PI()/180., %f*PI()/180.,0.,\'YZX\'))*180./PI()"%(-self.curtile["decmid"], self.curtile["ramid"])'
+      diskDec = float, '%%"lat (spoint(dra*PI()/180.,ddec*PI()/180.) + strans(%f*PI()/180., %f*PI()/180.,0.,\'YZX\'))*180./PI()"%(-self.curtile["decmid"], self.curtile["ramid"])'
+      diskMagNorm = float, 'toMag(flux_scale_disk)'
+      diskFluxNorm = float, 'flux_scale_disk'
+      diskSedFilename = str,'lookupGalaxySedFromId(sedid_disk)'
+      redshift = float, 'redshift'
+      galacticExtinctionModel = str,"'CCM'"
+      galacticAv = float, '0.0::real'
+      galacticRv = float, '3.1::real'
+[CALIB]
+  [[GALACTIC]]
+    [[[POINT]]]
+      id = long,'simobjid'
+      ra = float, 'ra*PI()/180.'
+      dec = float,'decl*PI()/180.'
+      glon = float,'gal_l*PI()/180.'
+      glat = float,'gal_b*PI()/180.'
+      r = float,'rmag'

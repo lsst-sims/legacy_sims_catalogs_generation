@@ -15,6 +15,14 @@
     ptype = 'POINT'
     idkey = 'id'
     constraint =
+[CALIBSTARS]
+  formatas = 'POINT'
+  [[MSSTARS]]
+    table = 'CalibStar'
+    component = 'GALACTIC'
+    ptype = 'POINT'
+    idkey = 'id'
+    constraint = 'rmag < 21.5'
 [MSSTARS]
   formatas = 'POINT'
   [[MSSTARS]]
@@ -31,6 +39,14 @@
     ptype = 'POINT'
     idkey = 'id'
     constraint =
+[ASSEMBLEDGALAXY]
+  formatas = 'ASSEMBLEDGALAXY'
+  [[ASSEMBLEDGALAXY]]
+    table = 'Galaxy'
+    component = 'EXTRAGALACTIC'
+    ptype = 'ASSEMBLEDGALAXY'
+    idkey = 'id'
+    constraint = 
 [GALAXY]
   formatas = 'SERSIC2D'
   [[BULGE]]
