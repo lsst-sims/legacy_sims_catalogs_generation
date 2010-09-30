@@ -42,11 +42,11 @@
 [ASSEMBLEDGALAXY]
   formatas = 'ASSEMBLEDGALAXY'
   [[ASSEMBLEDGALAXY]]
-    table = 'Galaxy'
+    table = 'GalaxyRect'
     component = 'EXTRAGALACTIC'
     ptype = 'ASSEMBLEDGALAXY'
     idkey = 'id'
-    constraint = 
+    constraint = 'r < 23'
 [GALAXY]
   formatas = 'SERSIC2D'
   [[BULGE]]
