@@ -22,7 +22,7 @@
     component = 'GALACTIC'
     ptype = 'POINT'
     idkey = 'id'
-    constraint = 'rmag < 21.5'
+    constraint = 
 [MSSTARS]
   formatas = 'POINT'
   [[MSSTARS]]

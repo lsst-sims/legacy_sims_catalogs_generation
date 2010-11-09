@@ -36,7 +36,7 @@
   [[EXTRAGALACTIC]]
     [[[SERSIC2D]]]
       id = long, 'id'
-      galtileid = long,'%%"(id||\'_\'||%i::varchar)"%(self.curtile["tid"])'
+      galtileid = long,'%%"id+%i*%i"%(self.curtile["tid"], 198479398)'
       ra = float,'ra'
       dec = float,'dec'
       glon = float,'0::real'
@@ -70,7 +70,7 @@
       lsst_y = float, 'y'
     [[[SERSIC2D_BULGE]]]
       id = long, 'id'
-      galtileid = long,'%%"(id||\'_\'||%i::varchar)"%(self.curtile["tid"])'
+      galtileid = long,'%%"id+%i*%i"%(self.curtile["tid"], 198479398)'
       ra = float, '%%"long (spoint(bra*PI()/180.,bdec*PI()/180.) + strans(%f*PI()/180., %f*PI()/180.,0.,\'YZX\'))*180./PI()"%(-self.curtile["decmid"], self.curtile["ramid"])'
       dec = float, '%%"lat (spoint(bra*PI()/180.,bdec*PI()/180.) + strans(%f*PI()/180., %f*PI()/180.,0.,\'YZX\'))*180./PI()"%(-self.curtile["decmid"], self.curtile["ramid"])'
       glon = float, '0::real'
@@ -98,7 +98,7 @@
       radialVelocity = float, '0.0::real'
     [[[SERSIC2D_DISK]]]
       id = long, 'id'
-      galtileid = long,'%%"(id||\'_\'||%i::varchar)"%(self.curtile["tid"])'
+      galtileid = long,'%%"id+%i*%i"%(self.curtile["tid"], 198479398)'
       glon = float, '0::real'
       glat = float, '0::real'
       redshift = float, 'redshift'
@@ -126,7 +126,7 @@
       internalRv = float, 'r_vd'
     [[[POINT]]]
       id = long, 'id'
-      galtileid = long,'%%"(id||\'_\'||%i::varchar)"%(self.curtile["tid"])'
+      galtileid = long,'%%"id+%i*%i"%(self.curtile["tid"], 198479398)'
       glon = float, '0::real'
       glat = float, '0::real'
       redshift = float,'redshift'
@@ -203,10 +203,25 @@
       ra = float, 'ra'
       dec = float, 'decl'
 [TEST]
+  [[GALACTIC]]
+    [[[POINT]]]
+      id = long,'id'
+      ra = float, 'ra'
+      dec = float,'decl'
+      glon = float,'gal_l'
+      glat = float,'gal_b'
+      gmag = float,'gmag'
+      fluxNorm = float,'flux_scale'
+      sedFilename = str,'sedfilename'
+      properMotionRa = float,'mudecl'
+      properMotionDec = float,'mura'
+      parallax = float,'parallax'
+      radialVelocity = float,'vr'
+      isvar = long,'isvar'
   [[EXTRAGALACTIC]]
     [[[ASSEMBLEDGALAXY]]]
       id = long, 'id'
-      galtileid = long,'%%"(id||\'_\'||%i::varchar)"%(self.curtile["tid"])'
+      galtileid = long,'%%"id+%i*%i"%(self.curtile["tid"], 511028198000019)'
       ra = float, '%%"long (spoint(ra*PI()/180.,decl*PI()/180.) + strans(%f*PI()/180., %f*PI()/180.,0.,\'YZX\'))*180./PI()"%(-self.curtile["decmid"], self.curtile["ramid"])'
       dec = float, '%%"lat (spoint(ra*PI()/180.,decl*PI()/180.) + strans(%f*PI()/180., %f*PI()/180.,0.,\'YZX\'))*180./PI()"%(-self.curtile["decmid"], self.curtile["ramid"])'
       bulgeRa = float, '%%"long (spoint(bra*PI()/180.,bdec*PI()/180.) + strans(%f*PI()/180., %f*PI()/180.,0.,\'YZX\'))*180./PI()"%(-self.curtile["decmid"], self.curtile["ramid"])'
@@ -231,4 +246,12 @@
       dec = float,'decl*PI()/180.'
       glon = float,'gal_l*PI()/180.'
       glat = float,'gal_b*PI()/180.'
+      u = float,'umag'
+      g = float,'gmag'
       r = float,'rmag'
+      i = float,'imag'
+      z = float,'zmag'
+      y = float,'ymag'
+[OBJECT]
+  [[GALACTIC]]
+    [[[POINT]]]

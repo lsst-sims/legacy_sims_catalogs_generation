@@ -2,7 +2,8 @@
 import sys
 sys.path.append("./movingObjects")
 import math
-import pg
+import psycopg2
+#import pg
 #import pyPgSQL as pg
 import movingObject as mo
 import movingObjectList as mol
