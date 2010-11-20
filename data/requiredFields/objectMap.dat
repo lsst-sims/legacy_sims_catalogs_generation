@@ -42,11 +42,11 @@
 [ASSEMBLEDGALAXY]
   formatas = 'ASSEMBLEDGALAXY'
   [[ASSEMBLEDGALAXY]]
-    table = 'GalaxyRect'
+    table = 'Galaxy'
     component = 'EXTRAGALACTIC'
     ptype = 'ASSEMBLEDGALAXY'
     idkey = 'id'
-    constraint = 'r < 23'
+    constraint = 
 [GALAXY]
   formatas = 'SERSIC2D'
   [[BULGE]]
@@ -54,13 +54,13 @@
     component = 'EXTRAGALACTIC'
     ptype = 'SERSIC2D_BULGE'
     idkey = 'id'
-    constraint = 'flux_scale_bulge is not NULL'
+    constraint = 'fluxnorm_bulge is not NULL'
   [[DISK]]
     table = 'Galaxy'
     component = 'EXTRAGALACTIC'
     ptype = 'SERSIC2D_DISK'
     idkey = 'id'
-    constraint = 'flux_scale_disk is not NULL'
+    constraint = 'fluxnorm_disk is not NULL'
 [AGN]
   formatas = 'POINT'
   [[AGN]]
