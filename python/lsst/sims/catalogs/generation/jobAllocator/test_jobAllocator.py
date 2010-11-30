@@ -109,11 +109,11 @@ class JobAllocatorTest(unittest.TestCase):
         print 'In testFullTrimCatalog()'
         if os.path.exists('/local/tmp/'):
             workDir = '/local/tmp/jobAllocator/'
-        elif os.path.exists('/share/sdata1/rgibson/'):
-            workDir = '/share/sdata1/rgibson/jobAllocator/'
+        elif os.path.exists('/share/athena/share/sdata1/rgibson/'):
+            workDir = '/share/athena/share/sdata1/rgibson/jobAllocator/'
         else:
             raise RuntimeError, '*** No place for workDir.'
-        j = jobAllocator.JobAllocator(workDir=workDir, chunkSize=200000, maxCats=-1)
+        j = jobAllocator.JobAllocator(workDir=workDir, chunkSize=2000, maxCats=3)
         # For some reason, need to use square brackets
         j.startCatalogs(['TRIM'], ['GALAXY'], '85748128')
 

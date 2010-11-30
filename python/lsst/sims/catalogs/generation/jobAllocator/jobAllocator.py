@@ -149,9 +149,9 @@ class JobAllocator:
                     numCats += 1
 
         for t in useTypes:
-            curMD.validateMetadata(catalogType)
+            curMD.validateRequiredMetadata(catalogType, myQDB.opsim)
             mFName = self.WorkDir + 'metaData%s_%s.ja' % (nFN, catalogType)
-            curMD.writeMetadata(mFName, catalogType)
+            curMD.writeMetadata(mFName, catalogType, myQDB.opsim)
         
         # Now fire off the jobs
         for i in range(len(jobNums)):
