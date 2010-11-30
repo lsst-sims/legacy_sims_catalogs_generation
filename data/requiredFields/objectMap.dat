@@ -53,12 +53,12 @@
     table = 'Galaxy'
     ptype = 'SERSIC2D_BULGE'
     idkey = 'id'
-    constraint = 'fluxnorm_bulge is not NULL'
+    constraint = 'fluxnorm_bulge < 99'
   [[DISK]]
     table = 'Galaxy'
     ptype = 'SERSIC2D_DISK'
     idkey = 'id'
-    constraint = 'fluxnorm_disk is not NULL'
+    constraint = 'fluxnorm_disk < 99'
 [AGN]
   formatas = 'POINT'
   component = 'EXTRAGALACTIC'
