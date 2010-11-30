@@ -11,7 +11,7 @@
       decHelio = float
       raTrim = float
       decTrim = float
-  [[EXTRAGALCTIC]]
+  [[EXTRAGALACTIC]]
     [[[SERSIC2D]]]
       raHelio = float
       decHelio = float

@@ -3,92 +3,90 @@
 #Start mapping
 [STARS]
   formatas = 'POINT'
+  component = 'GALACTIC'
   [[MSSTARS]]
     table = 'Star'
-    component = 'GALACTIC'
     ptype = 'POINT'
     idkey = 'id'
     constraint =
   [[WDSTARS]]
     table = 'Wd'
-    component = 'GALACTIC'
     ptype = 'POINT'
     idkey = 'id'
     constraint =
 [CALIBSTARS]
   formatas = 'POINT'
+  component = 'GALACTIC'
   [[MSSTARS]]
     table = 'CalibStar'
-    component = 'GALACTIC'
     ptype = 'POINT'
     idkey = 'id'
     constraint = 
 [MSSTARS]
   formatas = 'POINT'
+  component = 'GALACTIC'
   [[MSSTARS]]
     table = 'Star'
-    component = 'GALACTIC'
     ptype = 'POINT'
     idkey = 'id'
     constraint =
 [WDSTARS]
   formatas = 'POINT'
+  component = 'GALACTIC'
   [[WDSTARS]]
     table = 'Wd'
-    component = 'GALACTIC'
     ptype = 'POINT'
     idkey = 'id'
     constraint =
 [ASSEMBLEDGALAXY]
   formatas = 'ASSEMBLEDGALAXY'
+  component = 'EXTRAGALACTIC'
   [[ASSEMBLEDGALAXY]]
     table = 'Galaxy'
-    component = 'EXTRAGALACTIC'
     ptype = 'ASSEMBLEDGALAXY'
     idkey = 'id'
     constraint = 
 [GALAXY]
   formatas = 'SERSIC2D'
+  component = 'EXTRAGALACTIC'
   [[BULGE]]
     table = 'Galaxy'
-    component = 'EXTRAGALACTIC'
     ptype = 'SERSIC2D_BULGE'
     idkey = 'id'
     constraint = 'fluxnorm_bulge is not NULL'
   [[DISK]]
     table = 'Galaxy'
-    component = 'EXTRAGALACTIC'
     ptype = 'SERSIC2D_DISK'
     idkey = 'id'
     constraint = 'fluxnorm_disk is not NULL'
 [AGN]
   formatas = 'POINT'
+  component = 'EXTRAGALACTIC'
   [[AGN]]
     table = 'GALAXY'
-    component = 'EXTRAGALACTIC'
     ptype = 'POINT'
     idkey = 'id'
     constraint = 'isagn > 0'
 [SSM]
   formatas = 'MOVINGPOINT'
+  component = 'SOLARSYSTEM'
   [[EPHEMS]]
     table = 'Ephems'
-    component = 'SOLARSYSTEM'
     ptype = 'MOVINGPOINT'
     idkey = 'dbid'
     constraint = "%%'obsdate between %f - 0.5 and %f + 0.5'%(self.expmjd, self.expmjd)"
 [ORBIT]
   formatas = 'ORBIT'
+  component = 'SOLARSYSTEM'
   [[ORBIT0]]
     table = 'Orbits'
-    component = 'SOLARSYSTEM'
     ptype = 'ORBIT'
     idkey = 'id'
     constraint =
 [METADATA]
+  component = 'OPSIM361'
   [[OPSIM361]]
     table = 'OpSim3_61'
-    component = 'OPSIM361'
     idkey = 'Opsim_obshistid'
     radegkey = 'Unrefracted_RA'
     decdegkey = 'Unrefracted_Dec'

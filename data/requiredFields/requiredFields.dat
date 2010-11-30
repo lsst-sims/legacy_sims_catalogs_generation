@@ -96,6 +96,12 @@
       galacticAv = float, '0.0::real'
       galacticRv = float, '3.1::real'
       radialVelocity = float, 'rad_vel'
+      lsst_u = float, 'u_ab'
+      lsst_g = float, 'g_ab'
+      lsst_r = float, 'r_ab'
+      lsst_i = float, 'i_ab'
+      lsst_z = float, 'z_ab'
+      lsst_y = float, 'y_ab'
     [[[SERSIC2D_DISK]]]
       id = long, 'id'
       galtileid = long,'%%"id+%i::bigint*%i::bigint"%(self.curtile["tid"], 25711071)'
@@ -124,6 +130,12 @@
       internalExtinctionModel = str,"ext_model_d"
       internalAv = float, 'av_d'
       internalRv = float, 'rv_d'
+      lsst_u = float, 'u_ab'
+      lsst_g = float, 'g_ab'
+      lsst_r = float, 'r_ab'
+      lsst_i = float, 'i_ab'
+      lsst_z = float, 'z_ab'
+      lsst_y = float, 'y_ab'
     [[[POINT]]]
       id = long, 'id'
       galtileid = long,'%%"id+%i::bigint*%i::bigint"%(self.curtile["tid"], 25711071)'
@@ -147,6 +159,12 @@
       magNorm = float, 'magnorm_agn'
       fluxNorm = float, 'fluxnorm_agn'
       sedFilename = str,'lookupGalaxySedFromId(sedid_agn)'
+      lsst_u = float, 'u_ab'
+      lsst_g = float, 'g_ab'
+      lsst_r = float, 'r_ab'
+      lsst_i = float, 'i_ab'
+      lsst_z = float, 'z_ab'
+      lsst_y = float, 'y_ab'
 
   [[SOLARSYSTEM]]
     [[[MOVINGPOINT]]]
