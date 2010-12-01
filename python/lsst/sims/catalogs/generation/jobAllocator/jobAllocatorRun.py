@@ -23,6 +23,9 @@ if __name__ == '__main__':
     instanceCat = cPickle.load(open(pickleFile))
     print 'pickle load: %i' % (time.time() - t0)
 
+    # Need to work with the catalog type to allow the possibility
+    #  of writing out multiple types (loop not implemented yet)
+    #  while allowing this code to choose the file names.
     dataFile = instanceCat.jobAllocatorDataFile
     catalogType = instanceCat.jobAllocatorCatalogType
 

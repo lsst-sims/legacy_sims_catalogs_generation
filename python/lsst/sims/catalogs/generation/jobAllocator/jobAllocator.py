@@ -3,6 +3,7 @@ from jobAllocatorStubs import *
 import getFileNameWC
 from lsst.sims.catalogs.generation.db import queryDB
 from lsst.sims.catalogs.generation.db import jobDB
+import lsst.sims.catalogs.measures.utils as mUtils
 
 class JobAllocator:
 
@@ -110,6 +111,8 @@ class JobAllocator:
             myQDB = queryDB.queryDB(chunksize=self.chunkSize, objtype=t)
             t0 = time.time()
             instanceCat = myQDB.getInstanceCatalogById(obsHistID)
+            # This code adds some needed fields to the metadata
+            mUtils.trimGeneration.derivedTrimMetadata(instanceCat)
             print '   ...got catalog, took %i sec.' % (time.time() - t0)
             os.system('free -m')
             # RRG:  Hack; have Simon incorporate
@@ -121,25 +124,25 @@ class JobAllocator:
             while instanceCat:
                 # RRG:  Hack; have Simon incorporate
                 instanceCat.objectType = 'POINT'
-                if numCats > 0:
-                    curMD.mergeMetadata(instanceCat.metadata)
-                    t0 = self.WorkDir + 'catData%s_%i.ja' % (nFN, jobNum)
-                    t1 = self.WorkDir + 'catData%s_%i.p' % (nFN, jobNum)
-                    print 'Now pickling query type: %s' % t
-                    # Store job data files in instance
-                    instanceCat.jobAllocatorDataFile = t0
-                    allOutputFiles.append(t0) # Order is important
-                    instanceCat.jobAllocatorCatalogType = catalogType 
-                    cPickle.dump(instanceCat, open(t1, 'w'))
-                    jobTypes.append(catalogType)
-                    jobNums.append(jobNum)
-                    jobPickleFiles.append(t1)
-                    jobNum += 1
+                t0 = self.WorkDir + 'catData%s_%i.ja' % (nFN, jobNum)
+                t1 = self.WorkDir + 'catData%s_%i.p' % (nFN, jobNum)
+                print 'Now pickling query type: %s' % t
+                # Store job data files in instance
+                instanceCat.jobAllocatorDataFile = t0
+                allOutputFiles.append(t0) # Order is important
+                instanceCat.jobAllocatorCatalogType = catalogType 
+                cPickle.dump(instanceCat, open(t1, 'w'))
+                jobTypes.append(catalogType)
+                jobNums.append(jobNum)
+                jobPickleFiles.append(t1)
+                jobNum += 1
+                if numCats > 0: curMD.mergeMetadata(instanceCat.metadata)
+
                 # *** RRG:  Free up memory somehow here for instanceCat...
                 del(instanceCat); instanceCat = None
                 t0 = time.time()
                 os.system('free -m')
-                if self.maxCats >= 0 and numCats >= self.maxCats:
+                if self.maxCats >= 0 and (numCats + 1) >= self.maxCats:
                     instanceCat = None
                 else:
                     print 'Querying DB for next chunk.'
@@ -149,7 +152,7 @@ class JobAllocator:
                     numCats += 1
 
         for t in useTypes:
-            curMD.validateRequiredMetadata(catalogType, myQDB.opsim)
+            curMD.validateMetadata(catalogType, myQDB.opsim)
             mFName = self.WorkDir + 'metaData%s_%s.ja' % (nFN, catalogType)
             curMD.writeMetadata(mFName, catalogType, myQDB.opsim)
         
@@ -160,17 +163,17 @@ class JobAllocator:
             print 'Added job to execution DB: %s' % jobId
             #t0 = '/astro/apps/pkg/python64/bin/python jobAllocatorRun.py %i %s %s&' % (nFN, jobId, jobPickleFiles[i])
             #t0 = 'qsub ./runOneAthena.csh %i %s %s&' % (nFN, jobId, jobPickleFiles[i])
-            #t0 = 'ssh athena0 "(cd $PBS_O_WORKDIR; qsub ./runOneAthena.csh %i %s %s)"' % (nFN, jobId, jobPickleFiles[i])
+            #t0 = 'ssh minerva0 "(cd $PBS_O_WORKDIR; qsub ./runOneAthena.csh %i %s %s)"' % (nFN, jobId, jobPickleFiles[i])
             cwd0 = os.getcwd()
             f0 = open('tmpJA%s.csh' % jobId, 'w')
 	    f0.write('#!/bin/csh\n#PBS -N jA%s\n#PBS -l walltime=1:00:00\n#PBS -e jA%s.err\n#PBS -o jA%s.out\ncd %s\nsource setupAthena.csh\npython jobAllocatorRun.py %s %s %s\necho Finished.' % (jobId, jobId, jobId, cwd0, nFN, jobId, jobPickleFiles[i]))
             f0.close()
-            t0 = 'ssh athena0 "(cd %s; qsub tmpJA%s.csh)"' % (cwd0, jobId)
+            t0 = 'ssh minerva0 "(cd %s; /opt/torque/bin/qsub tmpJA%s.csh)"' % (cwd0, jobId)
             print t0
             os.system(t0)
 
         # Check that everything started within a certain time limit
-        # On athena, jobs may be queued indefinitely, so this won't work
+        # On minerva, jobs may be queued indefinitely, so this won't work
         for i in range(len(jobNums)):
             jobId = '%s_%i' % (nFN, jobNums[i])
             tryNum = 0
