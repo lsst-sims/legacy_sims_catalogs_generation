@@ -182,7 +182,7 @@
       properMotionDec = float, 'Ephemerides[thismjd]._ddecdt'
       parallax = float, '%%"0.0"'
       radialVelocity = float, '%%"0.0"'
-      spatialmodel = float, "%%'movingpoint'"
+      spatialmodel = float, '%%"movingpoint"'
       galacticExtinctionModel = float, "%%'None'"
       internalExtinctionModel = float, "%%'None'"
     [[[ORBIT]]]
