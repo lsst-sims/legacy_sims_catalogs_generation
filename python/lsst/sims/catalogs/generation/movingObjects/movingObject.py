@@ -35,7 +35,6 @@ A class to be used in source catalog generation.  Holds an orbit/MJD (epoch for 
 
 from DayMOPSObject import DayMOPSObject  
 import numpy as n
-#import lsst_mags as lm
 import pyoorb as oo
 
 
@@ -71,10 +70,8 @@ class MovingObject(DayMOPSObject):
         self._var_timescale = var_timescale
         # var_fluxnorm = max amplitude of the variability, in flux (relative to fluxNorm).
         self._var_fluxmax = var_fluxmax   
-        # sedname = the SED name, including directory beyond 'root' SED directory.
+        # sedname = the SED name
         self._sedname = sedname
-        # sedobj would be the Sed.Sed() object, if it is instantiated.
-        self._sedobj = None
         # The opposition values for ugrizy come from the database, as they are precalculated.
         self._u_opp = u_opp  
         self._g_opp = g_opp
@@ -305,30 +302,6 @@ class Ephemeris(DayMOPSObject):
         """Update V_mag with variability information"""
         # TBD - LJ
         pass
-    ''' 
-    # series of functions to calculate magnitude and SN information for this time
-    def setupBandpass(self, rootSEDdir, filtername):
-        """ Instantiate a teleThruput object for a filter. """
-        """ Not storing the bandpass within the class, because it should be used for > 1 object """
-        if rootSEDdir != '':
-            rootSEDdir = rootSEDdir + "/"
-        filterfile = rootSEDdir + filtername
-        bandpass = lm.teleThruput(filterfile)
-        return bandpass
-    '''
-
-    def calcMagFilter(self, bandpassFilter, bandpassV, asteroidSED):
-        """Calculate the magnitude of the movingObject at ephemeris['mjdTai'] in 'filter'"""
-        """ Have to read in filter bandpass and asteroid SED elsewhere """
-        """ if generating many similar magnitudes, use movingObjectList calcAllMags instead """
-        # scale SED to V-mag at this ephemeris prediction
-        try:
-            self._magV
-        except AttributeError:
-            raise AttributeError, "Ephemeris defined, but not given a V magnitude - can't calculate magFilter"
-        self._fluxNorm = asteroidSED.calcFluxNorm(self._magV, bandpassV)
-        self._magFilter = asteroidSED.calcMag(bandpassFilter)
-        return 
 
     def calcSNR(image_5sigma):
         """ Calculate the signal to noise of the movingObject at ephemeris['mjdTai'] in filter, """
