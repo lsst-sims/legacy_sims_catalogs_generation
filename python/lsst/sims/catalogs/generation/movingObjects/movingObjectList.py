@@ -230,6 +230,7 @@ class MovingObjectList(object):
             sed[sedfile].readSED_flambda(filename)
             # set up magnitudes for color calculation.
             sedmag[sedfile] = {}
+            sedcol[sedfile] = {}
             for f in filterlist:
                sedmag[sedfile][f] = sed[sedfile].calcMag(bandpass[f])
                sedcol[sedfile][f] = sedmag[sedfile][f] - sedmag[sedfile]['V']
