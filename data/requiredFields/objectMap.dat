@@ -42,7 +42,7 @@
   formatas = 'ASSEMBLEDGALAXY'
   component = 'EXTRAGALACTIC'
   [[ASSEMBLEDGALAXY]]
-    table = 'Galaxy'
+    table = 'GalaxyRect'
     ptype = 'ASSEMBLEDGALAXY'
     idkey = 'id'
     constraint = 
