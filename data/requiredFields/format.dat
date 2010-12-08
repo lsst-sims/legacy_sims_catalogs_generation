@@ -6,7 +6,7 @@
 
   [[MOVINGPOINT]]
     attributes = id,raHelio,decHelio,magNorm,sedFilename,redshift,shearXX,shearYY,magnification,velocityRa,velocityDec,spatialmodel,galacticExtinctionModel,internalExtinctionModel 
-    fmt = "object %d %.9g %.9g %.9s ssmSED/%s %.9g %.9g %.9g %.9g %.9g %.9g %s %s %s"
+    fmt = "object %d %.9g %.9g %.9g ssmSED/%s %.9g %.9g %.9g %.9g %.9g %.9g %s %s %s"
 #id,raHelio,decHelio,magNorm,sedFilename,redshift,shearXX,shearYY,magnification,properMotionRa,properMotionDec,spatialmodel,galacticExtinctionModel,internalExtinctionModel "object {0[0]:d} {0[1]:g} {0[2]:g} {0[3]:g} {0[4]:s} {0[5]:g} {0[6]:g} {0[7]:g} {0[8]:g} {0[9]:g} {0[10]:g} {0[11]:s} {0[12]:s} {0[13]:s}"
 
 
