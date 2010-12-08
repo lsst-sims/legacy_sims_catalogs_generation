@@ -5,7 +5,7 @@
       decHelio =  float
       raTrim = float
       decTrim = float
-  [[SOLAR]]
+  [[SOLARSYSTEM]]
     [[[MOVINGPOINT]]]
       raHelio = float
       decHelio = float
