@@ -223,6 +223,7 @@ class MovingObjectList(object):
         sedtypes = ('C.dat', 'S.dat')
         sed={}
         sedmag = {}
+        sedcol = {}
         for sedfile in sedtypes:
             # read sed files
             filename = os.path.join(rootSEDdir, sedfile)
