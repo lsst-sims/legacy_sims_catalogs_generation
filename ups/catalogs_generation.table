@@ -2,6 +2,7 @@ setupRequired(numpy >=1.2.1)
 setupRequired(throughputs 1.0)
 
 envSet(CATALOG_DESCRIPTION_PATH, ${PRODUCT_DIR}/data/requiredFields/)
+envSet(FILE_MAP_PATH, ${PRODUCT_DIR}/data/fileMaps/)
 envSet(OORB_CONF, ${CAT_SHARE_DATA}/oorb/main/oorb.conf)
 envSet(OORB_DATA, ${CAT_SHARE_DATA}/oorb/data)
 envSet(SED_DATA, ${CAT_SHARE_DATA}/data)
