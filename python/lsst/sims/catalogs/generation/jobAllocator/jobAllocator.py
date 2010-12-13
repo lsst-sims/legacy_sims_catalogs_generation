@@ -115,15 +115,11 @@ class JobAllocator:
             mUtils.trimGeneration.derivedTrimMetadata(instanceCat)
             print '   ...got catalog, took %i sec.' % (time.time() - t0)
             os.system('free -m')
-            # RRG:  Hack; have Simon incorporate
-            instanceCat.objectType = 'POINT'
             # Deep copy so we can store this after instanceCat disappears
             if curMD == None: curMD = copy.deepcopy(instanceCat.metadata)
             else: curMD.mergeMetadata(instanceCat.metadata)
             numCats = 0
             while instanceCat:
-                # RRG:  Hack; have Simon incorporate
-                instanceCat.objectType = 'POINT'
                 t0 = self.WorkDir + 'catData%s_%i.ja' % (nFN, jobNum)
                 t1 = self.WorkDir + 'catData%s_%i.p' % (nFN, jobNum)
                 print 'Now pickling query type: %s' % t
