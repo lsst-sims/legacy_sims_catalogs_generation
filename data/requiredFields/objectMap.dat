@@ -88,8 +88,8 @@
   [[OPSIM361]]
     table = 'OpSim3_61'
     idkey = 'Opsim_obshistid'
-    radegkey = 'Unrefracted_RA'
-    decdegkey = 'Unrefracted_Dec'
+    raradkey = 'Unrefracted_RA'
+    decradkey = 'Unrefracted_Dec'
     expmjdkey = 'Opsim_expmjd'
     filterkey = 'Opsim_filter'
     constraint =
