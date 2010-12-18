@@ -4,24 +4,24 @@
 [TRIM]
   [[GALACTIC]]
     [[[POINT]]]
-      id = long,'id'
+      id = long,'simobjid'
       ra = float, 'ra*PI()/180.'
       dec = float,'decl*PI()/180.'
       glon = float,'gal_l*PI()/180.'
       glat = float,'gal_b*PI()/180.'
-      magNorm = float,"%%'toMag(flux_scale*flux_ratio_from_lc(isvar,t0,%f,timescale,varfluxpeak,\'%c\'))'%(self.expmjd, self.filter)"
+      magNorm = float,'(-2.5*log(flux_scale)/log(10.)) - 18.402732642'
       fluxNorm = float,'flux_scale'
       sedFilename = str,'sedfilename'
-      redshift = float,'0.0::real'
-      shearXX = float,'0.0::real'
-      shearYY = float,'0.0::real'
-      magnification = float,'0.0::real'
+      redshift = float,'0.0'
+      shearXX = float,'0.0'
+      shearYY = float,'0.0'
+      magnification = float,'0.0'
       properMotionRa = float,'(mudecl/(1000.*3600.))*PI()/180.'
       properMotionDec = float,'(mura/(1000.*3600.))*PI()/180.'
       spatialmodel = str,"'None'"
       galacticExtinctionModel = str,"'CCM'"
       galacticAv = float,'ebv*3.1'
-      galacticRv = float,'3.1::real'
+      galacticRv = float,'3.1'
       internalExtinctionModel = str,"'None'"
       parallax = float,'parallax'
       radialVelocity = float,'vr'
