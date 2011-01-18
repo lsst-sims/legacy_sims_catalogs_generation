@@ -4,7 +4,7 @@ from lsst.sims.catalogs.generation.db import queryDB
 from lsst.sims.catalogs.measures.astrometry import Bbox
 
 if __name__ == "__main__":
-  csize = 10000
+  csize = 10
   racent = 210.
   deccent = -5.
   radius = 0.01
