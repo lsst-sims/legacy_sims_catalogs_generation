@@ -9,7 +9,7 @@ if __name__ == "__main__":
   deccent = -5.
   radius = 0.01
   expmjd = 0.
-  obj = "ASSEMBLEDGALAXY"
+  obj = "NEWASSEMBLEDGALAXY"
   print "Doing object type: %s"%obj
   myqdb = queryDB.queryDB(chunksize=csize,objtype=obj,filetypes=('TEST',))
   ic = myqdb.getInstanceCatalogByCirc(210.,-5.,radius,expmjd=expmjd)

@@ -46,6 +46,14 @@
     ptype = 'ASSEMBLEDGALAXY'
     idkey = 'id'
     constraint = 
+[NEWASSEMBLEDGALAXY]
+  formatas = 'ASSEMBLEDGALAXY'
+  component = 'EXTRAGALACTIC'
+  [[NEWASSEMBLEDGALAXY]]
+    table = 'Galaxy'
+    ptype = 'ASSEMBLEDGALAXY'
+    idkey = 'id'
+    constraint = 
 [GALAXY]
   formatas = 'SERSIC2D'
   component = 'EXTRAGALACTIC'
