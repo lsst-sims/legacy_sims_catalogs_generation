@@ -4,6 +4,7 @@
   derivedMetadataFile = "derivedMetadata.dat"
   requiredFieldsFile = "requiredFields.dat"
   derivedFieldsFile = "derivedFields.dat"
+  derivedSEDPaths = "spec_map.dat"
 [DATABASE]
   requiredMetadataFile = "requiredMetadata.dat"
   requiredFieldsFile = "requiredFields.dat"
