@@ -11,14 +11,14 @@
 
 
   [[SERSIC2D]]
-    attributes = id,raHelio,decHelio,magNorm,sedFilename,redshift,shearXX,shearYY,magnification,properMotionRa,properMotionDec,spatialmodel,majorAxis,minorAxis,positionAngle,galacticExtinctionModel,galacticAv,galacticRv,internalExtinctionModel,internalAv,internalRv  
-    fmt = "object %d %.9g %.9g %.9g %s %.9g %.9g %.9g %.9g %.9g %.9g %s %.9g %.9g %.9g %s %.9g %.9g %s %.9g %.9g"
+    attributes = galtileid,raTrim,decTrim,magNorm,sedFilename,redshift,shearXX,shearYY,magnification,raOffset,decOffset,spatialmodel,majorAxis,minorAxis,positionAngle,index,internalExtinctionModel,internalAv,internalRv,galacticExtinctionModel,galacticAv,galacticRv
+    fmt = "object %d %.9g %.9g %.9g %s %.9g %.9g %.9g %.9g %.9g %.9g %s %.9g %.9g %.9g %i %s %.9g %.9g %s %.9g %.9g"
   [[SERSIC2D_BULGE]]
-    attributes = id,raHelio,decHelio,magNorm,sedFilename,redshift,shearXX,shearYY,magnification,properMotionRa,properMotionDec,spatialmodel,majorAxis,minorAxis,positionAngle,galacticExtinctionModel,galacticAv,galacticRv,internalExtinctionModel,internalAv,internalRv  
-    fmt = "object %d %.9g %.9g %.9g %s %.9g %.9g %.9g %.9g %.9g %.9g %s %.9g %.9g %.9g %s %.9g %.9g %s %.9g %.9g"
+    attributes = galtileid,raTrim,decTrim,magNorm,sedFilename,redshift,shearXX,shearYY,magnification,raOffset,decOffset,spatialmodel,majorAxis,minorAxis,positionAngle,index,internalExtinctionModel,internalAv,internalRv,galacticExtinctionModel,galacticAv,galacticRv
+    fmt = "object %d %.9g %.9g %.9g %s %.9g %.9g %.9g %.9g %.9g %.9g %s %.9g %.9g %.9g %i %s %.9g %.9g %s %.9g %.9g"
   [[SERSIC2D_DISK]]
-    attributes = id,raHelio,decHelio,magNorm,sedFilename,redshift,shearXX,shearYY,magnification,properMotionRa,properMotionDec,spatialmodel,majorAxis,minorAxis,positionAngle,galacticExtinctionModel,galacticAv,galacticRv,internalExtinctionModel,internalAv,internalRv  
-    fmt = "object %d %.9g %.9g %.9g %s %.9g %.9g %.9g %.9g %.9g %.9g %s %.9g %.9g %.9g %s %.9g %.9g %s %.9g %.9g"
+    attributes = galtileid,raTrim,decTrim,magNorm,sedFilename,redshift,shearXX,shearYY,magnification,raOffset,decOffset,spatialmodel,majorAxis,minorAxis,positionAngle,index,internalExtinctionModel,internalAv,internalRv,galacticExtinctionModel,galacticAv,galacticRv  
+    fmt = "object %d %.9g %.9g %.9g %s %.9g %.9g %.9g %.9g %.9g %.9g %s %.9g %.9g %.9g %i %s %.9g %.9g %s %.9g %.9g"
 
   [[ASSEMBLEDGALAXY]]
     attributes = id,raHelio,decHelio,magNorm,sedFilename,redshift,shearXX,shearYY,magnification,properMotionRa,properMotionDec,spatialmodel,majorAxis,minorAxis,positionAngle,galacticExtinctionModel,galacticAv,galacticRv,internalExtinctionModel,internalAv,internalRv  
