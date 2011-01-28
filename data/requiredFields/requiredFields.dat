@@ -86,6 +86,7 @@
       majorAxis = float, 'a_b'
       minorAxis = float, 'b_b'
       positionAngle = float, 'pa_bulge'
+      index = float, 'bulge_n'
       internalExtinctionModel = str,"ext_model_b"
       internalAv = float, 'av_b'
       internalRv = float, 'rv_b'
@@ -137,6 +138,7 @@
       majorAxis = float, 'a_d'
       minorAxis = float, 'b_d'
       positionAngle = float, 'pa_disk'
+      index = float, 'disk_n'
       internalExtinctionModel = str,"ext_model_d"
       internalAv = float, 'av_d'
       internalRv = float, 'rv_d'
