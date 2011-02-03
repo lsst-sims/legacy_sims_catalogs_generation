@@ -93,17 +93,18 @@ class JobAllocatorTest(unittest.TestCase):
     #    # For some reason, need to use square brackets
     #    j.startCatalogs(['STUB'], 'TEST QUERY', '85748128')
 
-    def testSmallTrimCatalogMultiType(self):
-        print 'In testSmallTrimCatalog()'
-        if os.path.exists('/local/tmp/'):
-            workDir = '/local/tmp/jobAllocator/'
-        elif os.path.exists('/share/athena/share/sdata1/rgibson/'):
-            workDir = '/share/athena/share/sdata1/rgibson/jobAllocator/'
-        else:
-            raise RuntimeError, '*** No place for workDir.'
-        j = jobAllocator.JobAllocator(workDir=workDir, chunkSize=2000, maxCats=3)
-        # For some reason, need to use square brackets
-        j.startCatalogs(['TRIM'], ['STARS', 'GALAXY'], '85748128')
+    #def testSmallTrimCatalogMultiType(self):
+    #    print 'In testSmallTrimCatalog()'
+    #    if os.path.exists('/local/tmp/'):
+    #        workDir = '/local/tmp/jobAllocator/'
+    #    elif os.path.exists('/share/athena/share/sdata1/rgibson/'):
+    #        workDir = '/share/athena/share/sdata1/rgibson/jobAllocator/'
+    #    else:
+    #        raise RuntimeError, '*** No place for workDir.'
+    #    j = jobAllocator.JobAllocator(workDir=workDir, chunkSize=2000, maxCats=3)
+    #    # For some reason, need to use square brackets
+    #    # Note that "STARS" contains both MS and WD stars!
+    #    j.startCatalogs(['TRIM'], ['WDSTARS', 'MSSTARS', 'GALAXY', 'SSM'], '85748128')
 
     #def testSmallTrimCatalog(self):
     #    print 'In testSmallTrimCatalog()'
@@ -117,17 +118,17 @@ class JobAllocatorTest(unittest.TestCase):
     #    # For some reason, need to use square brackets
     #    j.startCatalogs(['TRIM'], ['GALAXY'], '85748128')
 
-    #def testFullTrimCatalog(self):
-    #    print 'In testFullTrimCatalog()'
-    #    if os.path.exists('/local/tmp/'):
-    #        workDir = '/local/tmp/jobAllocator/'
-    #    elif os.path.exists('/share/athena/share/sdata1/rgibson/'):
-    #        workDir = '/share/athena/share/sdata1/rgibson/jobAllocator/'
-    #    else:
-    #        raise RuntimeError, '*** No place for workDir.'
-    #    j = jobAllocator.JobAllocator(workDir=workDir, chunkSize=20000, maxCats=-1)
-    #    # For some reason, need to use square brackets
-    #    j.startCatalogs(['TRIM'], ['GALAXY'], '85748128')
+    def testFullTrimCatalog(self):
+        print 'In testFullTrimCatalog()'
+        if os.path.exists('/local/tmp/'):
+            workDir = '/local/tmp/jobAllocator/'
+        elif os.path.exists('/share/athena/share/sdata1/rgibson/'):
+            workDir = '/share/athena/share/sdata1/rgibson/jobAllocator/'
+        else:
+            raise RuntimeError, '*** No place for workDir.'
+        j = jobAllocator.JobAllocator(workDir=workDir, chunkSize=200000, maxCats=-1)
+        # For some reason, need to use square brackets
+        j.startCatalogs(['TRIM'], ['WDSTARS', 'MSSTARS', 'GALAXY', 'SSM'], '85748128')
 
 if __name__ == '__main__':
     unittest.main()

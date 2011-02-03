@@ -116,8 +116,10 @@ class JobAllocator:
             print '   ...got catalog, took %i sec.' % (time.time() - t0)
             os.system('free -m')
             # Deep copy so we can store this after instanceCat disappears
-            if curMD == None: curMD = copy.deepcopy(instanceCat.metadata)
-            else: curMD.mergeMetadata(instanceCat.metadata)
+            if curMD == None:
+                curMD = copy.deepcopy(instanceCat.metadata)
+            else:
+                curMD.mergeMetadata(instanceCat.metadata)
             numCats = 0
             while instanceCat:
                 t0 = self.WorkDir + 'catData%s_%i.ja' % (nFN, jobNum)
@@ -132,7 +134,8 @@ class JobAllocator:
                 jobNums.append(jobNum)
                 jobPickleFiles.append(t1)
                 jobNum += 1
-                if numCats > 0: curMD.mergeMetadata(instanceCat.metadata)
+                if numCats > 0:
+                    curMD.mergeMetadata(instanceCat.metadata)
 
                 # *** RRG:  Free up memory somehow here for instanceCat...
                 del(instanceCat); instanceCat = None
@@ -147,10 +150,9 @@ class JobAllocator:
                     os.system('free -m')
                     numCats += 1
 
-        for t in useTypes:
-            curMD.validateMetadata(catalogType, myQDB.opsim)
-            mFName = self.WorkDir + 'metaData%s_%s.ja' % (nFN, catalogType)
-            curMD.writeMetadata(mFName, catalogType, myQDB.opsim)
+        curMD.validateMetadata(catalogType, myQDB.opsim)
+        mFName = self.WorkDir + 'metaData%s_%s.ja' % (nFN, catalogType)
+        curMD.writeMetadata(mFName, catalogType, myQDB.opsim, newfile=True)
         
         # Now fire off the jobs
         for i in range(len(jobNums)):
