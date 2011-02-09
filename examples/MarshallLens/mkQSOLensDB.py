@@ -3,7 +3,7 @@ import numpy
 from numpy import random
 import pyfits
 import math
-from copy import copy
+from copy import deepcopy
 import os
 from lsst.sims.catalogs.generation.config import ConfigObj
 from lsst.sims.catalogs.measures.photometry.Bandpass import *
@@ -153,7 +153,7 @@ class LensIngester (object):
     sed.readSED_flambda(os.path.join(spath,spec))
     #need the rest frame spectrum for calculating the mag norm since
     #the normalization is applied in the rest frame
-    sed_orig = copy(sed)
+    sed_orig = deepcopy(sed)
     #Redshift the spectrum
     sed.redshiftSED(redshift, dimming=True)
     #Calculate the normalization using the reference magnitude
