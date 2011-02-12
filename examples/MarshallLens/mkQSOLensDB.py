@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+import time
 import numpy
 from numpy import random
 import pyfits
@@ -11,7 +12,18 @@ from lsst.sims.catalogs.measures.photometry.Sed import *
 
 class LensIngester (object):
   def __init__(self, file, posfile):
+    self.keymap = ['u', 'g', 'r', 'i', 'z', 'y']
+    self.indmap = {'0':'u', '1':'g', '2':'r', '3':'i', '4':'z', '5':'y'}
     #Read the data file.  This will presumably need to be specific to the data
+    #Set paths to default throughputs and seds
+    self.tpath = os.getenv('LSST_THROUGHPUTS_DEFAULT')
+    self.spath = os.getenv('SED_DATA')
+    self.bands = {}
+    for k in self.keymap:
+      self.bands[k] = Bandpass()
+      self.bands[k].readThroughput(os.path.join(self.tpath, "total_%s.dat"%k))
+    sed = Sed()
+    (self.phiarr, self.wavelen_step) = sed.setupPhiArray(self.mapFiltDictToArr(self.bands))
     self.centpos = self.readPositionFile(posfile) 
     (self.lensData, self.imgData) = self.readFile(file)
  
@@ -27,7 +39,7 @@ class LensIngester (object):
     lensAttList = ["ra", "decl", "id", "ra_bulge", "dec_bulge", "redshift", "b_bulge",
             "a_bulge", "pa_bulge", "sedname_bulge", "magnorm_bulge", "fluxnorm_bulge", 
             "ext_model_bulge", "rv_bulge", "av_bulge", "u", "g", "r", "i",
-            "z", "y"]
+            "z", "y", "point", "rad_vel"]
     lensList = {}
     #initialize each key to an empty array
     for la in lensAttList:
@@ -35,16 +47,22 @@ class LensIngester (object):
     #list of attributes for the image table
     imgAttList = ["lensid", "imgid", "nimg", "ra", "decl", "u", "g", "r",
             "i", "z", "y", "sedname", "redshift", "t_0",
-            "magnorm", "fluxnorm", "absimag", "sfinf", "tau", "extmodel", "rv", "av"]
+            "magnorm", "fluxnorm", "absimag", "sfinf", "tau", "extmodel",
+            "rv", "av", "point"]
     imgList = {}
     #initialize each key to an empty array
     for ia in imgAttList:
       imgList[ia] = []
     #read through data and positions in lock step
-    for l in zip(data, self.centpos):
-      print l[0].row
+    idoffset = 0
+    for l in zip(range(len(self.centpos)), self.centpos):
+      ind = l[0]
+      if ind >= data.size:
+        ind = ind%data.size
+        idoffset += 206083430
       #get data row
-      larr = l[0].array[l[0].row]
+      larr = data[ind]
+      print ind
       #get position array [ra, dec]
       lpos = l[1]
       #Assign positions, id, and redshift to appropriate keys
@@ -52,7 +70,7 @@ class LensIngester (object):
       lensList['decl'].append(lpos[1])
       lensList['ra_bulge'].append(lpos[0])
       lensList['dec_bulge'].append(lpos[1])
-      lensList['id'].append(int(larr['lensid']))
+      lensList['id'].append(int(larr['lensid']) + idoffset)
       lensList['redshift'].append(larr['zlens'])
       #Assign spacial attributes and sed
       lensList['b_bulge'].append(larr['reff_t']*numpy.sqrt(1.0 - larr['ellip']))
@@ -61,16 +79,17 @@ class LensIngester (object):
       lensList['sedname_bulge'].append("Exp.50E09.1Z.spec")
       #Calculate flux normalization constants used by the raytrace
       lensList['i'].append(larr['apmag_i'])
-      (magnorm, fluxnorm) = self.calcMagNorm("galaxySED/"+lensList['sedname_bulge'][-1],
-              lensList['i'][-1], lensList['redshift'][-1])
+      lensList['point'].append("(%fd,%fd)"%(lensList['ra'][-1], lensList['decl'][-1]))
+      (magnorm, fluxnorm) = self.calcMagNorm("galaxySED/"+lensList['sedname_bulge'][-1], lensList['i'][-1], lensList['redshift'][-1])
       lensList['magnorm_bulge'].append(magnorm)
       lensList['fluxnorm_bulge'].append(fluxnorm)
       #Calculate LSST magnitude for reference
       mags = self.calcLSSTMags("galaxySED/"+lensList['sedname_bulge'][-1],
               fluxnorm, lensList['redshift'][-1])
+      mags = self.mapFiltArrToDict(mags)
       #Test magnitude generation and assign magnitudes to keys
-      if not numpy.fabs(lensList['i'][-1] - mags['i']) < 0.00001:
-        raise "Something is wrong with the lens mag calculations %.14f %.14f"%(lensList['imag'][-1], mags['i'])
+      if not numpy.fabs(lensList['i'][-1] - mags['i']) < 0.0005:
+        raise "Something is wrong with the lens mag calculations %.14f %.14f"%(lensList['i'][-1], mags['i'])
       lensList['u'].append(mags['u'])
       lensList['g'].append(mags['g'])
       lensList['r'].append(mags['r'])
@@ -80,6 +99,8 @@ class LensIngester (object):
       lensList['ext_model_bulge'].append("CCM")
       lensList['rv_bulge'].append(3.1)
       lensList['av_bulge'].append(0.0)
+      lensList['rad_vel'].append(0.0)
+
       #Set values used by all images 
       nimg = larr['nimg']
       sourceMag = larr['magi_in']
@@ -93,7 +114,7 @@ class LensIngester (object):
       for i in range(nimg):
         #Assign position, spectrum, ids etc
         imgList['nimg'].append(nimg)
-        imgList['lensid'].append(larr['lensid'])
+        imgList['lensid'].append(lensList['id'][-1])
         imgList['imgid'].append(i)
         imgList['i'].append(sourceMag - 2.5*numpy.log10(numpy.abs(larr['mag'][i])))
         imgList['sedname'].append(sourceSpec)
@@ -111,8 +132,9 @@ class LensIngester (object):
         imgList['fluxnorm'].append(fluxnorm)
         imgList['absimag'].append(sourceAbsMag)
         mags = self.calcLSSTMags("agnSED/"+sourceSpec, fluxnorm, sourceRedshift)
+        mags = self.mapFiltArrToDict(mags)
         #Test magnitude generation.
-        if not numpy.fabs(imgList['i'][-1] - mags['i']) < 0.00001:
+        if not numpy.fabs(imgList['i'][-1] - mags['i']) < 0.0005:
           raise "Something is wrong with the image mag calculations %.14f %.14f"%(imgList['i'][-1], mags['i'])
         imgList['u'].append(mags['u'])
         imgList['g'].append(mags['g'])
@@ -123,6 +145,7 @@ class LensIngester (object):
         imgList['extmodel'].append("CCM")
         imgList['rv'].append(3.1)
         imgList['av'].append(0.0)
+        imgList['point'].append("(%fd,%fd)"%(imgList['ra'][-1], imgList['decl'][-1]))
     return lensList, imgList
     
   def readPositionFile(self, file):
@@ -140,24 +163,19 @@ class LensIngester (object):
     """Calculate the SED normalization given a spectrum, redshift, and
     reference magnitude.  ***This assumes not host redenning.***
     """
-    #Set paths to default throughputs and seds
-    tpath = os.getenv('LSST_THROUGHPUTS_DEFAULT')
-    spath = os.getenv('SED_DATA')
     #Setup the filters
-    band = Bandpass()
-    band.readThroughput(os.path.join(tpath,"total_%s.dat"%(filter)))
     imsimband = Bandpass()
     imsimband.imsimBandpass()
     #setup the sed
     sed = Sed()
-    sed.readSED_flambda(os.path.join(spath,spec))
+    sed.readSED_flambda(os.path.join(self.spath,spec))
     #need the rest frame spectrum for calculating the mag norm since
     #the normalization is applied in the rest frame
     sed_orig = deepcopy(sed)
     #Redshift the spectrum
     sed.redshiftSED(redshift, dimming=True)
     #Calculate the normalization using the reference magnitude
-    fluxNorm = sed.calcFluxNorm(mag, band)
+    fluxNorm = sed.calcFluxNorm(mag, self.bands[filter])
     sed_orig.multiplyFluxNorm(fluxNorm)
     #Calculate the normalization in units of magnitudes
     magNorm = sed_orig.calcMag(imsimband)
@@ -168,43 +186,43 @@ class LensIngester (object):
     standard LSST bands.  ***This does not take into account host extinction.
     """
     #Get default sed and filter locations
-    tpath = os.getenv('LSST_THROUGHPUTS_DEFAULT')
-    spath = os.getenv('SED_DATA')
     #setup and redshift the spectrum
     sed = Sed()
-    sed.readSED_flambda(os.path.join(spath,spec))
+    sed.readSED_flambda(os.path.join(self.spath,spec))
     sed.multiplyFluxNorm(fluxnorm)
     sed.redshiftSED(redshift, dimming=True)
-    bands = {"u":None, "g":None, "r":None, "i":None, "z":None, "y":None}
-    mags = {"u":None, "g":None, "r":None, "i":None, "z":None, "y":None}
-    keys = bands.keys()
-    #Calculate the magnitudes for each band
-    for k in keys:
-      bands[k] = Bandpass()
-      bands[k].readThroughput(os.path.join(tpath, "total_%s.dat"%k))
-      mags[k] = sed.calcMag(bands[k])
-    return mags
+    sed.resampleSED(wavelen_match=self.bands[self.indmap['0']].wavelen)
+    sed.flambdaTofnu()
+    return sed.manyMagCalc(self.phiarr, self.wavelen_step)
     
+  def mapFiltArrToDict(self, arr):
+    retdict = {}
+    for ind, a in zip(range(len(arr)), arr):
+      retdict[self.indmap[str(ind)]] = a
+    return retdict
+
+  def mapFiltDictToArr(self, dict):
+    retarr = []
+    for k in self.keymap:
+      retarr.append(dict[k])
+    return retarr
+
   def calcAbsMag(self, mag, D_L, spec, redshift, filter='i'):
     """Calculate an absolute magnitude given a filter, luminosity distance,
     apparent magnitude, sed, and redshift
     """
     #Get default locations for filters and seds
-    tpath = os.getenv('LSST_THROUGHPUTS_DEFAULT')
-    spath = os.getenv('SED_DATA')
     #Set up filters and sed
-    band = Bandpass()
-    band.readThroughput(os.path.join(tpath,"total_%s.dat"%filter))
     imsimband = Bandpass()
     imsimband.imsimBandpass()
     sed = Sed()
-    sed.readSED_flambda(os.path.join(spath,spec))
+    sed.readSED_flambda(os.path.join(self.spath,spec))
     #Calculate rest frame magnitude
-    magr = sed.calcMag(band)
+    magr = sed.calcMag(self.bands[filter])
     #redshift spectrum
     sed.redshiftSED(redshift, dimming=False)
     #calculate observed frame magnitude
-    mago = sed.calcMag(band)
+    mago = sed.calcMag(self.bands[filter])
     #SED portion of the K-correction
     Kcorr = mago-magr
     #Cosmological portion of the K-correction due to the dilation of the
@@ -256,19 +274,19 @@ class LensIngester (object):
   def writeLensData(self, file):
     fh = open(file, "w")
     keys = self.lensData.keys()
-    fh.write(",".join(keys)+"\n")
+    fh.write(":".join(keys)+"\n")
     zipex = "zip(%s)"%(",".join(["self.lensData['%s']"%k for k in keys]))
     for arr in eval(zipex):
-      fh.write(",".join([str(el) for el in arr])+"\n")
+      fh.write(":".join([str(el) for el in arr])+"\n")
     fh.close()
 
   def writeImgData(self, file):
     fh = open(file, "w")
     keys = self.imgData.keys()
-    fh.write(",".join(keys)+"\n")
-    zipex = "zip(%s)"%(",".join(["self.imgData['%s']"%k for k in keys]))
+    fh.write("id:"+":".join(keys)+"\n")
+    zipex = "zip(range(len(self.imgData[keys[0]])),%s)"%(",".join(["self.imgData['%s']"%k for k in keys]))
     for arr in eval(zipex):
-      fh.write(",".join([str(el) for el in arr])+"\n")
+      fh.write(":".join([str(el) for el in arr])+"\n")
     fh.close()
     
 if __name__ == "__main__":

@@ -1,5 +1,6 @@
 CREATE table TDSL_QSO_Image (
-LENSID int DEFAULT NULL,
+ID int not null primary key,
+LENSID bigint DEFAULT NULL,
 IMGID int DEFAULT NULL,
 NIMG int DEFAULT 0,
 RA double precision DEFAULT NULL,
@@ -21,4 +22,7 @@ Z real DEFAULT NULL,
 Y real DEFAULT NULL,
 SFINF real DEFAULT NULL,
 TAU real DEFAULT NULL,
-T_0 real DEFAULT NULL);
+T_0 real DEFAULT NULL,
+POINT spoint
+);
+

@@ -1,5 +1,5 @@
 CREATE TABLE GALAXY_LENS (
-ID int DEFAULT NULL,
+ID bigint not null primary key,
 RA double precision DEFAULT NULL,
 Decl double precision DEFAULT NULL,
 redshift real DEFAULT NULL,
@@ -57,5 +57,7 @@ GR_REST real DEFAULT NULL,
 RI_REST real DEFAULT NULL,
 IZ_REST real DEFAULT NULL,
 ZY_REST real DEFAULT NULL,
-R_ABSMAG real DEFAULT NULL
+R_ABSMAG real DEFAULT NULL,
+RAD_VEL real DEFAULT 0.,
+POINT spoint
 );
