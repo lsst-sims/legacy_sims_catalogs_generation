@@ -1,0 +1,27 @@
+#File to enumerate the different types of objects that can be queried.
+#The number will be used to identify objects of different types in
+#instance catalogs.
+
+[OBJECTTYPES]
+  [[BULGE]]
+    id = 1
+  [[DISK]]
+    id = 2
+  [[AGN]]
+    id = 3
+  [[MSSTARS]]
+    id = 4
+  [[WDSTARS]]
+    id = 5
+  [[BHBSTARS]]
+    id = 6
+  [[RRLYSTARS]]
+    id = 7
+  [[SSM]]
+    id = 8
+  [[ASSEMBLEDGALAXY]]
+    id = 9
+  [[ORBIT]]
+    id = 10
+  [[METADATA]]
+    id = 11
