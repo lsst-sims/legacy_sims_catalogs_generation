@@ -4,8 +4,10 @@
 [TRIM]
   [[OPSIM361]]
     SIM_SEED = long, 'expdate'
-    Unrefracted_RA = float, 'fieldradeg'
-    Unrefracted_Dec = float, 'fielddecdeg'
+    Unrefracted_RA = float, 'fieldra'
+    Unrefracted_Dec = float, 'fielddec'
+    Unrefracted_RA_deg = float, 'fieldradeg'
+    Unrefracted_Dec_deg = float, 'fielddecdeg'
     Opsim_moonra = float, 'moonra'
     Opsim_moondec = float, 'moondec'
     Opsim_rotskypos = float, 'rotskypos'
