@@ -5,6 +5,8 @@
   Unrefracted_Altitude = float, ''
   Unrefracted_Azimuth = float, ''
   Slalib_date = str, ''
-
+  SIM_MINSOURCE = int, ''	
+  SIM_TELCONFIG = int, ''
+  SIM_VISTIME = float, ''
 [STUB]
   TEST3 = str, ''
