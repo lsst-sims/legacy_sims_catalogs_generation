@@ -11,15 +11,19 @@
 
 
   [[SERSIC2D]]
-    attributes = galtileid,appendint,raTrim_deg,decTrim_deg,magNorm,sedFilename,redshift,shearXX,shearYY,magnification,raOffset,decOffset,spatialmodel,majorAxis,minorAxis,positionAngle,index,internalExtinctionModel,internalAv,internalRv,galacticExtinctionModel,galacticAv,galacticRv
-    fmt = "object %d.%i %.9g %.9g %.9g %s.gz %.9g %.9g %.9g %.9g %.9g %.9g %s %.9g %.9g %.9g %i %s %.9g %.9g %s %.9g %.9g"
-  [[SERSIC2D_BULGE]]
-    attributes = galtileid,appendint,raTrim_deg,decTrim_deg,magNorm,sedFilename,redshift,shearXX,shearYY,magnification,raOffset,decOffset,spatialmodel,majorAxis,minorAxis,positionAngle,index,internalExtinctionModel,internalAv,internalRv,galacticExtinctionModel,galacticAv,galacticRv
-    fmt = "object %d.%i %.9g %.9g %.9g %s.gz %.9g %.9g %.9g %.9g %.9g %.9g %s %.9g %.9g %.9g %i %s %.9g %.9g %s %.9g %.9g"
-  [[SERSIC2D_DISK]]
-    attributes = galtileid,appendint,raTrim_deg,decTrim_deg,magNorm,sedFilename,redshift,shearXX,shearYY,magnification,raOffset,decOffset,spatialmodel,majorAxis,minorAxis,positionAngle,index,internalExtinctionModel,internalAv,internalRv,galacticExtinctionModel,galacticAv,galacticRv  
-    fmt = "object %d.%i %.9g %.9g %.9g %s.gz %.9g %.9g %.9g %.9g %.9g %.9g %s %.9g %.9g %.9g %i %s %.9g %.9g %s %.9g %.9g"
-
+    attributes = galtileid,appendint,raTrim_deg,decTrim_deg,magnorm,sedFilename,redshift,a,b,pa,sindex,ext_model,av,rv
+    fmt = "object %d.%i %.9g %.9g %.9g %s %.9g 0. 0. 0. 0. 0. sersic2D %.9g %.9g %.9g %i CCM 0. 3.1 %s %.9g %.9g"
+#The below formats should be used as soon as the new stored procedures are in
+#place.
+#  [[SERSIC2D]]
+#    attributes = galtileid,appendint,raTrim_deg,decTrim_deg,magNorm,sedFilename,redshift,shearXX,shearYY,magnification,raOffset,decOffset,spatialmodel,majorAxis,minorAxis,positionAngle,index,galacticExtinctionModel,galacticAv,galacticRv,internalExtinctionModel,internalAv,internalRv
+#    fmt = "object %d.%i %.9g %.9g %.9g %s.gz %.9g %.9g %.9g %.9g %.9g %.9g %s %.9g %.9g %.9g %i %s %.9g %.9g %s %.9g %.9g"
+#  [[SERSIC2D_BULGE]]
+#    attributes = galtileid,appendint,raTrim_deg,decTrim_deg,magNorm,sedFilename,redshift,shearXX,shearYY,magnification,raOffset,decOffset,spatialmodel,majorAxis,minorAxis,positionAngle,index,internalExtinctionModel,internalAv,internalRv,galacticExtinctionModel,galacticAv,galacticRv
+#    fmt = "object %d.%i %.9g %.9g %.9g %s.gz %.9g %.9g %.9g %.9g %.9g %.9g %s %.9g %.9g %.9g %i %s %.9g %.9g %s %.9g %.9g"
+#  [[SERSIC2D_DISK]]
+#    attributes = galtileid,appendint,raTrim_deg,decTrim_deg,magNorm,sedFilename,redshift,shearXX,shearYY,magnification,raOffset,decOffset,spatialmodel,majorAxis,minorAxis,positionAngle,index,internalExtinctionModel,internalAv,internalRv,galacticExtinctionModel,galacticAv,galacticRv  
+#    fmt = "object %d.%i %.9g %.9g %.9g %s.gz %.9g %.9g %.9g %.9g %.9g %.9g %s %.9g %.9g %.9g %i %s %.9g %.9g %s %.9g %.9g"
   [[ASSEMBLEDGALAXY]]
     attributes = id,appendint,raTrim_deg,decTrim_deg,magNorm,sedFilename,redshift,shearXX,shearYY,magnification,properMotionRa,properMotionDec,spatialmodel,majorAxis,minorAxis,positionAngle,galacticExtinctionModel,galacticAv,galacticRv,internalExtinctionModel,internalAv,internalRv  
     fmt = "object %d.%i %.9g %.9g %.9g %s.gz %.9g %.9g %.9g %.9g %.9g %.9g %s %.9g %.9g %.9g %s %.9g %.9g %s %.9g %.9g"

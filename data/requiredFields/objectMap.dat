@@ -73,7 +73,7 @@
     ptype = 'ASSEMBLEDGALAXY'
     idkey = 'id'
     constraint = 
-[GALAXY]
+[GALAXY_BULGE]
   formatas = 'SERSIC2D'
   component = 'EXTRAGALACTIC'
   [[BULGE]]
@@ -81,19 +81,24 @@
     ptype = 'SERSIC2D_BULGE'
     idkey = 'id'
     constraint = 'fluxnorm_bulge is not NULL'
+[GALAXY_DISK]
+  formatas = 'SERSIC2D'
+  component = 'EXTRAGALACTIC'
   [[DISK]]
     table = 'Galaxy'
     ptype = 'SERSIC2D_DISK'
     idkey = 'id'
     constraint = 'fluxnorm_disk is not NULL'
+
 [AGN]
   formatas = 'POINT'
   component = 'EXTRAGALACTIC'
   [[AGN]]
-    table = 'GALAXY'
+    table = 'Galaxy'
     ptype = 'POINT'
     idkey = 'id'
     constraint = 'isagn > 0'
+
 [SSM]
   formatas = 'MOVINGPOINT'
   component = 'SOLARSYSTEM'
