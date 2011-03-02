@@ -4,10 +4,10 @@ import lsst.sims.catalogs.measures.utils as mUtils
 from lsst.sims.catalogs.generation.db import queryDB
 
 if __name__ == "__main__":
-  csize = 10
+  csize = 1000
   cattype = "TRIM"
   myqdb = queryDB.queryDB(chunksize=csize,objtype="GALAXY_BULGE")
-  ic = myqdb.getInstanceCatalogById(85748128, radiusdeg=0.1)
+  ic = myqdb.getInstanceCatalogById(85748128, radiusdeg=2.1)
   mUtils.trimGeneration.derivedTrimMetadata(ic)
   ic.metadata.validateMetadata(cattype, myqdb.opsim) 
   ic.metadata.writeMetadata("test.dat", cattype, myqdb.opsim,\
