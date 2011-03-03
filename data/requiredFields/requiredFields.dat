@@ -39,8 +39,6 @@
       galtileid = long,'%%"id+%i::bigint*%i::bigint"%(self.curtile["tid"], 25711071)'
       ra = float,'ra'
       dec = float,'dec'
-      glon = float,'0::real'
-      glat = float,'0::real'
       magNorm = float,'0.0::real'
       sedFilename = str,"'None'"
       redshift = float,'redshift'
@@ -61,7 +59,7 @@
       internalAv = float, '0.0::real'
       internalRv = float, '3.1::real'
       radialVelocity = float, '0.0::real'
-      fluxNorm =float,  None
+      fluxnorm =float,  None
       lsst_u = float, 'u_ab'
       lsst_g = float, 'g_ab'
       lsst_r = float, 'r_ab'
@@ -73,10 +71,8 @@
       galtileid = long,'%%"id+%i::bigint*%i::bigint"%(self.curtile["tid"], 25711071)'
       ra = float, '%%"long (spoint(bra*PI()/180.,bdec*PI()/180.) + strans(%f*PI()/180., %f*PI()/180.,0.,\'YZX\'))*180./PI()"%(-self.curtile["decmid"], self.curtile["ramid"])'
       dec = float, '%%"lat (spoint(bra*PI()/180.,bdec*PI()/180.) + strans(%f*PI()/180., %f*PI()/180.,0.,\'YZX\'))*180./PI()"%(-self.curtile["decmid"], self.curtile["ramid"])'
-      glon = float, '0::real'
-      glat = float, '0::real'
       magNorm = float, 'magnorm_bulge'
-      fluxNorm = float, 'fluxnorm_bulge'
+      fluxnorm = float, 'fluxnorm_bulge'
       sedFilename = str,'lookupGalaxySedFromId(sedid_bulge)'
       majorAxis = float, 'a_b'
       minorAxis = float, 'b_b'
@@ -99,8 +95,6 @@
     [[[SERSIC2D_DISK]]]
       id = long, 'id'
       galtileid = long,'%%"id+%i::bigint*%i::bigint"%(self.curtile["tid"], 25711071)'
-      glon = float, '0::real'
-      glat = float, '0::real'
       redshift = float, 'redshift'
       shearXX = float, '0.0::real'
       shearYY = float, '0.0::real'
@@ -116,7 +110,7 @@
       ra = float, '%%"long (spoint(dra*PI()/180.,ddec*PI()/180.) + strans(%f*PI()/180., %f*PI()/180.,0.,\'YZX\'))*180./PI()"%(-self.curtile["decmid"], self.curtile["ramid"])'
       dec = float, '%%"lat (spoint(dra*PI()/180.,ddec*PI()/180.) + strans(%f*PI()/180., %f*PI()/180.,0.,\'YZX\'))*180./PI()"%(-self.curtile["decmid"], self.curtile["ramid"])'
       magNorm = float, 'magnorm_disk'
-      fluxNorm = float, 'fluxnorm_disk'
+      fluxnorm = float, 'fluxnorm_disk'
       sedFilename = str,'lookupGalaxySedFromId(sedid_disk)'
       majorAxis = float, 'a_d'
       minorAxis = float, 'b_d'
@@ -127,8 +121,6 @@
     [[[POINT]]]
       id = long, 'id'
       galtileid = long,'%%"id+%i::bigint*%i::bigint"%(self.curtile["tid"], 25711071)'
-      glon = float, '0::real'
-      glat = float, '0::real'
       redshift = float,'redshift'
       shearXX = float,'0.0::real'
       shearYY = float,'0.0::real'
@@ -145,7 +137,7 @@
       ra = float, '%%"long (spoint(agnra*PI()/180.,agndec*PI()/180.) + strans(%f*PI()/180., %f*PI()/180.,0.,\'YZX\'))*180./PI()"%(-self.curtile["decmid"], self.curtile["ramid"])'
       dec = float, '%%"lat (spoint(agnra*PI()/180.,agndec*PI()/180.) + strans(%f*PI()/180., %f*PI()/180.,0.,\'YZX\'))*180./PI()"%(-self.curtile["decmid"], self.curtile["ramid"])'
       magNorm = float, 'magnorm_agn'
-      fluxNorm = float, 'fluxnorm_agn'
+      fluxnorm = float, 'fluxnorm_agn'
       sedFilename = str,'lookupGalaxySedFromId(sedid_agn)'
 
   [[SOLARSYSTEM]]
