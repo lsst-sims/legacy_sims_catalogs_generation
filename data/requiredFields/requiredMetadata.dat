@@ -20,8 +20,6 @@
     Opsim_moonphase = float, 'moonphase'
     Opsim_obshistid = long, 'obshistid'
     Opsim_expmjd = float, 'expmjd'
-    Opsim_altitude = float, 'altitude'
-    Opsim_azimuth = float, 'azimuth'
 
 #Trim file information
 [STUB]
