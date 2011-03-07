@@ -3,31 +3,35 @@
     [[[POINT]]]
       raTrim = float
       decTrim = float
+      raTrim_deg = float
+      decTrim_deg = float
   [[SOLAR]]
     [[[MOVINGPOINT]]]
       raTrim = float
       decTrim = float
+      raTrim_deg = float
+      decTrim_deg = float
   [[EXTRAGALCTIC]]
     [[[SERSIC2D]]]
       raTrim = float
       decTrim = float
-      glon = float
-      glat = float
+      raTrim_deg = float
+      decTrim_deg = float
     [[[SERSIC2D_BULGE]]]
       raTrim = float
       decTrim = float
-      glon = float
-      glat = float
+      raTrim_deg = float
+      decTrim_deg = float
     [[[SERSIC2D_DISK]]]
       raTrim = float
       decTrim = float
-      glon = float
-      glat = float
+      raTrim_deg = float
+      decTrim_deg = float
     [[[POINT]]]
       raTrim = float
       decTrim = float
-      glon = float
-      glat = float
+      raTrim_deg = float
+      decTrim_deg = float
 
 
 [STUB]
@@ -35,3 +39,11 @@
     [[[POINT]]]
       raHelio = float
       decHelio = float
+      raTrim_deg = float
+      decTrim_deg = float
+
+[REFERENCECATALOG]
+  [[GALACTIC]]
+    [[[POINT]]]
+      ra_deg = float
+      dec_deg = float
