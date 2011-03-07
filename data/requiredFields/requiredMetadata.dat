@@ -24,3 +24,25 @@
 #Trim file information
 [STUB]
   Test1 = str, ''
+
+#Reference catalog
+[REFERENCECATALOG]
+  [[OPSIM361]]
+    Unrefracted_RA = float, 'fieldra'
+    Unrefracted_Dec = float, 'fielddec'
+    Unrefracted_RA_deg = float, 'fieldra'
+    Unrefracted_Dec_deg = float, 'fielddec'
+    Opsim_fieldradeg = float, 'fieldra'
+    Opsim_fielddecdeg = float, 'fielddec'
+    Opsim_moonra = float, 'moonra'
+    Opsim_moondec = float, 'moondec'
+    Opsim_rotskypos = float, 'rotskypos'
+    Opsim_rottelpos = float, 'rottelpos'
+    Opsim_filter = int, 'filter'
+    Opsim_rawseeing = float, 'rawseeing'
+    Opsim_sunalt = float, 'sunalt'
+    Opsim_moonalt = float, 'moonalt'
+    Opsim_dist2moon = float, 'dist2moon'
+    Opsim_moonphase = float, 'moonphase'
+    Opsim_obshistid = long, 'obshistid'
+    Opsim_expmjd = float, 'expmjd'

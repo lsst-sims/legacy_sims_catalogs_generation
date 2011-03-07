@@ -196,6 +196,8 @@
       id = long, 'objid'
       ra = float, 'ra'
       dec = float, 'decl'
+
+#test file information
 [TEST]
   [[GALACTIC]]
     [[[POINT]]]
@@ -232,6 +234,8 @@
       galacticExtinctionModel = str,"ext_model_d"
       galacticAv = float, 'av_d'
       galacticRv = float, 'av_d'
+
+#calibration file information
 [CALIB]
   [[GALACTIC]]
     [[[POINT]]]
@@ -246,6 +250,39 @@
       i = float,'imag'
       z = float,'zmag'
       y = float,'ymag'
+
+#object file information
 [OBJECT]
   [[GALACTIC]]
     [[[POINT]]]
+
+#reference catalog information
+[REFERENCECATALOG]
+  [[GALACTIC]]
+    [[[POINT]]]
+      id = long,'simobjid'
+      raJ2000 = float, 'ra*PI()/180.'
+      decJ2000 = float,'decl*PI()/180.'
+      glon = float,'gal_l*PI()/180.'
+      glat = float,'gal_b*PI()/180.'
+      sedFilename = str,'sedfilename'
+      redshift = float,'0.0'
+      properMotionRa = float,'(mudecl/(1000.*3600.))*PI()/180.'
+      properMotionDec = float,'(mura/(1000.*3600.))*PI()/180.'
+      galacticExtinctionModel = str,"'CCM'"
+      galacticAv = float,'ebv*3.1'
+      galacticRv = float,'3.1'
+      internalExtinctionModel = str,"'None'"
+      parallax = float,'parallax'
+      radialVelocity = float,'vr'
+      u = float,'umag'
+      g = float,'gmag'
+      r = float,'rmag'
+      i = float,'imag'
+      z = float,'zmag'
+      y = float,'ymag'
+      gSDSS = float,'sdssg'
+      rSDSS = float,'sdssr'
+  [[EXTRAGALACTIC]]
+    [[[ASSEMBLEDGALAXY]]]
+      id = long, 'id'
