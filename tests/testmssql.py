@@ -8,7 +8,7 @@ from lsst.sims.catalogs.generation.db import jobDB
 if __name__ == "__main__":
   csize = 10
   cattype = "TRIM"
-  myqdb = queryDB.queryDB(chunksize=csize,objtype="GALAXY_BULGE")
+  myqdb = queryDB.queryDB(chunksize=csize,objtype="AGN")
   ic = myqdb.getInstanceCatalogById(85748128, radiusdeg=.1)
   ic.makeTrimCoords()
   mUtils.trimGeneration.derivedTrimMetadata(ic)

@@ -87,7 +87,7 @@
   [[DISK]]
     table = 'Galaxy'
     ptype = 'SERSIC2D_DISK'
-    idkey = 'id'
+    idkey = 'galtileid'
     constraint = 'fluxnorm_disk is not NULL'
 
 [AGN]
@@ -96,7 +96,7 @@
   [[AGN]]
     table = 'Galaxy'
     ptype = 'POINT'
-    idkey = 'id'
+    idkey = 'galtileid'
     constraint = 'isagn > 0'
 
 [SSM]
