@@ -5,8 +5,8 @@
   [[GALACTIC]]
     [[[POINT]]]
       id = long,'simobjid'
-      ra = float, 'ra*PI()/180.'
-      dec = float,'decl*PI()/180.'
+      raJ2000 = float, 'ra*PI()/180.'
+      decJ2000 = float,'decl*PI()/180.'
       glon = float,'gal_l*PI()/180.'
       glat = float,'gal_b*PI()/180.'
       raOffset = float,'0.'
@@ -68,7 +68,7 @@
       decOffset = float, '0.0*PI()'
       magNorm = float, 'magnorm_bulge'
       fluxNorm = float, 'fluxnorm_bulge'
-      sedFilename = str,"''Burst.50E09.04Z.spec''"
+      sedFilename = str, 'sedname_bulge'
       majorAxis = float, 'a_b'
       minorAxis = float, 'b_b'
       positionAngle = float, 'pa_bulge'
@@ -94,7 +94,7 @@
       decOffset = float, '0.0*PI()'
       magNorm = float, 'magnorm_disk'
       fluxNorm = float, 'fluxnorm_disk'
-      sedFilename = str,"''Burst.50E09.04Z.spec''"
+      sedFilename = str, 'sedname_disk'
       majorAxis = float, 'a_d'
       minorAxis = float, 'b_d'
       positionAngle = float, 'pa_disk'
@@ -120,7 +120,7 @@
       decOffset = float, '0.0*PI()'
       magNorm = float, 'magnorm_agn'
       fluxNorm = float, 'fluxnorm_agn'
-      sedFilename = str,"''Burst.50E09.04Z.spec''"
+      sedFilename = str, 'sedname_agn'
       internalExtinctionModel = str,"''none''"
       redshift = float, 'redshift'
       shearXX = float, '0.0*PI()'
@@ -136,8 +136,8 @@
     [[[MOVINGPOINT]]]
       dbid = long, 'objid'
       id = long, '_objid'
-      ra = float, 'Ephemerides[thismjd]._ra'
-      dec = float, 'Ephemerides[thismjd]._dec'
+      raJ2000 = float, 'Ephemerides[thismjd]._ra'
+      decJ2000 = float, 'Ephemerides[thismjd]._dec'
       magNorm = float, 'Ephemerides[thismjd]._magImsim'
       sedFilename = str, '_sedname'
       redshift = float, '%%"0.0"'
@@ -184,16 +184,16 @@
   [[GALACTIC]]
     [[[POINT]]]
       id = long, 'objid'
-      ra = float, 'ra'
-      dec = float, 'decl'
+      raJ2000 = float, 'ra'
+      decJ2000 = float, 'decl'
 
 #test file information
 [TEST]
   [[GALACTIC]]
     [[[POINT]]]
       id = long,'id'
-      ra = float, 'ra'
-      dec = float,'decl'
+      raJ2000 = float, 'ra'
+      decJ2000 = float,'decl'
       glon = float,'gal_l'
       glat = float,'gal_b'
       gmag = float,'gmag'
@@ -232,8 +232,8 @@
   [[GALACTIC]]
     [[[POINT]]]
       id = long,'simobjid'
-      ra = float, 'ra*PI()/180.'
-      dec = float,'decl*PI()/180.'
+      raJ2000 = float, 'ra*PI()/180.'
+      decJ2000 = float,'decl*PI()/180.'
       glon = float,'gal_l*PI()/180.'
       glat = float,'gal_b*PI()/180.'
       u = float,'umag'
