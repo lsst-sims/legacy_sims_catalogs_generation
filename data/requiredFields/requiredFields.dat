@@ -38,7 +38,7 @@
   [[EXTRAGALACTIC]]
     [[[SERSIC2D]]]
       id = long, 'id'
-      galtileid = long,'%%"id+%i::bigint*%i::bigint"%(self.curtile["tid"], 25711071)'
+      galtileid = long,'galtileid'
       raJ2000 = float,'ra'
       decJ2000 = float,'dec'
       magNorm = float,'0.0::real'
