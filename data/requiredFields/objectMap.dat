@@ -79,7 +79,7 @@
   [[BULGE]]
     table = 'Galaxy'
     ptype = 'SERSIC2D_BULGE'
-    idkey = 'id'
+    idkey = 'galtileid'
     constraint = 'fluxnorm_bulge is not NULL'
 [GALAXY_DISK]
   formatas = 'SERSIC2D'
