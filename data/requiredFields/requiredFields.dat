@@ -54,9 +54,6 @@
       majorAxis = float, '0::real'
       minorAxis = float, '0::real'
       positionAngle = float, '0::real'
-      galacticExtinctionModel = str,"'CCM'"
-      galacticAv = float, '0.0::real'
-      galacticRv = float, '3.1::real'
       internalExtinctionModel = str,"'CCM'"
       internalAv = float, '0.0::real'
       internalRv = float, '3.1::real'
@@ -90,9 +87,6 @@
       properMotionDec = float, '0.0::real'
       parallax = float, '0.0::real'
       spatialmodel = str,"'sersic2D'"
-      galacticExtinctionModel = str, "'CCM'"
-      galacticAv = float, '0.0::real'
-      galacticRv = float, '3.1::real'
       radialVelocity = float, 'rad_vel'
     [[[SERSIC2D_DISK]]]
       id = long, 'id'
@@ -105,9 +99,6 @@
       properMotionDec = float, '0.0::real'
       parallax = float, '0.0::real'
       spatialmodel = str,"'sersic2D'"
-      galacticExtinctionModel = str,"'CCM'"
-      galacticAv = float, '0.0::real'
-      galacticRv = float, '3.1::real'
       radialVelocity = float, 'rad_vel'
       ra = float, '%%"long (spoint(dra*PI()/180.,ddec*PI()/180.) + strans(%f*PI()/180., %f*PI()/180.,0.,\'YZX\'))*180./PI()"%(-self.curtile["decmid"], self.curtile["ramid"])'
       dec = float, '%%"lat (spoint(dra*PI()/180.,ddec*PI()/180.) + strans(%f*PI()/180., %f*PI()/180.,0.,\'YZX\'))*180./PI()"%(-self.curtile["decmid"], self.curtile["ramid"])'
@@ -131,9 +122,6 @@
       properMotionDec = float, '0.0::real'
       parallax = float, '0.0::real'
       spatialmodel = str,"'point'"
-      galacticExtinctionModel = str,"'CCM'"
-      galacticAv = float, '0.0::real'
-      galacticRv = float,'3.1::real'
       internalExtinctionModel = float,"'None'"
       radialVelocity = float, 'rad_vel'
       ra = float, '%%"long (spoint(agnra*PI()/180.,agndec*PI()/180.) + strans(%f*PI()/180., %f*PI()/180.,0.,\'YZX\'))*180./PI()"%(-self.curtile["decmid"], self.curtile["ramid"])'
@@ -231,9 +219,6 @@
       diskFluxNorm = float, 'fluxnorm_disk'
       diskSedFilename = str,'lookupGalaxySedFromId(sedid_disk)'
       redshift = float, 'redshift'
-      galacticExtinctionModel = str,"ext_model_d"
-      galacticAv = float, 'av_d'
-      galacticRv = float, 'av_d'
 
 #calibration file information
 [CALIB]
