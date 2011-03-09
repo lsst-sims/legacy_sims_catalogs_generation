@@ -16,7 +16,7 @@ if __name__ == "__main__":
       ic.makeTrimCoords()
       mUtils.trimGeneration.derivedTrimMetadata(ic)
       ic.metadata.validateMetadata(cattype, myqdb.opsim) 
-      ic.metadata.writeMetadata("test.dat", cattype, myqdb.opsim,\
+      ic.metadata.writeMetadata("test_%s.dat"%objtype, cattype, myqdb.opsim,\
              newfile=True) 
       ic.validateData('TRIM')
       keys = ic.dataArray.keys()
@@ -24,7 +24,7 @@ if __name__ == "__main__":
         for k in keys:
            print ic.dataArray[k][row],
         print 
-      ic.writeCatalogData("test.dat", "TRIM", newfile = False)
+      ic.writeCatalogData("test_%s.dat"%objtype, "TRIM", newfile = False)
       ic = myqdb.getNextChunk()
       cnum = 0
       #while ic is not None:

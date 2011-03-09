@@ -27,14 +27,7 @@
       internalExtinctionModel = str,"'None'"
       parallax = float,'parallax'
       radialVelocity = float,'vr'
-      u = float,'umag'
-      g = float,'gmag'
-      r = float,'rmag'
-      i = float,'imag'
-      z = float,'zmag'
-      y = float,'ymag'
-      gSDSS = float,'sdssg'
-      rSDSS = float,'sdssr'
+      #variabilityParameters = str, 'varParamStr'
   [[EXTRAGALACTIC]]
     [[[SERSIC2D]]]
       id = long, 'id'
@@ -131,6 +124,7 @@
       parallax = float, '0.0*PI()'
       spatialmodel = str,"''point''"
       radialVelocity = float, 'rad_vel'
+      #variabilityParameters = str, 'varParamStr'
 
   [[SOLARSYSTEM]]
     [[[MOVINGPOINT]]]
