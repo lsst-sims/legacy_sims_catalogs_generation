@@ -1,10 +1,9 @@
-"""" 
+"""
 
 ljones
 
 $Id$
 
-(2/10/2010)
 
 This provides a way to generate ephemeride positions for a moving object, over a given set of ephemerides.
 Extends to multiple objects (with differing ephemeris dates). 

@@ -4,8 +4,6 @@ ljones, jmyers
 
 $Id$
 
-(4/1/2010) 
-
 MovingObject:
 This is a class to hold individual MovingObject information, which is made up of the following info:
  - an orbit (cometary orbital elements q/e/i/node/argPeri/timePeri/epoch) 
@@ -56,7 +54,7 @@ class MovingObject(DayMOPSObject):
         # Set up the ephemerides dictionary, which is currently empty.
         self.Ephemerides = {}
         # Set other values within the class.
-        # Set values for identifying object ID and object type (ssmId & NEO/MBA, etc)
+        # Set values for identifying object ID and object type (objid & NEO/MBA, etc)
         self._objid = objid
         self._objtype = objtype
         # Set values for predicting magnitudes.
@@ -154,14 +152,13 @@ class MovingObject(DayMOPSObject):
         # set ephemerides
         for j in range(len(mjdTaiList)):
                 eph = ephems[0][j]
-                dradt = eph[6]/n.cos(n.radians(eph[2]))
-                ddecdt = eph[7]                 
+                #  dradt = eph[6] - sky motion. Add /n.cos(n.radians(eph[2])) for RA coordinate motion.
                 self.Ephemerides[mjdTaiListStr[j]] = Ephemeris(mjdTai=mjdTaiList[j],
                                                             ra=eph[1], dec=eph[2],
                                                             magV=eph[3],
                                                             distance=eph[0],
-                                                            dradt=dradt, 
-                                                            ddecdt=ddecdt)
+                                                            dradt=eph[6], 
+                                                            ddecdt=eph[7])
         return
 
 #################
@@ -220,23 +217,26 @@ class Orbit(DayMOPSObject):
 
 class Ephemeris(DayMOPSObject):
     #dayMOPSObject provides integrated getters and setters if needed
-    def __init__(self, mjdTai, ra, dec, magV, filter=None,
-                 fluxnorm=None, magFilter=None, magImsim=None,
-                 dradt=None, ddecdt=None, distance=None, ddistancedt=None, 
+    def __init__(self, mjdTai, ra, dec, magV, distance=None,
+                 dradt=None, ddecdt=None, ddistancedt=None,
+                 magFilter=None, magErr=None, magImsim=None, 
+                 snr=None, astErr=None, filter=None,
                  solar_elongation=None, cart_x=None, cart_y=None, cart_z=None):
         """ Initialize ephemeris object. 
 
         Only ra/dec/v_mag are completely necessary, but other info appreciated."""
-        self.setEphem(mjdTai=mjdTai, ra=ra, dec=dec, magV=magV, 
-                      filter=filter, fluxnorm=fluxnorm, magFilter=magFilter, magImsim=magImsim,
-                      dradt=dradt, ddecdt=ddecdt, distance=distance, ddistancedt=ddistancedt, 
+        self.setEphem(mjdTai=mjdTai, ra=ra, dec=dec, magV=magV, distance=distance,
+                      dradt=dradt, ddecdt=ddecdt, ddistancedt=ddistancedt, 
+                      magFilter=magFilter, magErr=magErr, magImsim=magImsim,
+                      snr=snr, astErr=astErr, filter=filter,
                       solar_elongation=solar_elongation, 
                       cart_x=cart_x, cart_y=cart_y, cart_z=cart_z)
         return
 
-    def setEphem(self, mjdTai, ra, dec, magV, filter=None, 
-                 fluxnorm=None, magFilter=None, magImsim=None,
-                 dradt=None, ddecdt=None, distance=None, ddistancedt=None, 
+    def setEphem(self, mjdTai, ra, dec, magV, distance=None,
+                 dradt=None, ddecdt=None, ddistancedt=None,
+                 magFilter=None, magErr=None, magImsim=None, 
+                 snr=None, astErr=None, filter=None,
                  solar_elongation=None, cart_x=None, cart_y=None, cart_z=None):
         """Set or update ephemeris object data."""
         self._mjdTai = mjdTai
@@ -245,16 +245,15 @@ class Ephemeris(DayMOPSObject):
         self._dec = dec 
         # V mag is from the ephemeris calculation, uses H_v and G (comes from pyoorb).
         self._magV = magV
-        # These next three likely aren't set until calculating magnitudes. 
+        # These next values may not be set until calculating magnitudes.
         self._filter = filter
-        self._fluxnorm = fluxnorm
         self._magFilter = magFilter
-        # Set some error values, that are useful in catalogs.
+        # Holders for error values, that are useful in catalogs.
         self._astErr = None
         self._magErr = None
         self._snr = None
         self._magImsim = magImsim
-        # these are set by ephemeris generation
+        # Set by ephemeris generation
         self._dradt = dradt
         self._ddecdt = ddecdt
         self._distance = distance
