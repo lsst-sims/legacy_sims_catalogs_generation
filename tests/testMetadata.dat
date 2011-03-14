@@ -1,8 +1,23 @@
-#Metadata the needs to be returned by the db
-
-#Trim file information
-[TRIM]
-  SIM_SEED = long, 'expdate'
-  Unrefracted_RA = float, 'fieldradeg'
-  Unrefracted_Dec = float, 'fielddecdeg'
-  Opsim_moonra = float, 'moonra'
+SIM_SEED 28170303 
+Unrefracted_RA 0.027626 
+Unrefracted_Dec 0.003271 
+Unrefracted_RA_deg 1.58285320483 
+Unrefracted_Dec_deg 0.187414494787 
+Opsim_moonra 2.02449 
+Opsim_moondec 0.295744 
+Opsim_rotskypos 2.60042 
+Opsim_rottelpos 5.56622 
+Opsim_filter 1 
+Opsim_rawseeing 0.659847 
+Opsim_sunalt -0.349673 
+Opsim_moonalt -0.420853 
+Opsim_dist2moon 1.9762 
+Opsim_moonphase 79.6307 
+Opsim_obshistid 85748128 
+Opsim_expmjd 49679.045181 
+Unrefracted_Altitude 1.04091725621 
+Unrefracted_Azimuth 6.07721291131 
+Slalib_date 1994/11/23/0.045181 
+SIM_MINSOURCE 1 
+SIM_TELCONFIG 0 
+SIM_VISTIME 32.0 
