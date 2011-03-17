@@ -183,41 +183,58 @@ class MovingObjectList(object):
                 outputList.append(movingobj)        
         return MovingObjectList(outputList)
 
-    '''
-    def calcAllMags(self, filt, mjdTaiList, rootSEDdir, withErrors=True, fiveSigmaLimitingMag=None):
-        """ Calculate the magnitude of all objects in the movingObjectList """
-        """  - Given the filter, the mjd (to find the ephemeris info) and the root directory of SEDS/thruputs """
-        """ individual objects know their SED and their expected V magnitude """
-        # set up data needed to calculate magnitudes for each moving object
-        # to calculate magnitudes, need info from sed/bandpass (lsst_mags)
-        import lsst_mags as lm
+    def calcAllMags(self, filt, mjdTaiList, rootSEDdir, rootFILTERdir=None, withErrors=True, fiveSigmaLimitingMag=None):
+        """ Calculate the magnitude of all objects in the movingObjectList. 
+
+        Give the filter, the mjd (to find the ephemeris info) and the root directory of SEDS. Calculates magnitudes.
+        Individual objects already know their SED and their expected V magnitude (part of ephemeris info). """
+        # Set up data needed to calculate magnitudes for each moving object.
+        # First find location of lsst filter throughput curves, if not specified.
+        import os
+        if rootFILTERdir == None:
+            # (assumes throughputs is setup)
+            # Just use the default directory of the throughputs as this is probably correct.
+            rootFILTERdir = os.getenv("LSST_THROUGHPUTS_DEFAULT")
+        # Now rootFILTERdir should be defined. 
+        if rootFILTERdir == None:
+            raise Exception("Ack: rootFILTERdir is undefined and it seems that 'throughputs' is not setup.")
+        # Import Sed and Bandpass for calculating magnitudes. (assumes catalogs_measures is setup)
+        import lsst.sims.catalogs.measures.photometry.Sed as Sed
+        import lsst.sims.catalogs.measures.photometry.Bandpass as Bandpass
         # read in and set up filter files
-        if rootSEDdir != '':
-            rootSEDdir = rootSEDdir + "/"
         bandpass = {}
-        filterlist = [filt, 'V', 'imsim']
-        for filter in filterlist:
-            if filter == 'V':
-                filename = rootSEDdir + 'harris_V.dat'
-            elif filter=='imsim':
+        filterlist = ('V', 'imsim', filt)
+        for f in filterlist:
+            if f == 'V':
+                filename = os.path.join(rootSEDdir,'harris_V.dat')
+                # Instantiate and read the throughput file. 
+                bandpass[f] = Bandpass()
+                bandpass[f].readThroughput(filename)
+            elif f=='imsim':
                 filename = 'imsim'
+                bandpass[f] = Bandpass()
+                bandpass[f].imsimBandpass()
             else:
-                filename = rootSEDdir + 'final_' + filt
-            bandpass[filter] = lm.teleThruput(filename)
-        # read in and set up sed files 
+                filename = os.path.join(rootFILTERdir,'total_' + f + '.dat')
+                # Instantiate and read the throughput file. 
+                bandpass[f] = Bandpass()
+                bandpass[f].readThroughput(filename)
+        # read in and set up sed files - FIX this in the future (when more seds)
         sedtypes = ('C.dat', 'S.dat')
         sed={}
         sedmag = {}
+        sedcol = {}
         for sedfile in sedtypes:
             # read sed files
-            filename = rootSEDdir + sedfile
-            sed[sedfile] = lm.simObj(filename)
-            # set up magnitudes
+            filename = os.path.join(rootSEDdir, sedfile)
+            sed[sedfile] = Sed()
+            sed[sedfile].readSED_flambda(filename)
+            # set up magnitudes for color calculation.
             sedmag[sedfile] = {}
-            for filter in filterlist:
-               sedmag[sedfile][filter] = sed[sedfile].calcMag(bandpass[filter])
-            # BUT can improve this later if add phaseG(bandpass).
-
+            sedcol[sedfile] = {}
+            for f in filterlist:
+               sedmag[sedfile][f] = sed[sedfile].calcMag(bandpass[f])
+               sedcol[sedfile][f] = sedmag[sedfile][f] - sedmag[sedfile]['V']
         # set up mjdTaiListStr for access to ephemeris dictionaries
         movingobj = self._mObjects[0]
         mjdTaiListStr = []
@@ -225,7 +242,7 @@ class MovingObjectList(object):
             mjdTaiList = [mjdTaiList]
         for mjdTai in mjdTaiList:
             mjdTaiListStr.append(movingobj.mjdTaiStr(mjdTai))
-            # mjdTaiListStr will be the same for all objects
+            # mjdTaiListStr will be the same for all objects.
 
         # now loop through each object and assign appropriate magnitudes for this observation
         for movingobj in self._mObjects:
@@ -234,37 +251,19 @@ class MovingObjectList(object):
                 try:  # check ephemerides exist
                     movingobj.Ephemerides[mjdTaiStr]
                 except AttributeError:
-                    raise Exception, "Do not have an ephemeride on date %s" %(mjdTaiStr)
+                    raise Exception("Do not have an ephemeride on date %s" %(mjdTaiStr))
                 vmag = movingobj.Ephemerides[mjdTaiStr].getmagV()
                 sedname = movingobj.getsedname()
-                # add a little failsafe hack for SED failure
+                # Check if sedname in list of known seds.
                 if sed.has_key(sedname)==False:
-                    warning.warn("Found a SED not in movingObjectList calcAllMag's dictionary. Substituting C/S seds.")
-                    q = movingobj.Orbit.getq()
-                    e = movingobj.Orbit.gete()
-                    a = q/(1-e)
-                    if a<2:
-                        sedname = 'S.dat'
-                    elif a>4:
-                        sedname = 'C.dat'
-                    else:
-                        prob_c = 0.5*a-1
-                        chance = n.random.random()
-                        if chance<= prob_c:
-                            sedname = 'C.dat'
-                        else:
-                            sedname = 'S.dat'
-                    movingobj.setsedname(sedname)                    
-                # end of SED backup hack
+                    raise Exception("SED (%s) of moving object not in movingObjectList's directory." %(sedname))
                 # calculate magnitudes
-                fluxnorm = sed[sedname].calcFluxNorm(vmag, bandpass['V'])
-                # set fluxnorm in ephemeris
-                movingobj.Ephemerides[mjdTaiStr].setfluxnorm(fluxnorm)
-                # could also set dmag = vmag - sedmag[sedname]['V']
-                dmag = -2.5*n.log10(fluxnorm)
-                filtmag = sedmag[sedname][filt] + dmag
-                imsimmag = sedmag[sedname]['imsim'] + dmag
-                # set filter magnitude in ephemeris
+                filtmag = vmag + sedcol[sedname][filt]
+                imsimmag = vmag + sedcol[sedname]['imsim']
+                # set fluxnorm in ephemeris - not really needed presently.
+                #fluxnorm = sed[sedname].calcFluxNorm(vmag, bandpass['V'])
+                #movingobj.Ephemerides[mjdTaiStr].setfluxnorm(fluxnorm)
+                # set filter magnitude in ephemeris - needed.
                 movingobj.Ephemerides[mjdTaiStr].setmagFilter(filtmag)  
                 movingobj.Ephemerides[mjdTaiStr].setmagImsim(imsimmag)
                 # calculate errors in ra/dec/mag from magnitude/m5
@@ -285,7 +284,7 @@ class MovingObjectList(object):
                     movingobj.Ephemerides[mjdTaiStr].setmagErr(mag_error)
             # end of mjdTaiList loop
         return
-    '''
+
     def cutAllSNR(self, fiveSigmaLimitingMag, SNRcutoff, mjdTai):
         """calculate SNR for each object and create new moving object list of objects above the SNR cutoff """
         """ Given five sigma limiting mag for image and SNR cutoff """

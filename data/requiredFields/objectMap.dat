@@ -100,19 +100,19 @@
 
 [SSM]
   formatas = 'MOVINGPOINT'
-  component = 'SOLARSYSTEM'
+  component = 'SOLAR'
   [[EPHEMS]]
     table = 'Ephems'
     ptype = 'MOVINGPOINT'
     idkey = 'dbid'
-    constraint = "%%'obsdate between %f - 0.5 and %f + 0.5'%(self.expmjd, self.expmjd)"
+    constraint = 
 [ORBIT]
   formatas = 'ORBIT'
-  component = 'SOLARSYSTEM'
-  [[ORBIT0]]
+  component = 'SOLAR'
+  [[ORBITS]]
     table = 'Orbits'
     ptype = 'ORBIT'
-    idkey = 'id'
+    idkey = 'nokey'
     constraint =
 [METADATA]
   component = 'OPSIM361'

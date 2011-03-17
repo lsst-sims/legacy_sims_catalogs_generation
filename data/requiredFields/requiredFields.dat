@@ -9,25 +9,25 @@
       decJ2000 = float,'decl*PI()/180.'
       glon = float,'gal_l*PI()/180.'
       glat = float,'gal_b*PI()/180.'
-      raOffset = float,'0.'
-      decOffset = float,'0.'
+      raOffset = float,'CONVERT(float,0.)'
+      decOffset = float,'CONVERT(float,0.)'
       magNorm = float,'(-2.5*log(flux_scale)/log(10.)) - 18.402732642'
       fluxNorm = float,'flux_scale'
       sedFilename = str,'sedfilename'
-      redshift = float,'0.0'
-      shearXX = float,'0.0'
-      shearYY = float,'0.0'
-      magnification = float,'0.0'
+      redshift = float,'CONVERT(float,0.0)'
+      shearXX = float,'CONVERT(float,0.0)'
+      shearYY = float,'CONVERT(float,0.0)'
+      magnification = float,'CONVERT(float,0.0)'
       properMotionRa = float,'(mudecl/(1000.*3600.))*PI()/180.'
       properMotionDec = float,'(mura/(1000.*3600.))*PI()/180.'
       spatialmodel = str,"'point'"
       galacticExtinctionModel = str,"'CCM'"
-      galacticAv = float,'ebv*3.1'
-      galacticRv = float,'3.1'
+      galacticAv = float,'CONVERT(float,ebv*3.1)'
+      galacticRv = float,'CONVERT(float,3.1)'
       internalExtinctionModel = str,"'None'"
       parallax = float,'parallax'
       radialVelocity = float,'vr'
-      #variabilityParameters = str, 'varParamStr'
+      variabilityParameters = str, 'varParamStr'
   [[EXTRAGALACTIC]]
     [[[SERSIC2D]]]
       id = long, 'id'
@@ -124,11 +124,10 @@
       parallax = float, '0.0*PI()'
       spatialmodel = str,"''point''"
       radialVelocity = float, 'rad_vel'
-      #variabilityParameters = str, 'varParamStr'
+      variabilityParameters = str, 'varParamStr'
 
-  [[SOLARSYSTEM]]
+  [[SOLAR]]
     [[[MOVINGPOINT]]]
-      dbid = long, 'objid'
       id = long, '_objid'
       raJ2000 = float, 'Ephemerides[thismjd]._ra'
       decJ2000 = float, 'Ephemerides[thismjd]._dec'
@@ -142,9 +141,10 @@
       properMotionDec = float, 'Ephemerides[thismjd]._ddecdt'
       parallax = float, '%%"0.0"'
       radialVelocity = float, '%%"0.0"'
-      spatialmodel = float, "%%'point'"
-      galacticExtinctionModel = float, "%%'None'"
-      internalExtinctionModel = float, "%%'None'"
+      spatialmodel = float, "%%'\'movingpoint\''"
+      galacticExtinctionModel = float, "%%'\'none\''"
+      internalExtinctionModel = float, "%%'\'none\''"
+      variabilityParameters = str, "%%'None'"
     [[[ORBIT]]]
       id = long, 'objid'
       q = float, 'q'
@@ -156,10 +156,10 @@
       epoch = float, 'epoch'
       magHv = float, 'h_g'
       phaseGv = float, 'phasegv'
-      index = float, 'index'
+      idx = float, 'idx'
       n_par = float, 'n_par'
       moid = float, 'moid'
-      objtype = int, 'type'
+      objtype = int, 'otype'
       isVar = int, 'isvar'
       var_t0 = float, 't0'
       var_timescale = float, 'timescale'
