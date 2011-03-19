@@ -212,13 +212,13 @@
       agnDec = float, 'dec'
       bulgeMagNorm = float, 'magnorm_bulge'
       bulgeFluxNorm = float, 'fluxnorm_bulge'
-      bulgeSedFilename = str,'lookupGalaxySedFromId(sedid_bulge)'
+      bulgeSedFilename = str,'sedid_bulge'
       diskMagNorm = float, 'magnorm_disk'
       diskFluxNorm = float, 'fluxnorm_disk'
-      diskSedFilename = str,'lookupGalaxySedFromId(sedid_disk)'
+      diskSedFilename = str,'sedid_disk'
       agnMagNorm = float, 'magnorm_agn'
       agnFluxNorm = float, 'fluxnorm_agn'
-      agnSedFilename = str,'lookupGalaxySedFromId(sedid_disk)'
+      agnSedFilename = str,'sedname_agn'
       redshift = float, 'redshift'
 
 #calibration file information

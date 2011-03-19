@@ -71,7 +71,7 @@
   [[ASSEMBLEDGALAXY]]
     table = 'Galaxy'
     ptype = 'ASSEMBLEDGALAXY'
-    idkey = 'id'
+    idkey = 'galtileid'
     constraint = 
 [GALAXY_BULGE]
   formatas = 'SERSIC2D'
