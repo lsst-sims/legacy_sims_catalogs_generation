@@ -42,5 +42,17 @@
 [REFERENCECATALOG]
   [[GALACTIC]]
     [[[POINT]]]
-      ra_deg = float
-      dec_deg = float
+      uDerived = float
+      gDerived = float
+      rDerived = float
+      iDerived = float
+      zDerived = float
+      yDerived = float
+  [[EXTRAGALACTIC]]
+    [[[ASSEMBLEDGALAXY]]]
+      uDerived = float
+      gDerived = float
+      rDerived = float
+      iDerived = float
+      zDerived = float
+      yDerived = float
