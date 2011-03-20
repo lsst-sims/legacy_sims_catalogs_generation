@@ -212,18 +212,10 @@
       agnDec = float, 'dec'
       bulgeMagNorm = float, 'magnorm_bulge'
       bulgeFluxNorm = float, 'fluxnorm_bulge'
-<<<<<<< .mine
       bulgeSedFilename = str,'sedname_bulge'
-=======
-      bulgeSedFilename = str,'sedid_bulge'
->>>>>>> .r20139
       diskMagNorm = float, 'magnorm_disk'
       diskFluxNorm = float, 'fluxnorm_disk'
-<<<<<<< .mine
       diskSedFilename = str,'sedname_disk'
-=======
-      diskSedFilename = str,'sedid_disk'
->>>>>>> .r20139
       agnMagNorm = float, 'magnorm_agn'
       agnFluxNorm = float, 'fluxnorm_agn'
       agnSedFilename = str,'sedname_agn'
