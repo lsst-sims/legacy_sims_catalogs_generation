@@ -27,3 +27,7 @@
     id = 11
   [[EPHEMS]]
     id = 12
+  [[LENS]]
+    id = 13
+  [[IMAGE]]
+    id = 14

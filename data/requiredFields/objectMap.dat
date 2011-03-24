@@ -97,6 +97,22 @@
     ptype = 'POINT'
     idkey = 'galtileid'
     constraint = 'fluxNorm < 99'
+[GLENS]
+  formatas = 'SERSIC2D'
+  component = 'EXTRAGALACTIC'
+  [[LENS]]
+    table = 'LENS'
+    ptype = 'SERSIC2D_BULGE'
+    idkey = 'id'
+    constraint = ''
+[IMAGE]
+  formatas = 'POINT'
+  component = 'EXTRAGALACTIC'
+  [[IMAGE]]
+    table = 'IMAGE'
+    ptype = 'POINT'
+    idkey = 'id'
+    constraint = ''
 
 [SSM]
   formatas = 'MOVINGPOINT'
