@@ -30,11 +30,11 @@ if __name__ == '__main__':
     catalogType = instanceCat.jobAllocatorCatalogType
 
     t0 = time.time()
-    print jobIdStr, 'makeHelio...'
-    instanceCat.makeHelio()
+    # RRG:  I'm told makeHelio is no longer needed.
+    #print jobIdStr, 'makeHelio...'
+    #instanceCat.makeHelio()
     print jobIdStr, 'makeTrimCoords...'
     instanceCat.makeTrimCoords()
-    print jobIdStr, 'validateData...'
     instanceCat.validateData(catalogType)
     print 'makeHelio, makeTrimCoords, and validateData: %i' % (time.time() - t0)
 

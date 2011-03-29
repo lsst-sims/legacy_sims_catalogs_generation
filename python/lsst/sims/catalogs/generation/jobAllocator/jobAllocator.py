@@ -110,10 +110,11 @@ class JobAllocator:
                 t, self.chunkSize)
             myQDB = queryDB.queryDB(chunksize=self.chunkSize, objtype=t)
             t0 = time.time()
+            print '   ...got catalog, took %i sec.' % (time.time() - t0)
             instanceCat = myQDB.getInstanceCatalogById(obsHistID)
             # This code adds some needed fields to the metadata
             mUtils.trimGeneration.derivedTrimMetadata(instanceCat)
-            print '   ...got catalog, took %i sec.' % (time.time() - t0)
+            instanceCat.makeTrimCoords()
             os.system('free -m')
             # Deep copy so we can store this after instanceCat disappears
             if curMD == None:
@@ -146,13 +147,21 @@ class JobAllocator:
                 else:
                     print 'Querying DB for next chunk.'
                     instanceCat = myQDB.getNextChunk()
+                    if instanceCat:
+                        # This code adds some needed fields to the metadata
+                        mUtils.trimGeneration.derivedTrimMetadata(instanceCat)
+                        instanceCat.makeTrimCoords()
                     print '   ...took %i sec.' % (time.time() - t0)
                     os.system('free -m')
                     numCats += 1
 
-        curMD.validateMetadata(catalogType, myQDB.opsim)
+        # RRG:  For now this must be disabled
+        #curMD.validateMetadata(catalogType, myQDB.opsim)
         mFName = self.WorkDir + 'metaData%s_%s.ja' % (nFN, catalogType)
         curMD.writeMetadata(mFName, catalogType, myQDB.opsim, newfile=True)
+
+        # Finished with queryDB; clean up nicely.
+        myQDB.closeSession()
         
         # Now fire off the jobs
         for i in range(len(jobNums)):
@@ -177,13 +186,14 @@ class JobAllocator:
             tryNum = 0
             t0 = self.executionDBManager.queryState(jobId)
             while t0 != 'JAFinished':
-                print 'JA sees state for %s: %s' % (jobId, t0)
+                print 'Try %i: JA sees state for %s: %s' % (tryNum, jobId, t0)
                 time.sleep(1)
-                if tryNum > 3000:
+                # Give it up to a day
+                if tryNum > 60 * 60 * 24:
                     raise RuntimeError, '*** Job not started: %s' % jobId
                 tryNum += 1
                 t0 = self.executionDBManager.queryState(jobId)
-            print 'JA sees state for %s: %s' % (jobId, t0)
+            print 'Finished (Try %i):  JA sees state for %s: %s' % (tryNum, jobId, t0)
 
         # Finally, merge the output trim file
         trimFile = self.WorkDir + 'trim%s_%s.ja' % (nFN, catalogType)
