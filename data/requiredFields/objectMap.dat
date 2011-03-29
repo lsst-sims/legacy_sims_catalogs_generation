@@ -24,7 +24,14 @@
     ptype = 'POINT'
     idkey = 'id'
     constraint =
-
+[EASTEREGGS]
+  formatas = 'POINT'
+  component = 'GALACTIC'
+  [[ASTROMEASTEREGGS]]
+    table = 'AstromEggs'
+    ptype = 'POINT'
+    idkey = 'id'
+    constraint =
 [CALIBSTARS]
   formatas = 'POINT'
   component = 'GALACTIC'

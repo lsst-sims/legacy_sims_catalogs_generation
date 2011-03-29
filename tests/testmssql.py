@@ -9,14 +9,14 @@ if __name__ == "__main__":
   csize = 10000
   cattype = "TRIM"
   objtypes = ['ALLSTARS', 'GALAXY_BULGE', 'GALAXY_DISK', 'AGN', 'SSM',\
-          'GLENS', 'IMAGE']
+          'GLENS', 'IMAGE', 'EASTEREGGS']
   varobj = ['ALLSTARS', 'AGN', 'IMAGE']
   warnings.simplefilter('ignore', category=exceptions.UserWarning)
   for objtype in objtypes:
       outfile = "test_%s.dat"%(objtype)
       print "doing %s"%(objtype)
       myqdb = queryDB.queryDB(chunksize=csize,objtype=objtype)
-      ic = myqdb.getInstanceCatalogById(85748128, radiusdeg=0.1)
+      ic = myqdb.getInstanceCatalogById(85520357, radiusdeg=0.1)
       ic.makeTrimCoords()
       if objtype in varobj:
           ic.applyVariability()
