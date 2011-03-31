@@ -104,32 +104,36 @@ class JobAllocator:
         allOutputFiles = []; curMD = None
         self.metaDataManager.reset()
         os.system('free -m')
-        for t in queryTypes:
-            if t not in useTypes: useTypes.append(t)
+        for objectType in queryTypes:
+            if objectType not in useTypes: useTypes.append(t)
             print 'Getting first %s instance catalog of size %i...' % (
-                t, self.chunkSize)
-            myQDB = queryDB.queryDB(chunksize=self.chunkSize, objtype=t)
+                objectType, self.chunkSize)
+            myQDB = queryDB.queryDB(
+                chunksize=self.chunkSize, objtype=objectType)
             t0 = time.time()
             print '   ...got catalog, took %i sec.' % (time.time() - t0)
             instanceCat = myQDB.getInstanceCatalogById(obsHistID)
-            # This code adds some needed fields to the metadata
-            mUtils.trimGeneration.derivedTrimMetadata(instanceCat)
-            instanceCat.makeTrimCoords()
-            os.system('free -m')
-            # Deep copy so we can store this after instanceCat disappears
-            if curMD == None:
-                curMD = copy.deepcopy(instanceCat.metadata)
-            else:
-                curMD.mergeMetadata(instanceCat.metadata)
+
             numCats = 0
-            while instanceCat:
+            if instanceCat != None:
+                # This code adds some needed fields to the metadata
+                mUtils.trimGeneration.derivedTrimMetadata(instanceCat)
+                os.system('free -m')
+                # Deep copy so we can store this after instanceCat disappears
+                if curMD == None:
+                    curMD = copy.deepcopy(instanceCat.metadata)
+                else:
+                    curMD.mergeMetadata(instanceCat.metadata)
+
+            while instanceCat != None:
                 t0 = self.WorkDir + 'catData%s_%i.ja' % (nFN, jobNum)
                 t1 = self.WorkDir + 'catData%s_%i.p' % (nFN, jobNum)
-                print 'Now pickling query type: %s' % t
+                print 'Now pickling query type: %s' % objectType
                 # Store job data files in instance
                 instanceCat.jobAllocatorDataFile = t0
                 allOutputFiles.append(t0) # Order is important
-                instanceCat.jobAllocatorCatalogType = catalogType 
+                instanceCat.jobAllocatorCatalogType = catalogType
+                instanceCat.jobAllocatorObjectType = objectType
                 cPickle.dump(instanceCat, open(t1, 'w'))
                 jobTypes.append(catalogType)
                 jobNums.append(jobNum)
@@ -147,7 +151,7 @@ class JobAllocator:
                 else:
                     print 'Querying DB for next chunk.'
                     instanceCat = myQDB.getNextChunk()
-                    if instanceCat:
+                    if instanceCat != None:
                         # This code adds some needed fields to the metadata
                         mUtils.trimGeneration.derivedTrimMetadata(instanceCat)
                         instanceCat.makeTrimCoords()
