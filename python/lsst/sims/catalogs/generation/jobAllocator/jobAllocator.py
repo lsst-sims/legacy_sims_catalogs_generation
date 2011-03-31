@@ -105,7 +105,7 @@ class JobAllocator:
         self.metaDataManager.reset()
         os.system('free -m')
         for objectType in queryTypes:
-            if objectType not in useTypes: useTypes.append(t)
+            if objectType not in useTypes: useTypes.append(objectType)
             print 'Getting first %s instance catalog of size %i...' % (
                 objectType, self.chunkSize)
             myQDB = queryDB.queryDB(
