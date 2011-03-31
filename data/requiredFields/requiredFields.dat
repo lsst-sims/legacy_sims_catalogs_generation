@@ -24,7 +24,7 @@
       galacticExtinctionModel = str,"'CCM'"
       galacticAv = float,'CONVERT(float,ebv*3.1)'
       galacticRv = float,'CONVERT(float,3.1)'
-      internalExtinctionModel = str,"'None'"
+      internalExtinctionModel = str,"'none'"
       parallax = float,'parallax'
       radialVelocity = float,'vrad'
       variabilityParameters = str, 'varParamStr'
@@ -35,7 +35,7 @@
       raJ2000 = float,'ra'
       decJ2000 = float,'dec'
       magNorm = float,'0.0::real'
-      sedFilename = str,"'None'"
+      sedFilename = str,"'none'"
       redshift = float,'redshift'
       shearXX = float,'0.0::real'
       shearYY = float,'0.0::real'
@@ -185,18 +185,25 @@
 [TEST]
   [[GALACTIC]]
     [[[POINT]]]
-      id = long,'id'
-      raJ2000 = float, 'ra'
-      decJ2000 = float,'decl'
-      glon = float,'gal_l'
-      glat = float,'gal_b'
-      gmag = float,'gmag'
+      id = long,'simobjid'
+      raJ2000 = float, 'ra*PI()/180.'
+      decJ2000 = float,'decl*PI()/180.'
+      glon = float,'gal_l*PI()/180.'
+      glat = float,'gal_b*PI()/180.'
+      magNorm = float,'(-2.5*log(flux_scale)/log(10.)) - 18.402732642'
       fluxNorm = float,'flux_scale'
       sedFilename = str,'sedfilename'
-      properMotionRa = float,'mudecl'
-      properMotionDec = float,'mura'
+      properMotionRa = float,'(mudecl/(1000.*3600.))*PI()/180.'
+      properMotionDec = float,'(mura/(1000.*3600.))*PI()/180.'
+      umag = float,'umag'
+      gmag = float,'gmag'
+      rmag = float,'rmag'
+      imag = float,'imag'
+      zmag = float,'zmag'
+      ymag = float,'ymag'
       parallax = float,'parallax'
       radialVelocity = float,'vr'
+      ebv = float,'ebv'
       isvar = long,'isvar'
   [[EXTRAGALACTIC]]
     [[[ASSEMBLEDGALAXY]]]
@@ -258,7 +265,7 @@
       galacticExtinctionModel = str,"'CCM'"
       galacticAv = float,'ebv*3.1'
       galacticRv = float,'3.1'
-      internalExtinctionModel = str,"'None'"
+      internalExtinctionModel = str,"'none'"
       parallax = float,'parallax'
       radialVelocity = float,'vr'
       fluxNorm = float,'flux_scale'

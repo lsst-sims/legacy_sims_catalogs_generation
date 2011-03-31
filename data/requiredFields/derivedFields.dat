@@ -39,6 +39,10 @@
       raHelio = float
       decHelio = float
 
+[TEST]
+  [[GALACTIC]]
+    [[[POINT]]]
+
 [REFERENCECATALOG]
   [[GALACTIC]]
     [[[POINT]]]
