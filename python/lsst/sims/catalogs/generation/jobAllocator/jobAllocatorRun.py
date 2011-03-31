@@ -3,7 +3,7 @@ import jobAllocatorStubs
 from lsst.sims.catalogs.generation.db import jobDB as jobDB
 
 # RRG:  Layering violation; should go in InstanceCat
-varTypes = ['ALLSTARS', 'BHBSTARS', 'MSRGBSTARS', 'WDSTARS',
+varTypes = ['ALLSTARS', 'BHBSTARS', 'MSSTARS', 'WDSTARS',
             'RRLYSTARS', 'AGN', 'IMAGE']
 
 if __name__ == '__main__':
