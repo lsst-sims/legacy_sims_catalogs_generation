@@ -36,9 +36,9 @@
 
 [TEST]
   [[POINT]]
-    attributes = id, raJ2000, decJ2000, glon, glat, umag, gmag, rmag, imag, zmag, ymag, properMotionRa, properMotionDec, parallax, radialVelocity, ebv
-    conv = x,math.degrees(x),math.degrees(x),math.degrees(x),math.degrees(x),x,x,x,x,x,x,math.degrees(x)*360000., math.degrees(x)*360000, x, x, x
-    fmt = "%d %.9g %.9g %.9g %.9g %.9g %.9g %.9g %.9g %.9g %.9g %.9g %.9g %.9g %.9g %.9g"
+    attributes = id, raJ2000, decJ2000, glon, glat, umag, gmag, rmag, imag, zmag, ymag, sdssu, sdssg, sdssr, sdssi, sdssz, absmr, distance, properMotionRa, properMotionDec, parallax, radialVelocity, ebv
+    conv = x,math.degrees(x),math.degrees(x),math.degrees(x),math.degrees(x),x,x,x,x,x,x,x,x,x,x,x,x,x,math.degrees(x)*360000., math.degrees(x)*360000, x, x, x
+    fmt = "%d %.9g %.9g %.9g %.9g %.9g %.9g %.9g %.9g %.9g %.9g %.9g %.9g %.9g %.9g %.9g %.9g %.9g %.9g %.9g %.9g %.9g %.9g"
   [[ASSEMBLEDGALAXY]]
     attributes = galtileid,raJ2000,decJ2000
     conv = x,x,x
