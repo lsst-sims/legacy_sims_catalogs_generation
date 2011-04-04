@@ -6,9 +6,9 @@ setenv CAT_SHARE_DATA /share/pogo3/krughoff/shared/
 #setup -r /share/home/rgibson/sims/catalogs/generation/trunk/
 setup -r /share/home/rgibson/sims/catalogs/measures/trunk/
 setup -r /share/home/rgibson/sims/catalogs/generation/branches/mssql/
-setup numpy
-setup throughputs
+setup -r /share/pogo3/rgibson/aASAGN/simCode/throughputs/
 setup subversion
-setup python
 setup pyfits
+unsetup numpy
+setup python
 
