@@ -108,11 +108,13 @@ class JobAllocator:
             if objectType not in useTypes: useTypes.append(objectType)
             print 'Getting first %s instance catalog of size %i...' % (
                 objectType, self.chunkSize)
+            t0 = time.time()
             myQDB = queryDB.queryDB(
                 chunksize=self.chunkSize, objtype=objectType)
+            print '   ...setting up QDB took %i sec.' % (time.time() - t0)
             t0 = time.time()
-            print '   ...got catalog, took %i sec.' % (time.time() - t0)
             instanceCat = myQDB.getInstanceCatalogById(obsHistID)
+            print '   ...and getting catalog took %i sec.' % (time.time() - t0)
 
             numCats = 0
             if instanceCat != None:
@@ -130,11 +132,13 @@ class JobAllocator:
                 t1 = self.WorkDir + 'catData%s_%i.p' % (nFN, jobNum)
                 print 'Now pickling query type: %s' % objectType
                 # Store job data files in instance
+                time0 = time.time()
                 instanceCat.jobAllocatorDataFile = t0
                 allOutputFiles.append(t0) # Order is important
                 instanceCat.jobAllocatorCatalogType = catalogType
                 instanceCat.jobAllocatorObjectType = objectType
                 cPickle.dump(instanceCat, open(t1, 'w'))
+                print '   ...pickling took %i sec.' % (time.time() - time0)
                 jobTypes.append(catalogType)
                 jobNums.append(jobNum)
                 jobPickleFiles.append(t1)
@@ -144,18 +148,17 @@ class JobAllocator:
 
                 # *** RRG:  Free up memory somehow here for instanceCat...
                 del(instanceCat); instanceCat = None
-                t0 = time.time()
                 os.system('free -m')
                 if self.maxCats >= 0 and (numCats + 1) >= self.maxCats:
                     instanceCat = None
                 else:
                     print 'Querying DB for next chunk.'
+                    t0 = time.time()
                     instanceCat = myQDB.getNextChunk()
+                    print '   ...took %i sec.' % (time.time() - t0)
                     if instanceCat != None:
                         # This code adds some needed fields to the metadata
                         mUtils.trimGeneration.derivedTrimMetadata(instanceCat)
-                        instanceCat.makeTrimCoords()
-                    print '   ...took %i sec.' % (time.time() - t0)
                     os.system('free -m')
                     numCats += 1
 
@@ -191,7 +194,7 @@ class JobAllocator:
             t0 = self.executionDBManager.queryState(jobId)
             while t0 != 'JAFinished':
                 print 'Try %i: JA sees state for %s: %s' % (tryNum, jobId, t0)
-                time.sleep(1)
+                time.sleep(10)
                 # Give it up to a day
                 if tryNum > 60 * 60 * 24:
                     raise RuntimeError, '*** Job not started: %s' % jobId
