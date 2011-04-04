@@ -33,6 +33,9 @@ if __name__ == '__main__':
     dataFile = instanceCat.jobAllocatorDataFile
     catalogType = instanceCat.jobAllocatorCatalogType
     objectType = instanceCat.jobAllocatorObjectType
+    print 'dataFile:', dataFile
+    print 'catalogType:', catalogType
+    print 'objectType:', objectType
 
     # RRG:  I'm told makeHelio is no longer needed.
     #print jobIdStr, 'makeHelio...'
