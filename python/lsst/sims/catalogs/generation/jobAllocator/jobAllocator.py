@@ -39,6 +39,7 @@ class JobAllocator:
         self.maxCats = maxCats
         if self.maxCats < 1 and self.chunkSize < 100000:
             raise RuntimeError, '*** You are not allowed to swamp the network.'
+        self.QueryOnly = queryOnly
         print 'Leaving JA __init()__'
         
     def reset(self):
@@ -172,7 +173,7 @@ class JobAllocator:
         myQDB.closeSession()
         
         # For debug mode, don't start the clients
-        if queryOnly == True:
+        if self.QueryOnly == True:
             print 'Full time for this file: %i sec' % (time.time()-fullTimeStart)
             print 'DEBUG:  Finished, no client processes started.'
 
