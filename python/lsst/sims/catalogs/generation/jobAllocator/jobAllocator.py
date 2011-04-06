@@ -22,7 +22,7 @@ class JobAllocator:
     fileName = None #???
     directory = None #???
     
-    def __init__(self, workDir='/local/tmp/jobAllocator/', chunkSize=1000, maxCats=-1):
+    def __init__(self, workDir='/local/tmp/jobAllocator/', chunkSize=1000, maxCats=-1, queryOnly=False):
         print 'In JA __init__()'
         print 'Creating JA with chunkSize: %i, maxCats: %i' % (chunkSize, maxCats)
         self.nJobs = None
@@ -93,6 +93,7 @@ class JobAllocator:
 
     def doOneCatalogType(self, catalogType, queryTypes, obsHistID):
         #nFN = self.getNextGoodFileNum()
+        fullTimeStart = time.time()
         self.executionDBManager = jobDB.JobState()
         t0 = self.executionDBManager.getJobId()
 
@@ -170,6 +171,11 @@ class JobAllocator:
         # Finished with queryDB; clean up nicely.
         myQDB.closeSession()
         
+        # For debug mode, don't start the clients
+        if queryOnly == True:
+            print 'Full time for this file: %i sec' % (time.time()-fullTimeStart)
+            print 'DEBUG:  Finished, no client processes started.'
+
         # Now fire off the jobs
         for i in range(len(jobNums)):
             jobId = '%s_%i' % (nFN, jobNums[i])
@@ -211,6 +217,7 @@ class JobAllocator:
             t0 = 'cat %s >> %s' % (f, trimFile)
             print t0
             os.system(t0)
+        print 'Full time for this file: %i sec' % (time.time()-fullTimeStart)
         print 'Finished catting trim file: ', trimFile
 
         
