@@ -137,6 +137,8 @@
       shearXX = float, '%%"0.0"'
       shearYY = float, '%%"0.0"'
       magnification = float, '%%"0.0"'
+      raOffset = float, '%%"0.0"'
+      decOffset = float, '%%"0.0"'
       properMotionRa = float, 'Ephemerides[thismjd]._dradt'
       properMotionDec = float, 'Ephemerides[thismjd]._ddecdt'
       parallax = float, '%%"0.0"'
