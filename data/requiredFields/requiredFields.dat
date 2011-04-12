@@ -47,9 +47,9 @@
       majorAxis = float, '0::real'
       minorAxis = float, '0::real'
       positionAngle = float, '0::real'
-      internalExtinctionModel = str,"'CCM'"
-      internalAv = float, '0.0::real'
-      internalRv = float, '3.1::real'
+      internalExtinctionModel = str, "''CCM''"
+      internalAv = float,'CONVERT(float,0.0)'  
+      internalRv = float,'CONVERT(float,3.1)'
       radialVelocity = float, '0.0::real'
       fluxNorm =float,  None
     [[[SERSIC2D_BULGE]]]
@@ -309,3 +309,13 @@
       agnFluxNorm = float, 'fluxnorm_agn'
       agnSedFilename = str,'sedname_agn'
       redshift = float, 'redshift'
+      internalExtinctionModel = str,"ext_model_d"
+      internalAv = float, 'av_d'
+      internalRv = float, 'rv_d'
+      u = float,'u_ab'
+      g = float,'g_ab'
+      r = float,'r_ab'
+      i = float,'i_ab'
+      z = float,'z_ab'
+      y = float,'y_ab'
+  
