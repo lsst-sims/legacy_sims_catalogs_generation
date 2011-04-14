@@ -4,7 +4,7 @@ import sys
 
 js = jobDB.JobState()
 jobid = js.getJobId()
-print jobid
+print jobid.getOwner(), jobid.getId()
 js.updateState("mykey","my value")
 print js.queryState("mykey")
 js.updateState("mykey","now my value")

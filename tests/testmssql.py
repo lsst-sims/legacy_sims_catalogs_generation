@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-import pyoorb,math,sys
+import pyoorb,math,sys,time
 import exceptions,warnings
 import lsst.sims.catalogs.measures.utils as mUtils
 from lsst.sims.catalogs.generation.db import queryDB
@@ -10,18 +10,18 @@ if __name__ == "__main__":
       obsid = int(sys.argv[1])
   else:
       obsid = 85520357
-  csize = 100000
+  csize = 50000
   cattype = "TRIM"
-  #objtypes = ['GALAXY_BULGE', 'GALAXY_DISK', 'AGN', 'ALLSTARS', 'SSM',\
-  #        'GLENS', 'IMAGE', 'EASTEREGGS']
-  objtypes = ['SSM']
+  #objtypes = ['ALLSTARS', 'SSM', 'GLENS', 'IMAGE', 'EASTEREGGS',
+  #        'GALAXY_BULGE', 'GALAXY_DISK', 'AGN']
+  objtypes = ['ALLSTARS', 'GALAXY_DISK']
   varobj = ['ALLSTARS', 'AGN', 'IMAGE']
   warnings.simplefilter('ignore', category=exceptions.UserWarning)
   for objtype in objtypes:
       outfile = "test_%i_%s.dat"%(obsid,objtype)
       print "doing %s"%(objtype)
       myqdb = queryDB.queryDB(chunksize=csize,objtype=objtype)
-      ic = myqdb.getInstanceCatalogById(obsid, radiusdeg=0.5)
+      ic = myqdb.getInstanceCatalogById(obsid, radiusdeg=2.)
       cnum = 0
       while ic is not None:
           ic.makeTrimCoords()
