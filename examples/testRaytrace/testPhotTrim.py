@@ -5,11 +5,11 @@ import random
 from lsst.sims.catalogs.measures.photometry.Bandpass import *
 from lsst.sims.catalogs.measures.photometry.Sed import *
 from lsst.sims.catalogs.measures.photometry.EBV import *
-from lsst.sims.catalogs.measures.photometry.Magnitudes import *
 from lsst.sims.catalogs.measures.astrometry.Astrometry import *
 from lsst.sims.catalogs.measures.utils.catalogGeneration import *
 from lsst.sims.catalogs.measures.utils.trimGeneration import *
 import os
+import re
 import copy
 import numpy
 
@@ -60,7 +60,7 @@ class testPhotTrim (object):
             otype = flds[12]
             if otype != "sersic2D":
                 continue
-            id = int(flds[1])
+            id = float(flds[1])
             magNorm = float(flds[4])
             spec = flds[5]
             redshift = float(flds[6])
@@ -104,23 +104,23 @@ class testPhotTrim (object):
             otype = flds[12]
             if otype != "point":
                 continue
-            id = int(flds[1])
+            id = float(flds[1])
             magNorm = float(flds[4])
             spec = flds[5]
             av = float(flds[14])
             sed = Sed()
             self.outdata['id'].append(id)
             if re.search("kurucz", spec):
-              sed.readSED_flambda(self.sdata+"/"+spec+".gz")
+              sed.readSED_flambda(self.spath+"/"+spec+".gz")
             else:
-              sed.readSED_flambda(self.sdata+"/"+spec)
+              sed.readSED_flambda(self.spath+"/"+spec)
             fluxNorm = sed.calcFluxNorm(magNorm, self.imsimband)
             sed.multiplyFluxNorm(fluxNorm)
             a, b = sed.setupCCMab()
             sed.addCCMDust(a, b, A_v=av)
             line = {'flux':None, 'mag':None}
-            mag = sed.calcMag(self.bands[n])
-            flux = sed.calcADU(self.bands[n], gain=1.)
+            mag = sed.calcMag(self.bands[k])
+            flux = sed.calcADU(self.bands[k], gain=1.)
             line['mag'] = mag
             line['flux'] = flux
             self.outdata[k].append(line)
@@ -143,5 +143,5 @@ if __name__ == "__main__":
     centfile = sys.argv[2]
     outfile = sys.argv[3]
     tpt = testPhotTrim(infile,centfile,outfile)
-    tpt.mkGalPhot()
+    tpt.mkStarPhot()
     tpt.printComp()
