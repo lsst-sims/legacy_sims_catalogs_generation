@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-import pyoorb,math,sys,tarfile,os
+import pyoorb,math,sys,tarfile,os,shutil
 from copy import deepcopy
 import exceptions,warnings
 import lsst.sims.catalogs.measures.utils as mUtils
@@ -10,21 +10,27 @@ def writeJobEvent(je, event, description=''):
         if event == 'start':
             je.registerTaskStart()
         elif event == 'stop':
-            je.registerTastStop()
+            je.registerTaskStop()
         else:
             je.registerEvent(event, eventdescription=description)
 
-def mvFiles(repodir, obsid, files, je = None):
+def mvFiles(repodir, basedir, arcroot, je = None):
     if not os.path.exists(repodir):
         os.makedirs(repodir)
-    writeJobEvent(je, "MoveFiles", "Moving files for obsid %i"%(obsid))
-    tar = tarfile.open(os.path.join(repodir,"obsid%i.tar.gz"%(obsid)), "w:gz")
-    for file in files:
-        tar.add(file)
-        writeJobEvent(je, "MoveFiles", "Added file %s"%(file))
+    writeJobEvent(je, "MoveFiles", "Moving files for to %s"%(arcroot))
+    tar = tarfile.open(os.path.join(repodir,"%s.tar.gz"%(arcroot)), "w:gz")
+    tar.add(basedir, arcname=arcroot)
+    writeJobEvent(je, "MoveFiles", "Added file %s"%(basedir))
     tar.close()
+
+def cleanUpDirs(dirs, je = None):
+    if os.path.exists(dirs):
+        shutil.rmtree(dirs)
+        writeJobEvent(je, "RemoveDirs", "Cleaned up by deleting %s"%(dirs))
+    else:
+        writeJobEvent(je, "RemoveDirs", "Directory %s does not exist"%(dirs))
        
-def runTrim(csize, obsid, radius=2.1, outdir='.', repodir=None, je=None):
+def runTrim(csize, obsid, radius=2.1, outdir='.', repodir=None, je=None, compress=True, cleanup=False):
     if repodir is None:
         repodir = outdir
     meta = None
@@ -36,16 +42,21 @@ def runTrim(csize, obsid, radius=2.1, outdir='.', repodir=None, je=None):
             'GLENS', 'IMAGE', 'EASTEREGGS']
     varobj = ['ALLSTARS', 'AGN', 'IMAGE']
     warnings.simplefilter('ignore', category=exceptions.UserWarning)
-    metaOutfile = os.path.join(outdir,"obsid%i"%(obsid),"metadata_%i.dat"%(obsid))
-    outPath = os.path.join(outdir,"obsid%i"%(obsid),"pops")
-    if not os.path.exists(outPath):
-        os.makedirs(outPath)
-    writeJobEvent(je, 'MakeDirs', 'Made output directories %s'%(outPath))
+    arcroot = "obsid%i"%(obsid)
+    outBase = os.path.join(outdir, arcroot)
+    if cleanup:
+        cleanUpDirs(outBase, je)
+    subdir = "pops"
+    popsPath = os.path.join(outBase, subdir)
+    if not os.path.exists(popsPath):
+        os.makedirs(popsPath)
+    writeJobEvent(je, 'MakeDirs', 'Made output directories %s'%(popsPath))
+    files = []
 
     for objtype in objtypes:
         writeJobEvent(je, 'Object:%s'%(objtype), 'Doing %s out of: %s'%(objtype, ",".join(objtypes)))
-
-        outfile = os.path.join(outPath,"trim_%i_%s.dat"%(obsid,objtype))
+        filename = "trim_%i_%s.dat"%(obsid,objtype)
+        outfile = os.path.join(popsPath,filename)
         myqdb = queryDB.queryDB(chunksize=csize,objtype=objtype)
         ic = myqdb.getInstanceCatalogById(obsid, radiusdeg=radius)        
         if opsimid is None:
@@ -56,7 +67,10 @@ def runTrim(csize, obsid, radius=2.1, outdir='.', repodir=None, je=None):
             ic.makeTrimCoords()
             writeJobEvent(je, 'MakeTrim', 'Made trim coords for chunk #%i'%(cnum))
             if cnum == 0:
-                files.append(outfile)
+                if compress:
+                    files.append(os.path.join(subdir,filename)+".gz")
+                else:
+                    files.append(os.path.join(subdir,filename))
                 mUtils.trimGeneration.derivedTrimMetadata(ic)
                 if meta is None:
                     meta = deepcopy(ic.metadata)
@@ -68,7 +82,7 @@ def runTrim(csize, obsid, radius=2.1, outdir='.', repodir=None, je=None):
             ic.validateData('TRIM')
             numRec = len(ic.dataArray[ic.dataArray.keys()[0]])
             if cnum == 0:
-                ic.writeCatalogData(outfile, "TRIM", newfile = True)
+                ic.writeCatalogData(outfile, "TRIM", newfile = True, compress=compress)
                 writeJobEvent(je, 'WriteChunk', 'Wrote first chunk of length %i'%(numRec))
             else:
                 ic.writeCatalogData(outfile, "TRIM", newfile = False)
@@ -77,7 +91,11 @@ def runTrim(csize, obsid, radius=2.1, outdir='.', repodir=None, je=None):
             cnum += 1
         myqdb.closeSession()
     meta.validateMetadata(cattype, opsimid)
-    meta.writeMetadata(metaOutfile, cattype, opsimid, newfile=True)
-    files.append(metaOutfile)
-    writeJobEvent(je, 'WriteMetadata', 'Wrote metadata to %s'%(outfile))
-    mvFiles(repodir, obsid, files, je)
+    metaOutfile = os.path.join(outBase,"metadata_%i.dat"%(obsid))
+    meta.writeMetadata(metaOutfile, cattype, opsimid, newfile=True, filelist=files, compress=False)
+    #files.append(os.path.join("obsid%i"%(obsid),"metadata_%i.dat"%(obsid)))
+    writeJobEvent(je, 'WriteMetadata', 'Wrote metadata to %s'%(metaOutfile))
+    mvFiles(repodir, outBase, arcroot, je=je)
+    if cleanup:
+        cleanUpDirs(outBase, je)
+    writeJobEvent(je, 'stop')
