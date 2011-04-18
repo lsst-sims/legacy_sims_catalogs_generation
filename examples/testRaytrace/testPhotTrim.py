@@ -42,8 +42,9 @@ class testPhotTrim (object):
             flds = l.rstrip().split()
             if flds[0].startswith("Source") or int(flds[1]) == 0:
                 continue
-            data[int(flds[0])] = {'photons':int(flds[1]), 'x':float(flds[2]),
-                    'y':float(flds[3])}
+            #data[int(flds[0])] = {'photons':int(flds[1]), 'x':float(flds[2]),
+            #        'y':float(flds[3])}
+            data[float(flds[0])] = {'photons':int(flds[1]), 'x':float(flds[2]), 'y':float(flds[3])}
         return data
 
     def mkGalPhot(self):
@@ -111,7 +112,8 @@ class testPhotTrim (object):
             sed = Sed()
             self.outdata['id'].append(id)
             if re.search("kurucz", spec):
-              sed.readSED_flambda(self.spath+"/"+spec+".gz")
+              #sed.readSED_flambda(self.spath+"/"+spec+".gz")
+              sed.readSED_flambda(self.spath+"/"+spec)
             else:
               sed.readSED_flambda(self.spath+"/"+spec)
             fluxNorm = sed.calcFluxNorm(magNorm, self.imsimband)
