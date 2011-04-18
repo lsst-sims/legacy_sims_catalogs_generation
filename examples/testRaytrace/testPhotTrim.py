@@ -14,7 +14,7 @@ import copy
 import numpy
 
 class testPhotTrim (object):
-    def __init__(self, trimfilename, centfilename, outfile, donum = None):
+    def __init__(self, metafile, trimfilename, centfilename, outfile, donum = None):
         self.datadir = os.environ.get("SIMS_DATA_DIR")
 
         self.tpath = os.getenv('LSST_THROUGHPUTS_DEFAULT')
@@ -26,6 +26,7 @@ class testPhotTrim (object):
             self.bands[k].readThroughput(os.path.join(self.tpath, "total_%s.dat"%k))
         self.imsimband = Bandpass()
         self.imsimband.imsimBandpass()
+        self.mfile = metafile
         self.tfile = trimfilename
         self.ofile = outfile
         self.outdata = {'id':[],'u':[], 'g':[], 'r':[], 'i':[], 'z':[],
@@ -42,13 +43,11 @@ class testPhotTrim (object):
             flds = l.rstrip().split()
             if flds[0].startswith("Source") or int(flds[1]) == 0:
                 continue
-            #data[int(flds[0])] = {'photons':int(flds[1]), 'x':float(flds[2]),
-            #        'y':float(flds[3])}
             data[float(flds[0])] = {'photons':int(flds[1]), 'x':float(flds[2]), 'y':float(flds[3])}
         return data
 
     def mkGalPhot(self):
-        ifh = open(self.tfile)
+        ifh = open(self.mfile)
         lnum = 0
         k = None
         for l in ifh:
@@ -56,12 +55,18 @@ class testPhotTrim (object):
             if l.startswith("Opsim_filter"):
                 self.filter = self.filtmap[int(flds[1])]
                 k = self.filter
+        ifh.close()
+        ifh = open(self.tfile)
+        for l in ifh:
+            flds = l.rstrip().split()
             if not flds[0] == "object":
                 continue
             otype = flds[12]
             if otype != "sersic2D":
                 continue
             id = float(flds[1])
+            if not self.centdata.has_key(id):
+                continue
             magNorm = float(flds[4])
             spec = flds[5]
             redshift = float(flds[6])
@@ -92,7 +97,7 @@ class testPhotTrim (object):
         ifh.close()
 
     def mkStarPhot(self):
-        ifh = open(self.tfile)
+        ifh = open(self.mfile)
         lnum = 0
         k = None
         for l in ifh:
@@ -100,19 +105,24 @@ class testPhotTrim (object):
             if l.startswith("Opsim_filter"):
                 self.filter = self.filtmap[int(flds[1])]
                 k = self.filter
+        ifh.close()
+        ifh = open(self.tfile)
+        for l in ifh:
+            flds = l.rstrip().split()
             if not flds[0] == "object":
                 continue
             otype = flds[12]
             if otype != "point":
                 continue
             id = float(flds[1])
+            if not self.centdata.has_key(id):
+                continue
             magNorm = float(flds[4])
             spec = flds[5]
             av = float(flds[14])
             sed = Sed()
             self.outdata['id'].append(id)
             if re.search("kurucz", spec):
-              #sed.readSED_flambda(self.spath+"/"+spec+".gz")
               sed.readSED_flambda(self.spath+"/"+spec)
             else:
               sed.readSED_flambda(self.spath+"/"+spec)
@@ -138,12 +148,13 @@ class testPhotTrim (object):
         ofh.close()
 
 if __name__ == "__main__":
-    if not len(sys.argv) == 4:
-        print "usage: testPhotTrim.py trimfile centroidfile outputfile"        
+    if not len(sys.argv) == 5:
+        print "usage: testPhotTrim.py metafile trimfile centroidfile outputfile"        
         quit()
-    infile = sys.argv[1]
-    centfile = sys.argv[2]
-    outfile = sys.argv[3]
-    tpt = testPhotTrim(infile,centfile,outfile)
+    metafile = sys.argv[1]
+    infile = sys.argv[2]
+    centfile = sys.argv[3]
+    outfile = sys.argv[4]
+    tpt = testPhotTrim(metafile,infile,centfile,outfile)
     tpt.mkStarPhot()
     tpt.printComp()
