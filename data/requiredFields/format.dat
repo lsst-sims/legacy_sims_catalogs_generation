@@ -12,7 +12,7 @@
   [[MOVINGPOINT]]
     attributes = id,appendint,raTrim,decTrim,magNorm,sedFilename,redshift,shearXX,shearYY,magnification,raOffset,decOffset,spatialmodel,properMotionRa,properMotionDec,galacticExtinctionModel,internalExtinctionModel 
     fmt = "object %d.%i %.9g %.9g %.9g %s %.9g %.9g %.9g %.9g %.9g %.9g %s %.9g %.9g %s %s"
-    conv = x,x,math.degrees(x),math.degrees(x),x,x,x,x,x,x,math.degrees(x),math.degrees(x),x,math.degrees(x),math.degrees(x),x,x
+    conv = x,x,math.degrees(x),math.degrees(x),x,x,x,x,x,x,math.degrees(x),math.degrees(x),x,x,x,x,x
 #id,raHelio,decHelio,magNorm,sedFilename,redshift,shearXX,shearYY,magnification,properMotionRa,properMotionDec,spatialmodel,galacticExtinctionModel,internalExtinctionModel "object {0[0]:d} {0[1]:g} {0[2]:g} {0[3]:g} {0[4]:s} {0[5]:g} {0[6]:g} {0[7]:g} {0[8]:g} {0[9]:g} {0[10]:g} {0[11]:s} {0[12]:s} {0[13]:s}"
 
   [[SERSIC2D]]
@@ -53,7 +53,9 @@
 
   [[ASSEMBLEDGALAXY]]
     attributes = id, raJ2000, decJ2000,uDerived,gDerived,rDerived,iDerived,zDerived,yDerived,redshift
-    conv = x, math.degrees(x), math.degrees(x), x, x, x, x, x, x, x
-    fmt = "%d %.9g %.9g %.9g %.9g %.9g %.9g %.9g %.9g %.9g "
+
+    conv = x, math.degrees(x), math.degrees(x), x, x, x, x, x, x, x, x, x, x, x, x, x
+    fmt = "%d %.9g %.9g %.9g %.9g %.9g %.9g %.9g %.9g %.9g"
+
 
 
