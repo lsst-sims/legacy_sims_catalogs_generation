@@ -85,7 +85,7 @@ def runTrim(csize, obsid, radius=2.1, outdir='.', repodir=None, je=None, compres
                 ic.writeCatalogData(outfile, "TRIM", newfile = True, compress=compress)
                 writeJobEvent(je, 'WriteChunk', 'Wrote first chunk of length %i'%(numRec))
             else:
-                ic.writeCatalogData(outfile, "TRIM", newfile = False)
+                ic.writeCatalogData(outfile, "TRIM", newfile = False, compress=compress)
                 writeJobEvent(je, 'WriteChunk', 'Wrote chunk #%i of length %i'%(cnum,numRec))
             ic = myqdb.getNextChunk()
             cnum += 1
