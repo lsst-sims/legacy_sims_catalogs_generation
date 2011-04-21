@@ -106,8 +106,8 @@
   [[SOLAR]]
     [[[MOVINGPOINT]]]
       id = long, '_objid'
-      raJ2000 = float, 'Ephemerides[thismjd]._ra'
-      decJ2000 = float, 'Ephemerides[thismjd]._dec'
+      raJ2000 = float, 'Ephemerides[thismjd]._ra*math.pi/180.'
+      decJ2000 = float, 'Ephemerides[thismjd]._dec*math.pi/180.'
       magNorm = float, 'Ephemerides[thismjd]._magImsim'
       sedFilename = str, '_sedname'
       redshift = float, '%%"0.0"'
@@ -116,8 +116,10 @@
       magnification = float, '%%"0.0"'
       raOffset = float, '%%"0.0"'
       decOffset = float, '%%"0.0"'
-      properMotionRa = float, 'Ephemerides[thismjd]._dradt'
-      properMotionDec = float, 'Ephemerides[thismjd]._ddecdt'
+      properMotionRa = float, '%%"0.0"'
+      properMotionDec = float, '%%"0.0"'
+      velRa = float, 'Ephemerides[thismjd]._dradt*math.pi/180.'
+      velDec = float, 'Ephemerides[thismjd]._ddecdt*math.pi/180.'
       parallax = float, '%%"0.0"'
       radialVelocity = float, '%%"0.0"'
       spatialmodel = float, "%%'\'movingpoint\''"

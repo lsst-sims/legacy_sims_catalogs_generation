@@ -87,7 +87,7 @@
     table = 'Galaxy'
     ptype = 'SERSIC2D_BULGE'
     idkey = 'galtileid'
-    constraint = 'fluxNorm < 99'
+    constraint = 'sedFilename is not NULL'
 [GALAXY_DISK]
   formatas = 'SERSIC2D'
   component = 'EXTRAGALACTIC'
@@ -95,7 +95,7 @@
     table = 'Galaxy'
     ptype = 'SERSIC2D_DISK'
     idkey = 'galtileid'
-    constraint = 'fluxNorm < 99'
+    constraint = 'sedFilename is not NULL'
 [AGN]
   formatas = 'POINT'
   component = 'EXTRAGALACTIC'
@@ -103,7 +103,7 @@
     table = 'Galaxy'
     ptype = 'POINT'
     idkey = 'galtileid'
-    constraint = 'fluxNorm < 99'
+    constraint = 'sedFilename is not NULL'
 [GLENS]
   formatas = 'SERSIC2D'
   component = 'EXTRAGALACTIC'
