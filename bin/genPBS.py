@@ -11,7 +11,7 @@ def writeFile(fh, obshistid):
 #PBS -j oe
 #PBS -o /share/pogo3/krughoff/pbsout/%i.out
 #PBS -e /share/pogo3/krughoff/pbsout/%i.err
-#PBS -l walltime=12:00:00
+#PBS -l walltime=60:00:00
 #PBS -l nodes=1:ppn=1
 #PBS -l pmem=1000MB
 #PBS -q default
