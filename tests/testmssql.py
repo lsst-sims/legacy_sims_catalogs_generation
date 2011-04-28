@@ -9,19 +9,18 @@ if __name__ == "__main__":
   if len(sys.argv) == 2:
       obsid = int(sys.argv[1])
   else:
-      obsid = 85520357
+      obsid = 88533591
   csize = 50000
   cattype = "TRIM"
-  #objtypes = ['ALLSTARS', 'SSM', 'GLENS', 'IMAGE', 'EASTEREGGS',
-  #        'GALAXY_BULGE', 'GALAXY_DISK', 'AGN']
-  objtypes = ['ALLSTARS', 'GALAXY_DISK']
+  objtypes = ['ALLSTARS', 'SSM', 'GLENS', 'IMAGE', 'EASTEREGGS',
+          'GALAXY_BULGE', 'GALAXY_DISK', 'AGN']
   varobj = ['ALLSTARS', 'AGN', 'IMAGE']
   warnings.simplefilter('ignore', category=exceptions.UserWarning)
   for objtype in objtypes:
       outfile = "test_%i_%s.dat"%(obsid,objtype)
       print "doing %s"%(objtype)
       myqdb = queryDB.queryDB(chunksize=csize,objtype=objtype)
-      ic = myqdb.getInstanceCatalogById(obsid, radiusdeg=2.)
+      ic = myqdb.getInstanceCatalogById(obsid, radiusdeg=.1)
       cnum = 0
       while ic is not None:
           ic.makeTrimCoords()
