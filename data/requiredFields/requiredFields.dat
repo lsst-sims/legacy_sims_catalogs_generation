@@ -29,6 +29,32 @@
       radialVelocity = float,'vrad'
       variabilityParameters = str, 'varParamStr'
   [[EXTRAGALACTIC]]
+    [[[SERSIC2D]]]
+      id = long, 'id'
+      galtileid = long, 'galtileid'
+      raJ2000 = float, 'ra'
+      decJ2000 = float, 'dec'
+      raOffset = float, '0.0*PI()'
+      decOffset = float, '0.0*PI()'
+      magNorm = float, 'magnorm_bulge'
+      fluxNorm = float, 'fluxnorm_bulge'
+      sedFilename = str, 'sedname_bulge'
+      majorAxis = float, 'a_b'
+      minorAxis = float, 'b_b'
+      positionAngle = float, 'pa_bulge'
+      sindex = float, 'bulge_n'
+      internalExtinctionModel = str,"ext_model_b"
+      internalAv = float, 'av_b'
+      internalRv = float, 'rv_b'
+      redshift = float, 'redshift'
+      shearXX = float, '0.0*PI()'
+      shearYY = float, '0.0*PI()'
+      magnification = float, '0.0*PI()'
+      properMotionRa = float, '0.0*PI()'
+      properMotionDec = float, '0.0*PI()'
+      parallax = float, '0.0*PI()'
+      spatialmodel = str,"'sersic2D'"
+      radialVelocity = float, 'rad_vel'
     [[[SERSIC2D_BULGE]]]
       id = long, 'id'
       galtileid = long, 'galtileid'
