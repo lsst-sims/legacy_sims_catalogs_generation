@@ -1,16 +1,19 @@
 import pyoorb
+import time
 import lsst.sims.catalogs.measures.photometry.Variability as variability
 import numpy
 
 def getParams(filename):
     fh = open(filename)
     parr = []
-    names = fh.readline().rstrip().split(",")
+    names = fh.readline().strip().split(",")
+    string_flds = ("varMethodName", "filename", "lcfilename", "sedfilename",
+            "lcfile", "spectrumname")
     for l in fh:
         params = {}
         flds = l.rstrip().split(",")
         for name, fld in zip(names,flds):
-            if name == "varMethodName" or name == "filename":
+            if name in string_flds:
                 params[name] = fld
             else:
                 params[name] = float(fld)
@@ -18,22 +21,75 @@ def getParams(filename):
     return parr
 
 if __name__ == "__main__": 
-    startmjd = 50000.
-    endmjd = 65000.
-    steps = 1500.
-
+    startmjd = 51000.
+    endmjd = 51200.
+    steps = 4800
+    var = variability.Variability(cache=False)
+    mjds = numpy.linspace(startmjd, endmjd, steps)
+    arr = getParams("mflare.dat")
+    '''
+    for a in arr:
+        fhout = open("lcs/mflare_%i.out"%(a['varsimobjid']),"w")
+        t0 = time.time()
+        dmags = eval("var.%s(a, mjds)"%(a['varMethodName']))
+        line = []
+        fhout.write("#MJD,u,g,r,i,z,y\n")
+        for k in a:
+            line.append("%s:%s"%(k,str(a[k])))
+        fhout.write("#"+",".join(line)+"\n")
+        print time.time() - t0
+        for i in range(steps):
+            line = [mjds[i], dmags['u'][i], dmags['g'][i], dmags['r'][i], dmags['i'][i],\
+                    dmags['z'][i], dmags['y'][i]]
+            fhout.write(",".join([str(el) for el in line])+"\n")
+        fhout.close()
+    '''
     var = variability.Variability(cache=True)
     mjds = numpy.linspace(startmjd, endmjd, steps)
+    arr = getParams("microlens.dat")
+    for a in arr:
+        fhout = open("lcs/microlens_%i.out"%(a['varsimobjid']),"w")
+        dmags = eval("var.%s(a, mjds)"%(a['varMethodName']))
+        line = []
+        fhout.write("#MJD,u,g,r,i,z,y\n")
+        for k in a:
+            line.append("%s:%s"%(k,str(a[k])))
+        fhout.write("#"+",".join(line)+"\n")
+        for i in range(steps):
+            line = [mjds[i], dmags['u'][i], dmags['g'][i], dmags['r'][i], dmags['i'][i],\
+                    dmags['z'][i], dmags['y'][i]]
+            fhout.write(",".join([str(el) for el in line])+"\n")
+        fhout.close()
+
+    arr = getParams("eb.dat")
+    for a in arr:
+        fhout = open("lcs/eb_%i.out"%(a['varsimobjid']),"w")
+        dmags = eval("var.%s(a, mjds)"%(a['varMethodName']))
+        line = []
+        fhout.write("#MJD,u,g,r,i,z,y\n")
+        for k in a:
+            line.append("%s:%s"%(k,str(a[k])))
+        fhout.write("#"+",".join(line)+"\n")
+        for i in range(steps):
+            line = [mjds[i], dmags['u'][i], dmags['g'][i], dmags['r'][i], dmags['i'][i],\
+                    dmags['z'][i], dmags['y'][i]]
+            fhout.write(",".join([str(el) for el in line])+"\n")
+        fhout.close()
+
     arr = getParams("agn.dat")
     mag_o = 20.
     for a in arr: 
-        fhout = open("agn_%i.out"%(a['varsimobjid']),"w")
+        fhout = open("lcs/agn_%i.out"%(a['varsimobjid']),"w")
         dmags = eval("var.%s(a, mjds)"%(a['varMethodName']))
-        fhout.write("#MJD,u,uerr,g,gerr,r,rerr,i,ierr,z,zerr,y,yerr\n")
+        line = []
+        fhout.write("#MJD,u,g,r,i,z,y\n")
+        for k in a:
+            line.append("%s:%s"%(k,str(a[k])))
+        fhout.write("#"+",".join(line)+"\n")
         for i in range(steps):
-            line = [mjds[i], dmags['u'][i]+mag_o, 0.01, dmags['g'][i]+mag_o, 0.01,\
-                    dmags['r'][i]+mag_o, 0.01, dmags['i'][i]+mag_o, 0.01,\
-                    dmags['z'][i]+mag_o, 0.01, dmags['y'][i]+mag_o, 0.01]
+            line = [mjds[i], dmags['u'][i]+mag_o, dmags['g'][i]+mag_o,\
+                    dmags['r'][i]+mag_o, dmags['i'][i]+mag_o,\
+                    dmags['z'][i]+mag_o, dmags['y'][i]+mag_o]
             fhout.write(",".join([str(el) for el in line])+"\n")
         fhout.close()
         mag_o += 0.04
@@ -41,12 +97,16 @@ if __name__ == "__main__":
         
     arr = getParams("rrly.dat")
     for a in arr:
-        fhout = open("rrly_%i.out"%(a['varsimobjid']),"w")
+        fhout = open("lcs/rrly_%i.out"%(a['varsimobjid']),"w")
         dmags = eval("var.%s(a, mjds)"%(a['varMethodName']))
+        line = []
+        fhout.write("#MJD,u,g,r,i,z,y\n")
+        for k in a:
+            line.append("%s:%s"%(k,str(a[k])))
+        fhout.write("#"+",".join(line)+"\n")
         for i in range(steps):
             line = [mjds[i], dmags['u'][i], dmags['g'][i], dmags['r'][i], dmags['i'][i],\
                     dmags['z'][i], dmags['y'][i]]
             fhout.write(",".join([str(el) for el in line])+"\n")
         fhout.close()
-
 

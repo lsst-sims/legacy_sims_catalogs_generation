@@ -12,9 +12,10 @@ if __name__ == "__main__":
       obsid = 88533591
   csize = 50000
   cattype = "TRIM"
-  objtypes = ['ALLSTARS', 'SSM', 'GLENS', 'IMAGE', 'EASTEREGGS',
-          'GALAXY_BULGE', 'GALAXY_DISK', 'AGN']
-  varobj = ['ALLSTARS', 'AGN', 'IMAGE']
+ # objtypes = ['ALLSTARS', 'SSM', 'GLENS', 'IMAGE', 'EASTEREGGS',
+ #         'GALAXY_BULGE', 'GALAXY_DISK', 'AGN']
+  objtypes = ['MSSTARS', 'WDSTARS', 'BHBSTARS', 'RRLYSTARS']
+  varobj = ['MSSTARS', 'WDSTARS', 'BHBSTARS', 'RRLYSTARS', 'AGN', 'IMAGE']
   warnings.simplefilter('ignore', category=exceptions.UserWarning)
   for objtype in objtypes:
       outfile = "test_%i_%s.dat"%(obsid,objtype)

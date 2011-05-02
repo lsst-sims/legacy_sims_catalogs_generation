@@ -32,6 +32,14 @@
     ptype = 'POINT'
     idkey = 'id'
     constraint =
+[EBSTARS]
+  formatas = 'POINT'
+  component = 'GALACTIC'
+  [[EBSTARS]]
+    table = 'EBSTARS'
+    ptype = 'POINT'
+    idkey = 'id'
+    constraint =
 [CALIBSTARS]
   formatas = 'POINT'
   component = 'GALACTIC'

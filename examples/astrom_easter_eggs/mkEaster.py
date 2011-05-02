@@ -33,6 +33,7 @@ class makeEaster (object):
                     continue
                 else:
                     line[name] = flds[ind]
+
             magNorm, fluxNorm = self.getSpecNorms(self.specmap[line['sed']],\
                     float(line['appmag']), line['filtstr'])
             glon, glat = Astrometry().equatorialToGalactic([float(line['ra'])],\
@@ -47,7 +48,7 @@ class makeEaster (object):
             try:
                 line['id'] = self.eggs[-1]['id'] + 1
             except:
-                line['id'] = 0
+                line['id'] = 303 
             self.eggs.append(line)
 
     def getSpecNorms(self, sedfile, mag, filtstr):
@@ -76,7 +77,7 @@ class makeEaster (object):
         return mags
 
     def writeEasterFile(self):
-        fh = open("EasterEggs.out", 'w')
+        fh = open("EasterEggs2.out", 'w')
         fh.write(",".join([el for el in self.fields])+"\n")
         for egg in self.eggs:
             fh.write(",".join([str(egg[el]) for el in self.fields])+"\n")
