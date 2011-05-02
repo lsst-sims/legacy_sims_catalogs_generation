@@ -14,8 +14,8 @@ if __name__ == "__main__":
   cattype = "TRIM"
  # objtypes = ['ALLSTARS', 'SSM', 'GLENS', 'IMAGE', 'EASTEREGGS',
  #         'GALAXY_BULGE', 'GALAXY_DISK', 'AGN']
-  objtypes = ['MSSTARS', 'WDSTARS', 'BHBSTARS', 'RRLYSTARS']
-  varobj = ['MSSTARS', 'WDSTARS', 'BHBSTARS', 'RRLYSTARS', 'AGN', 'IMAGE']
+  objtypes = ['EASTEREGGS','EBSTARS', 'MSSTARS', 'WDSTARS', 'BHBSTARS', 'RRLYSTARS']
+  varobj = ['EBSTARS','MSSTARS', 'WDSTARS', 'BHBSTARS', 'RRLYSTARS', 'AGN', 'IMAGE']
   warnings.simplefilter('ignore', category=exceptions.UserWarning)
   for objtype in objtypes:
       outfile = "test_%i_%s.dat"%(obsid,objtype)
