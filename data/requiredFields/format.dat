@@ -47,7 +47,7 @@
 
 [REFERENCECATALOG]
   [[POINT]]    
-    attributes = id, raJ2000, decJ2000, glat, glon, sedFilename, uDerived, gDerived, rDerived, iDerived, zDerived, yDerived, properMotionRa, properMotionDec, parallax, radialVelocity, isVar
+    attributes = galtileid, raJ2000, decJ2000, glat, glon, sedFilename, uDerived, gDerived, rDerived, iDerived, zDerived, yDerived, properMotionRa, properMotionDec, parallax, radialVelocity, isVar
     conv = x, math.degrees(x), math.degrees(x), math.degrees(x), math.degrees(x), x, x, x, x, x, x, x, math.degrees(x)*3600000., math.degrees(x)*3600000., x , x, x
     fmt = "%d %.9g %.9g %.9g %.9g %s %.9g %.9g %.9g %.9g %.9g %.9g %.9g %.9g %.9g %.9g %d"
 
