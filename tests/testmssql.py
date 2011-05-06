@@ -14,14 +14,14 @@ if __name__ == "__main__":
   cattype = "TRIM"
  # objtypes = ['ALLSTARS', 'SSM', 'GLENS', 'IMAGE', 'EASTEREGGS',
  #         'GALAXY_BULGE', 'GALAXY_DISK', 'AGN']
-  objtypes = ['EASTEREGGS','EBSTARS', 'MSSTARS', 'WDSTARS', 'BHBSTARS', 'RRLYSTARS']
-  varobj = ['EBSTARS','MSSTARS', 'WDSTARS', 'BHBSTARS', 'RRLYSTARS', 'AGN', 'IMAGE']
+  objtypes = ['EASTEREGGS','CEPHEIDSTARS','EBSTARS', 'WDSTARS']
+  varobj = ['CEPHEIDSTARS','EBSTARS','MSSTARS', 'WDSTARS', 'BHBSTARS', 'RRLYSTARS', 'AGN', 'IMAGE']
   warnings.simplefilter('ignore', category=exceptions.UserWarning)
   for objtype in objtypes:
       outfile = "test_%i_%s.dat"%(obsid,objtype)
       print "doing %s"%(objtype)
       myqdb = queryDB.queryDB(chunksize=csize,objtype=objtype)
-      ic = myqdb.getInstanceCatalogById(obsid, radiusdeg=.1)
+      ic = myqdb.getInstanceCatalogById(obsid, radiusdeg=2.1)
       cnum = 0
       while ic is not None:
           ic.makeTrimCoords()

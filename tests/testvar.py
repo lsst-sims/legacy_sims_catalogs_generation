@@ -44,8 +44,23 @@ if __name__ == "__main__":
             fhout.write(",".join([str(el) for el in line])+"\n")
         fhout.close()
     '''
+
+    arr = getParams("bh_microlens.dat")
+    for a in arr:
+        fhout = open("lcs/bh_microlens_%i.out"%(a['varsimobjid']),"w")
+        dmags = eval("var.%s(a, mjds)"%(a['varMethodName']))
+        line = []
+        fhout.write("#MJD,u,g,r,i,z,y\n")
+        for k in a:
+            line.append("%s:%s"%(k,str(a[k])))
+        fhout.write("#"+",".join(line)+"\n")
+        for i in range(steps):
+            line = [mjds[i], dmags['u'][i], dmags['g'][i], dmags['r'][i], dmags['i'][i],\
+                    dmags['z'][i], dmags['y'][i]]
+            fhout.write(",".join([str(el) for el in line])+"\n")
+        fhout.close()
+
     var = variability.Variability(cache=True)
-    mjds = numpy.linspace(startmjd, endmjd, steps)
     arr = getParams("microlens.dat")
     for a in arr:
         fhout = open("lcs/microlens_%i.out"%(a['varsimobjid']),"w")

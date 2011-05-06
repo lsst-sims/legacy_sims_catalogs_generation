@@ -40,6 +40,14 @@
     ptype = 'POINT'
     idkey = 'id'
     constraint =
+[CEPHEIDSTARS]
+  formatas = 'POINT'
+  component = 'GALACTIC'
+  [[CEPHEIDSTARS]]
+    table = 'CEPHEIDSTARS'
+    ptype = 'POINT'
+    idkey = 'id'
+    constraint =
 [CALIBSTARS]
   formatas = 'POINT'
   component = 'GALACTIC'
