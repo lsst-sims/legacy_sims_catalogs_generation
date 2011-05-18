@@ -42,7 +42,7 @@ def jobFinished(eM, tableId, jobId):
     t1 = int(t0) - 1
     eM.updateState(tableStr + 'NumJobs', str(t1))
     print 'addJob: New num: ', t1
-    jobKey = tableId + '_%s' %(jobId) + 'JS'
+    jobKey = tableStr + '_%s' %(jobId) + 'JS'
     eM.updateState(jobKey, 'FINISHED')
     eM.updateState(jobKey + 'FT', time.ctime())
     print 'Updated the state of %s as FINISHED.' %(jobId)
@@ -80,7 +80,7 @@ if state == 'running':
     jobRunning(eM, tableId, jobId)
 
 if state == 'finished':
-    tableInt = int(tableId)
-    eM = jobDB.JobState(tableInt)
+    tableId = int(tableId)
+    eM = jobDB.JobState(tableId)
     jobFinished(eM, tableId, jobId) 
 
