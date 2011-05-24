@@ -40,6 +40,27 @@
     Opsim_obshistid = long, 'obshistid',x
     Opsim_expmjd = float, 'expmjd',x
 
+#Metadata that could potentially be useful for DIA sources
+[DIASOURCE]
+  [[OPSIM361]]
+    SIM_SEED = long, 'expdate',x
+    Unrefracted_RA = float, 'fieldra',x
+    Unrefracted_Dec = float, 'fielddec',x
+    Unrefracted_RA_deg = float, 'fieldradeg',x
+    Unrefracted_Dec_deg = float, 'fielddecdeg',x
+    Opsim_moonra = float, 'moonra',math.degrees(x)
+    Opsim_moondec = float, 'moondec',math.degrees(x)
+    Opsim_rotskypos = float, 'rotskypos',math.degrees(x)
+    Opsim_rottelpos = float, 'rottelpos',math.degrees(x)
+    Opsim_filter = int, 'filter',x
+    Opsim_rawseeing = float, 'rawseeing',x
+    Opsim_sunalt = float, 'sunalt',math.degrees(x)
+    Opsim_moonalt = float, 'moonalt',math.degrees(x)
+    Opsim_dist2moon = float, 'dist2moon',math.degrees(x)
+    Opsim_moonphase = float, 'moonphase',x
+    Opsim_obshistid = long, 'obshistid',x
+    Opsim_expmjd = float, 'expmjd',x
+
 #Trim file information
 [STUB]
   Test1 = str, '',x

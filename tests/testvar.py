@@ -24,10 +24,9 @@ if __name__ == "__main__":
     startmjd = 51000.
     endmjd = 51200.
     steps = 4800
-    var = variability.Variability(cache=False)
+    var = variability.Variability(cache=True)
     mjds = numpy.linspace(startmjd, endmjd, steps)
     arr = getParams("mflare.dat")
-    '''
     for a in arr:
         fhout = open("lcs/mflare_%i.out"%(a['varsimobjid']),"w")
         t0 = time.time()
@@ -43,7 +42,6 @@ if __name__ == "__main__":
                     dmags['z'][i], dmags['y'][i]]
             fhout.write(",".join([str(el) for el in line])+"\n")
         fhout.close()
-    '''
 
     arr = getParams("bh_microlens.dat")
     for a in arr:

@@ -11,6 +11,9 @@
 
 #Reference file information
 [REFERENCECATALOG]
+#
+#Difference image source  file information
+[DIASOURCE]
 
 #stub file information
 [STUB]

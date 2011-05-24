@@ -42,7 +42,9 @@
 [TEST]
   [[GALACTIC]]
     [[[POINT]]]
-
+[DIASOURCE]
+  [[SOLAR]]
+    [[[MOVINGPOINT]]]
 [REFERENCECATALOG]
   [[GALACTIC]]
     [[[POINT]]]

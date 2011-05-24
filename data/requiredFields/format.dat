@@ -58,5 +58,8 @@
     conv = x, math.degrees(x), math.degrees(x), x, x, x, x, x, x, x, x, x, x, x, x, x
     fmt = "%d %.9g %.9g %.9g %.9g %.9g %.9g %.9g %.9g %.9g"
 
-
-
+[DIASOURCE]
+  [[MOVINGPOINT]]    
+    attributes = id, raJ2000, decJ2000, sedFilename, magNorm, filtMag, velRa, velDec
+    conv = x, math.degrees(x), math.degrees(x), x, x, x, math.degrees(x), math.degrees(x)
+    fmt = "%d %.9g %.9g %s %.9g %.9g %.9g %.9g"

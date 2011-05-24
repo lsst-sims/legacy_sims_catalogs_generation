@@ -263,6 +263,45 @@
   [[GALACTIC]]
     [[[POINT]]]
 
+#Difference image catalog
+[DIASOURCE]
+  [[SOLAR]]
+    [[[MOVINGPOINT]]]
+      id = long, '_objid'
+      raJ2000 = float, 'Ephemerides[thismjd]._ra*math.pi/180.'
+      decJ2000 = float, 'Ephemerides[thismjd]._dec*math.pi/180.'
+      magNorm = float, 'Ephemerides[thismjd]._magImsim'
+      filtMag = float, 'Ephemerides[thismjd]._magFilter'
+      sedFilename = str, '_sedname'
+      velRa = float, 'Ephemerides[thismjd]._dradt*math.pi/180.'
+      velDec = float, 'Ephemerides[thismjd]._ddecdt*math.pi/180.'
+    [[[ORBIT]]]
+      id = long, 'objid'
+      q = float, 'q'
+      e = float, 'e'
+      i = float, 'inclination'
+      node = float, 'node'
+      argPeri = float, 'argperi'
+      timePeri = float, 't_peri'
+      epoch = float, 'epoch'
+      magHv = float, 'h_g'
+      phaseGv = float, 'phasegv'
+      idx = float, 'idx'
+      n_par = float, 'n_par'
+      moid = float, 'moid'
+      objtype = int, 'otype'
+      isVar = int, 'isvar'
+      var_t0 = float, 't0'
+      var_timescale = float, 'timescale'
+      var_fluxmax = float, 'varfluxmax'
+      sedname = str, 'sed_filename'
+      u_opp = float, 'u_opp'
+      g_opp = float, 'g_opp'
+      r_opp = float, 'r_opp'
+      i_opp = float, 'i_opp'
+      z_opp = float, 'z_opp'
+      y_opp = float, 'y_opp'
+
 #reference catalog information
 [REFERENCECATALOG]
   [[GALACTIC]]
