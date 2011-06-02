@@ -80,7 +80,12 @@ if state == 'running':
     jobRunning(eM, tableId, jobId)
 
 if state == 'finished':
+    #jid = jobDB.JobId(id, owner)
     tableId = int(tableId)
     eM = jobDB.JobState(tableId)
     jobFinished(eM, tableId, jobId) 
 
+if state == 'howmany':
+    tableId = int(tableId)
+    eM = jobDB.JobState(tableId)
+    howManyJobs(eM, tableId, jobId)
