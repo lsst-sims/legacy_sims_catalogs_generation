@@ -157,4 +157,5 @@ if __name__ == "__main__":
     outfile = sys.argv[4]
     tpt = testPhotTrim(metafile,infile,centfile,outfile)
     tpt.mkStarPhot()
+    tpt.mkGalPhot()
     tpt.printComp()

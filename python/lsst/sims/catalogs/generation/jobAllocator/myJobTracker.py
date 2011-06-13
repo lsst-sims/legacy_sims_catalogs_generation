@@ -66,7 +66,7 @@ sensormap = {"00":"0,0", "01":"0,1", "02":"0,2", \
 
 # constructed to have the form "R:rx,ry S:sx,sy:snap"
 # which is how the fpaFig.map keys are constructed
-sensorid = "R:"+raftmap[rxry]+" "+"S:"+sensormap[sxsy]+":0"+ex
+sensorid = "R:"+raftmap[rxry]+" "+"S:"+sensormap[sxsy]+":"+ex
 
 jobid = jobDB.JobId(id=obshistid, owner=username)
 jobStr = str(jobid)
