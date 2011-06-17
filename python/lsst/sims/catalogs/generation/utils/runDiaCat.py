@@ -35,10 +35,9 @@ def runDia(csize, obsidList, radius=2.1, outdir='.', repodir=None, je=None, comp
         repodir = outdir
     meta = None
     opsimid = None
-    files = []
     writeJobEvent(je, 'start')
     cattype = "DIASOURCE"
-    objtypes = ['SSM']
+    objtype = 'SSM'
     warnings.simplefilter('ignore', category=exceptions.UserWarning)
     arcroot = "diaBatchStarting_%i"%(obsidList[0])
     outBase = os.path.join(outdir, arcroot)
@@ -47,7 +46,6 @@ def runDia(csize, obsidList, radius=2.1, outdir='.', repodir=None, je=None, comp
     if not os.path.exists(outBase):
         os.makedirs(outBase)
     writeJobEvent(je, 'MakeDirs', 'Made output directories %s'%(outBase))
-    files = []
     nid = 0
     for obsid in obsidList:
         writeJobEvent(je, 'Obshistid:%s'%(obsid), 'Doing %i out of %i total'%(nid, len(obsidList)))
@@ -60,20 +58,11 @@ def runDia(csize, obsidList, radius=2.1, outdir='.', repodir=None, je=None, comp
         cnum = 0
         while ic is not None:
             writeJobEvent(je, 'GetChunk', 'Got chunk #%i of length %i'%(cnum, len(ic.dataArray[ic.dataArray.keys()[0]])))
-            if cnum == 0:
-                if compress:
-                    files.append(os.path.join(subdir,filename)+".gz")
-                else:
-                    files.append(os.path.join(subdir,filename))
-                if meta is None:
-                    meta = deepcopy(ic.metadata)
-                else:
-                    meta.mergeMetadata(ic.metadata)
             numRec = len(ic.dataArray[ic.dataArray.keys()[0]])
             if cnum == 0:
-                meta.validateMetadata(cattype, opsimid)
-                meta.writeMetadata(outfile, cattype, opsimid, newfile=True, filelist=files, compress=False)
-                writeJobEvent(je, 'WriteMetadata', 'Wrote metadata to %s'%(metaOutfile))
+                ic.metadata.validateMetadata(cattype, opsimid)
+                ic.metadata.writeMetadata(outfile, cattype, opsimid, newfile=True, filelist=None, compress=compress)
+                writeJobEvent(je, 'WriteMetadata', 'Wrote metadata to %s'%(outfile))
             ic.validateData(cattype)
             ic.writeCatalogData(outfile, cattype, newfile = False, compress=compress)
             writeJobEvent(je, 'WriteChunk', 'Wrote chunk #%i of length %i'%(cnum,numRec))
