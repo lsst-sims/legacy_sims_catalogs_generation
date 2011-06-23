@@ -48,14 +48,19 @@
 [REFERENCECATALOG]
   [[GALACTIC]]
     [[[POINT]]]
+      varsimobjid = int
+      appendint = int
       uDerived = float
       gDerived = float
       rDerived = float
       iDerived = float
       zDerived = float
       yDerived = float
+      isVar = int
   [[EXTRAGALACTIC]]
     [[[ASSEMBLEDGALAXY]]]
+      varsimobjid = int
+      appendint = int
       uDerived = float
       gDerived = float
       rDerived = float
