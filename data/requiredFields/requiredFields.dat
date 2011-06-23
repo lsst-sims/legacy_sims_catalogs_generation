@@ -330,7 +330,7 @@
       y = float,'ymag'
       gSDSS = float,'sdssg'
       rSDSS = float,'sdssr'
-      isVar = int, 'isvar'
+      varsimobjid = int,varsimobjid
   [[EXTRAGALACTIC]]
     [[[ASSEMBLEDGALAXY]]]
       id = long, 'id'
@@ -364,4 +364,10 @@
       i = float,'i_ab'
       z = float,'z_ab'
       y = float,'y_ab'
-  
+      varsimobjid = int,varsimobjid
+      semiMajorBulge = float, 'a_b'  
+      semiMinorBulge = float, 'b_b'  
+      semiMajorDisk = float, 'a_d'  
+      semiMinorDisk = float, 'b_d'  
+      isAGN = int, 'isagn'  
+
