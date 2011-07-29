@@ -18,8 +18,8 @@ def run(id, csize=50000, radius=2.1, outdir='/state/partition1/krughoff', repodi
     try:
         rtc.runTrim(csize, id, radius, outdir, repodir, je, compress=compress, cleanup=cleanup)
     except Exception, e:
-        rtc.writeJobeEvent(je, "Exception", description=e.__str__())
+        rtc.writeJobEvent(je, "Exception", description=e.__str__())
         raise e
 
 if __name__ == "__main__":
-  run(int(sys.argv[1]), radius=float(sys.argv[2]), cleanup=True)
+  run(int(sys.argv[1]), radius=float(sys.argv[2]), repodir='/share/pogo3/krughoff/monetPT1.2', csize=10000, cleanup=True)

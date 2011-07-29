@@ -1,6 +1,8 @@
 import sys
-def writeFile(fh, obshistid):
-    header = """### ---------------------------------------
+import os
+def writeFile(fh, obshistid, radius, id):
+    for obsid in obshistid:
+        header = """### ---------------------------------------
 ### PBS script created by: krughoff
 ### ---------------------------------------
 #PBS -S /bin/tcsh
@@ -24,14 +26,20 @@ echo $HOME
 echo `hostname`
 source $HOME/.cshrc
 source $HOME/setupStack.csh
-python $CATALOGS_GENERATION_DIR/bin/runFiles.py %i %g
-"""%(obshistid, obshistid, obshistid, radius)
+"""%(id, id)
     fh.write(header)
+    for obsid in obshistid:
+        if os.path.exists("/share/pogo3/krughoff/monetPT1.2/obsid%s.tar.gz"%obsid):
+            continue
+        else:
+            fh.write("python $CATALOGS_GENERATION_DIR/bin/runFiles.py %i %g\n"%(obsid, radius))
     fh.close()
 
 if __name__ == "__main__":
-    obsid = int(sys.argv[1])
-    radius = float(sys.argv[2])
-    fh = open("run%i.pbs"%(obsid), "w")
-    writeFile(fh, obsid)
+    obsid = []
+    for el in sys.argv[1:-1]:
+        obsid.append(int(el))
+    radius = float(sys.argv[-1])
+    fh = open("run%i.pbs"%(obsid[0]), "w")
+    writeFile(fh, obsid, radius, obsid[0])
 

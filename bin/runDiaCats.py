@@ -21,4 +21,4 @@ def run(idlist, csize=50000, radius=2.1, outdir='/state/partition1/krughoff', re
         raise e
 
 if __name__ == "__main__":
-  run(getIds(sys.argv[1]), radius=float(sys.argv[2]), cleanup=True)
+  run(getIds(open(sys.argv[1])), radius=float(sys.argv[2]), cleanup=True)
