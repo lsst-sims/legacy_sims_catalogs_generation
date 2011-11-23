@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+import time
 from lsst.sims.catalogs.generation.db import jobDB
 import sys
 
