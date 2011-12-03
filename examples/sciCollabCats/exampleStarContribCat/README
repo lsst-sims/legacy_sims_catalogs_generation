@@ -32,4 +32,7 @@ extinction.
 4. If objects are variable, modify the code in python/variability.py to apply 
 the variability model.
 5. Generate the catalog.
-
+6. Update settings.py
+7. Make sure all lightcurves and spectra are in the right place.
+8. Run the validator to check the catalogs.
+  $> python tests/validateCat.py
