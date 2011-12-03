@@ -1,5 +1,8 @@
 #  Most common python modules are accepted.  This will be run using Python
 #  2.7.2.  scipy and numpy are both supported.
+#  This method must take a dictionary of variability parameters and
+#  observation time(s) in MJD.  The return must be a list of offsets in
+#  magnitude per band for each of the input observation times.
 import numpy
 def applyMySpecialVariability(params, expmjd):
     datadir = "lightcurves"  #relative to base directory this can be modified to any path
