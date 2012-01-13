@@ -22,4 +22,4 @@ def run(id, csize=50000, radius=2.1, outdir='/state/partition1/krughoff', repodi
         raise e
 
 if __name__ == "__main__":
-  run(int(sys.argv[1]), radius=float(sys.argv[2]), repodir='/share/pogo3/krughoff/monetPT1.2', csize=10000, cleanup=True)
+  run(int(sys.argv[1]), radius=float(sys.argv[2]), repodir='/share/pogo3/krughoff/testDir', csize=10000, cleanup=True)

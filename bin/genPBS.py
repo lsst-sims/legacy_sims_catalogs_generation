@@ -29,7 +29,7 @@ source $HOME/setupStack.csh
 """%(id, id)
     fh.write(header)
     for obsid in obshistid:
-        if os.path.exists("/share/pogo3/krughoff/monetPT1.2/obsid%s.tar.gz"%obsid):
+        if os.path.exists("/share/pogo3/krughoff/testDir/obsid%s.tar.gz"%obsid):
             continue
         else:
             fh.write("python $CATALOGS_GENERATION_DIR/bin/runFiles.py %i %g\n"%(obsid, radius))
@@ -40,6 +40,6 @@ if __name__ == "__main__":
     for el in sys.argv[1:-1]:
         obsid.append(int(el))
     radius = float(sys.argv[-1])
-    fh = open("run%i.pbs"%(obsid[0]), "w")
+    fh = open("test%i.pbs"%(obsid[0]), "w")
     writeFile(fh, obsid, radius, obsid[0])
 

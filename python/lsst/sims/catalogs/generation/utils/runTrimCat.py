@@ -38,10 +38,10 @@ def runTrim(csize, obsid, radius=2.1, outdir='.', repodir=None, je=None, compres
     files = []
     writeJobEvent(je, 'start')
     cattype = "TRIM"
-    objtypes = ['MSSTARS', 'BHBSTARS', 'RRLYSTARS', 'EBSTARS', 'CEPHEIDSTARS',\
-            'GALAXY_BULGE', 'GALAXY_DISK', 'AGN', 'GLENS', 'IMAGE', 'EASTEREGGS', 'WDSTARS']
-#    objtypes = ['MSSTARS','WDSTARS','BHBSTARS','RRLYSTARS','SSM', \
-#            'GLENS','IMAGE','EBSTARS','CEPHEIDSTARS','EASTEREGGS','GALAXY_BULGE','GALAXY_DISK','AGN']
+#    objtypes = ['DWARFCOMPANION','MSSTARS', 'BHBSTARS', 'RRLYSTARS', 'EBSTARS', 'CEPHEIDSTARS',\
+#            'GALAXY_BULGE', 'GALAXY_DISK', 'AGN', 'GLENS', 'IMAGE', 'EASTEREGGS', 'WDSTARS']
+    objtypes = ['MSSTARS','WDSTARS','BHBSTARS','RRLYSTARS','SSM', \
+            'GLENS','IMAGE','EBSTARS','CEPHEIDSTARS','EASTEREGGS','GALAXY_BULGE','GALAXY_DISK','AGN']
     varobj = ['MSSTARS', 'RRLYSTARS', 'AGN', 'IMAGE', 'WDSTARS', 'EBSTARS', 'CEPHEIDSTARS']
     warnings.simplefilter('ignore', category=exceptions.UserWarning)
     arcroot = "obsid%i"%(obsid)
