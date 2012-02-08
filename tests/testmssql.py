@@ -21,7 +21,7 @@ if __name__ == "__main__":
       refoutfile = "test_%i_%s_REF.dat"%(obsid,objtype)
       print "doing %s"%(objtype)
       myqdb = queryDB.queryDB(chunksize=csize,objtype=objtype,filetypes=['TRIM',])
-      ic = myqdb.getInstanceCatalogById(obsid, radiusdeg=0.01)
+      ic = myqdb.getInstanceCatalogById(obsid, radiusdeg=0.5)
       cnum = 0
       while ic is not None:
           #ic.makeReferenceCoords()
