@@ -9,6 +9,12 @@
     conv = x,x,math.degrees(x),math.degrees(x),x,x,x,x,x,x,math.degrees(x),math.degrees(x),x,x,x,x,x
 #id,raTrim_deg,decTrim_deg,magNorm,sedFilename,redshift,shear1,shear2,kappa,properMotionRa,properMotionDec,spatialmodel,galacticExtinctionModel,galacticAv,galacticRv,internalExtinctionModel "object {0[0]:d} {0[1]:g} {0[2]:g} {0[3]:g} {0[4]:s} {0[5]:g} {0[6]:g} {0[7]:g} {0[8]:g} {0[9]:g} {0[10]:g} {0[11]:s} {0[12]:s} {0[13]:g} {0[14]:g} {0[15]:s}"
 
+  [[ZPOINT]]    
+    attributes = id,appendint,raTrim,decTrim,magNorm,sedFilename,redshift,shear1,shear2,kappa,raOffset,decOffset,spatialmodel,galacticExtinctionModel,galacticAv,galacticRv,internalExtinctionModel 
+    fmt = "object %d.%i %.9g %.9g %.9g %s %.9g %.9g %.9g %.9g %.9g %.9g %s %s %.9g %.9g %s"
+    conv = x,x,math.degrees(x),math.degrees(x),x,x,x,x,x,x,math.degrees(x),math.degrees(x),x,x,x,x,x
+#id,raTrim_deg,decTrim_deg,magNorm,sedFilename,redshift,shear1,shear2,kappa,properMotionRa,properMotionDec,spatialmodel,galacticExtinctionModel,galacticAv,galacticRv,internalExtinctionModel "object {0[0]:d} {0[1]:g} {0[2]:g} {0[3]:g} {0[4]:s} {0[5]:g} {0[6]:g} {0[7]:g} {0[8]:g} {0[9]:g} {0[10]:g} {0[11]:s} {0[12]:s} {0[13]:g} {0[14]:g} {0[15]:s}"
+
   [[MOVINGPOINT]]
     attributes = id,appendint,raTrim,decTrim,magNorm,sedFilename,redshift,shear1,shear2,kappa,raOffset,decOffset,spatialmodel,velRa,velDec,galacticExtinctionModel,internalExtinctionModel 
     fmt = "object %d.%i %.9g %.9g %.9g %s %.9g %.9g %.9g %.9g %.9g %.9g %s %.9g %.9g %s %s"
@@ -46,31 +52,36 @@
     fmt = "%d %.9g %.9g"
 
 [REFERENCECATALOG]
-#  [[POINT]]    
-#    attributes = id, raJ2000, decJ2000, glat, glon, sedFilename, uDerived, gDerived, rDerived, iDerived, zDerived, yDerived, properMotionRa, properMotionDec, parallax, radialVelocity, isVar
-#    conv = x, math.degrees(x), math.degrees(x), math.degrees(x), math.degrees(x), x, x, x, x, x, x, x, math.degrees(x)*3600000., math.degrees(x)*3600000., x , x, x
-#    fmt = "%d %.9g %.9g %.9g %.9g %s %.9g %.9g %.9g %.9g %.9g %.9g %.9g %.9g %.9g %.9g %d"
+  [[POINT]]    
+    attributes = id, raJ2000, decJ2000, glat, glon, sedFilename, uDerived, gDerived, rDerived, iDerived, zDerived, yDerived, properMotionRa, properMotionDec, parallax, radialVelocity, isVar
+    conv = x, math.degrees(x), math.degrees(x), math.degrees(x), math.degrees(x), x, x, x, x, x, x, x, math.degrees(x)*3600000., math.degrees(x)*3600000., x , x, x
+    fmt = "%d %.9g %.9g %.9g %.9g %s %.9g %.9g %.9g %.9g %.9g %.9g %.9g %.9g %.9g %.9g %d"
 #    attributes = galtileid, raJ2000, decJ2000,uDerived,gDerived,rDerived,iDerived,zDerived,yDerived,redshift
 #    conv = x, math.degrees(x), math.degrees(x), x, x, x, x, x, x, x
 #    fmt = "%d %.9g %.9g %.9g %.9g %.9g %.9g %.9g %.9g %.9g 0. 0. 0. 0. 0"
 
-  [[POINT]]
-    attributes = galtileid, raJ2000, decJ2000,uDerived,gDerived,rDerived,iDerived,zDerived,yDerived,redshift
+  [[ZPOINT]]
+    attributes = galtileid, raJ2000, decJ2000, glat, glon, sedFilename, uDerived,gDerived,rDerived,iDerived,zDerived,yDerived,redshift
     conv = x, math.degrees(x), math.degrees(x), x, x, x, x, x, x, x 
-    fmt = "%d %.9g %.9g %.9g %.9g %.9g %.9g %.9g %.9g %.9g 0.0 0.0 0.0 0.0 3"
+    fmt = "%d %.9g %.9g %.9g %9.g %s %.9g %.9g %.9g %.9g %.9g %.9g %.9g"
+
+  [[MOVINGPOINT]]    
+    attributes = id, raJ2000, decJ2000, glat, glon, sedFilename, u, g, r, i, z, y, velRa, velDec
+    conv = x, math.degrees(x), math.degrees(x), math.degrees(x), math.degrees(x), x, x, x, x, x, x, x, math.degrees(x), math.degrees(x)
+    fmt = "%d %.9g %.9g %.9g %.9g %s %.9g %.9g %.9g %.9g %.9g %.9g %.9g %.9g"
 
   [[ASSEMBLEDGALAXY]]
-    attributes = galtileid, raJ2000, decJ2000,uDerived,gDerived,rDerived,iDerived,zDerived,yDerived,redshift, semiMajorBulge, semiMinorBulge, semiMajorDisk, semiMinorDisk, isAGN
+    attributes = galtileid, raJ2000, decJ2000, glat, glon, uDerived,gDerived,rDerived,iDerived,zDerived,yDerived,redshift, semiMajorBulge, semiMinorBulge, semiMajorDisk, semiMinorDisk, isAGN
     conv = x, math.degrees(x), math.degrees(x), x, x, x, x, x, x, x, x, x, x, x, x
-    fmt = "%d %.9g %.9g %.9g %.9g %.9g %.9g %.9g %.9g %.9g %.9g %.9g %.9g %.9g %d"
+    fmt = "%d %.9g %.9g %.9g %.9g %.9g %.9g %.9g %.9g %.9g %.9g %.9g %.9g %.9g %.9g %.9g %d"
 
   [[SERSIC2D]]
-    attributes = galtileid, raJ2000, decJ2000,uDerived,gDerived,rDerived,iDerived,zDerived,yDerived,redshift, semiMajorBulge, semiMinorBulge
+    attributes = galtileid, raJ2000, decJ2000, glat, glon,uDerived,gDerived,rDerived,iDerived,zDerived,yDerived,redshift, semiMajorBulge, semiMinorBulge
     conv = x, math.degrees(x), math.degrees(x), x, x, x, x, x, x, x, x, x, x
-    fmt = "%d %.9g %.9g %.9g %.9g %.9g %.9g %.9g %.9g %.9g %.9g %.9g 0.0 0.0 0"
+    fmt = "%d %.9g %.9g %.9g %.9g %.9g %.9g %.9g %.9g %.9g %.9g %.9g %.9g %.9g 0.0 0.0 0"
 
 [DIASOURCE]
   [[MOVINGPOINT]]    
-    attributes = id, raJ2000, decJ2000, sedFilename, magNorm, filtMag, velRa, velDec
-    conv = x, math.degrees(x), math.degrees(x), x, x, x, math.degrees(x), math.degrees(x)
-    fmt = "%d %.9g %.9g %s %.9g %.9g %.9g %.9g"
+    attributes = id, raJ2000, decJ2000, sedFilename, magNorm, u, g, r, i, z, y, velRa, velDec
+    conv = x, math.degrees(x), math.degrees(x), x, x, x, x, x, x, x, x, x, math.degrees(x), math.degrees(x)
+    fmt = "%d %.9g %.9g %s %.9g %.9g %s %s %s %s %s %s %.9g %.9g"

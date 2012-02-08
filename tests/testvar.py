@@ -8,7 +8,7 @@ def getParams(filename):
     parr = []
     names = fh.readline().strip().split(",")
     string_flds = ("varMethodName", "filename", "lcfilename", "sedfilename",
-            "lcfile", "spectrumname")
+            "lcfile", "spectrumname", "spectrum_name")
     for l in fh:
         params = {}
         flds = l.rstrip().split(",")
@@ -22,11 +22,12 @@ def getParams(filename):
 
 if __name__ == "__main__": 
     startmjd = 51000.
-    endmjd = 51200.
+    endmjd = 51100.
     steps = 4800
     var = variability.Variability(cache=True)
     mjds = numpy.linspace(startmjd, endmjd, steps)
     arr = getParams("mflare.dat")
+    """
     for a in arr:
         fhout = open("lcs/mflare_%i.out"%(a['varsimobjid']),"w")
         t0 = time.time()
@@ -42,6 +43,7 @@ if __name__ == "__main__":
                     dmags['z'][i], dmags['y'][i]]
             fhout.write(",".join([str(el) for el in line])+"\n")
         fhout.close()
+    """
 
     arr = getParams("bh_microlens.dat")
     for a in arr:
@@ -59,6 +61,34 @@ if __name__ == "__main__":
         fhout.close()
 
     var = variability.Variability(cache=True)
+    arr = getParams("amcvn.dat")
+    for a in arr:
+        fhout = open("lcs/amcvn_%i.out"%(a['varsimobjid']),"w")
+        dmags = eval("var.%s(a, mjds)"%(a['varMethodName']))
+        line = []
+        fhout.write("#MJD,u,g,r,i,z,y\n")
+        for k in a:
+            line.append("%s:%s"%(k,str(a[k])))
+        fhout.write("#"+",".join(line)+"\n")
+        for i in range(steps):
+            line = [mjds[i], dmags['u'][i], dmags['g'][i], dmags['r'][i], dmags['i'][i],\
+                    dmags['z'][i], dmags['y'][i]]
+            fhout.write(",".join([str(el) for el in line])+"\n")
+        fhout.close()
+    arr = getParams("cepheid.dat")
+    for a in arr:
+        fhout = open("lcs/cepheid_%i.out"%(a['varsimobjid']),"w")
+        dmags = eval("var.%s(a, mjds)"%(a['varMethodName']))
+        line = []
+        fhout.write("#MJD,u,g,r,i,z,y\n")
+        for k in a:
+            line.append("%s:%s"%(k,str(a[k])))
+        fhout.write("#"+",".join(line)+"\n")
+        for i in range(steps):
+            line = [mjds[i], dmags['u'][i], dmags['g'][i], dmags['r'][i], dmags['i'][i],\
+                    dmags['z'][i], dmags['y'][i]]
+            fhout.write(",".join([str(el) for el in line])+"\n")
+        fhout.close()
     arr = getParams("microlens.dat")
     for a in arr:
         fhout = open("lcs/microlens_%i.out"%(a['varsimobjid']),"w")

@@ -46,6 +46,8 @@
   [[SOLAR]]
     [[[MOVINGPOINT]]]
 [REFERENCECATALOG]
+  [[SOLAR]]
+    [[[MOVINGPOINT]]]
   [[GALACTIC]]
     [[[POINT]]]
       varsimobjid = int

@@ -1,6 +1,18 @@
 # Mapping of object types to their database repr
 
+
 #Start mapping
+#The following is not suggested for making files where the object id needs to
+#be tracked as the appendint will be the same for all the star types.  Use
+#ALLSTARS instead
+[ALLSTARSVIEW]
+  formatas = 'POINT'
+  component = 'GALACTIC'
+  [[ALLSTARS]]
+    table = 'AllStar'
+    ptype = 'POINT'
+    idkey = 'id'
+    constraint =
 [ALLSTARS]
   formatas = 'POINT'
   component = 'GALACTIC'
@@ -121,11 +133,11 @@
     idkey = 'galtileid'
     constraint = 'sedFilename is not NULL'
 [AGN]
-  formatas = 'POINT'
+  formatas = 'ZPOINT'
   component = 'EXTRAGALACTIC'
   [[AGN]]
     table = 'Galaxy'
-    ptype = 'POINT'
+    ptype = 'ZPOINT'
     idkey = 'galtileid'
     constraint = 'sedFilename is not NULL'
 [GLENS]
@@ -137,11 +149,11 @@
     idkey = 'id'
     constraint = ''
 [IMAGE]
-  formatas = 'POINT'
+  formatas = 'ZPOINT'
   component = 'EXTRAGALACTIC'
   [[IMAGE]]
     table = 'IMAGE'
-    ptype = 'POINT'
+    ptype = 'ZPOINT'
     idkey = 'id'
     constraint = ''
 
@@ -153,14 +165,6 @@
     ptype = 'MOVINGPOINT'
     idkey = 'dbid'
     constraint = 
-[ORBIT]
-  formatas = 'ORBIT'
-  component = 'SOLAR'
-  [[ORBITS]]
-    table = 'Orbits'
-    ptype = 'ORBIT'
-    idkey = 'nokey'
-    constraint =
 [METADATA]
   component = 'OPSIM361'
   [[OPSIM361]]
