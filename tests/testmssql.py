@@ -12,7 +12,7 @@ if __name__ == "__main__":
       obsid = 88533591
   csize = 5000
 
-  objtypes = ['ALLSTARS', 'SSM', 'GLENS', 'IMAGE', 'EASTEREGGS', 'GALAXY_BULGE', 'GALAXY_DISK', 'AGN']
+  objtypes = ['GALAXY_BULGE', 'AGN', 'ALLSTARS', 'SSM', 'GLENS', 'IMAGE', 'EASTEREGGS', 'GALAXY_BULGE', 'GALAXY_DISK', 'AGN']
  #  objtypes = ['DWARFCOMPANION']
   varobj = ['CEPHEIDSTARS','EBSTARS','MSSTARS', 'WDSTARS', 'BHBSTARS', 'RRLYSTARS', 'AGN', 'IMAGE']
   warnings.simplefilter('ignore', category=exceptions.UserWarning)
@@ -21,7 +21,7 @@ if __name__ == "__main__":
       refoutfile = "test_%i_%s_REF.dat"%(obsid,objtype)
       print "doing %s"%(objtype)
       myqdb = queryDB.queryDB(chunksize=csize,objtype=objtype,filetypes=['TRIM',])
-      ic = myqdb.getInstanceCatalogById(obsid, radiusdeg=0.5)
+      ic = myqdb.getInstanceCatalogById(obsid, radiusdeg=0.1)
       cnum = 0
       while ic is not None:
           #ic.makeReferenceCoords()

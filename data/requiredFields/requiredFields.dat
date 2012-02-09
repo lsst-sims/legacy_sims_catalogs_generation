@@ -110,8 +110,8 @@
     [[[ZPOINT]]]
       id = long, 'id'
       galtileid = long, 'galtileid'
-      raJ2000 = float, 'ra*PI()/180.'
-      decJ2000 = float, 'dec*PI()/180.'
+      raJ2000 = float, 'ra'
+      decJ2000 = float, 'dec'
       raOffset = float, '0.0*PI()'
       decOffset = float, '0.0*PI()'
       magNorm = float, 'magnorm_agn'
