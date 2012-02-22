@@ -92,7 +92,8 @@ def runTrim(csize, obsid, radius=2.1, outdir='.', repodir=None, je=None, compres
                 writeJobEvent(je, 'WriteChunk', 'Wrote chunk #%i of length %i'%(cnum,numRec))
             ic = myqdb.getNextChunk()
             cnum += 1
-        myqdb.closeSession()
+        writeJobEvent(je, 'Finished Object:%s'%(objtype), 'Finished object %s'%(objtype))
+        #myqdb.closeSession()
     meta.validateMetadata(cattype, opsimid)
     metaOutfile = os.path.join(outBase,"metadata_%i.dat"%(obsid))
     meta.writeMetadata(metaOutfile, cattype, opsimid, newfile=True, filelist=files, compress=False)
