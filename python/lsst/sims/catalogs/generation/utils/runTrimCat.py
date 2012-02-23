@@ -38,11 +38,11 @@ def runTrim(csize, obsid, radius=2.1, outdir='.', repodir=None, je=None, compres
     files = []
     writeJobEvent(je, 'start')
     cattype = "TRIM"
-    objtypes = ['MSSTARS']
+#    objtypes = ['WDSTARS']
 #    objtypes = ['DWARFCOMPANION','MSSTARS', 'BHBSTARS', 'RRLYSTARS', 'EBSTARS', 'CEPHEIDSTARS',\
 #            'GALAXY_BULGE', 'GALAXY_DISK', 'AGN', 'GLENS', 'IMAGE', 'EASTEREGGS', 'WDSTARS']
-#    objtypes = ['MSSTARS','WDSTARS','BHBSTARS','RRLYSTARS','SSM', \
-#            'GLENS','IMAGE','EBSTARS','CEPHEIDSTARS','EASTEREGGS','GALAXY_BULGE','GALAXY_DISK','AGN']
+    objtypes = ['MSSTARS','WDSTARS','BHBSTARS','RRLYSTARS','SSM', \
+            'GLENS','IMAGE','EBSTARS','CEPHEIDSTARS','EASTEREGGS','GALAXY_BULGE','GALAXY_DISK','AGN']
     varobj = ['MSSTARS', 'RRLYSTARS', 'AGN', 'IMAGE', 'WDSTARS', 'EBSTARS', 'CEPHEIDSTARS']
     warnings.simplefilter('ignore', category=exceptions.UserWarning)
     arcroot = "obsid%i"%(obsid)
@@ -90,8 +90,12 @@ def runTrim(csize, obsid, radius=2.1, outdir='.', repodir=None, je=None, compres
             else:
                 ic.writeCatalogData(outfile, "TRIM", newfile = False, compress=compress)
                 writeJobEvent(je, 'WriteChunk', 'Wrote chunk #%i of length %i'%(cnum,numRec))
-            ic = myqdb.getNextChunk()
+            if numRec == csize:
+                ic = myqdb.getNextChunk()
+            else:
+                ic = None
             cnum += 1
+        writeJobEvent(je, 'Finished Object:%s'%(objtype), 'Finished object %s'%(objtype))
         myqdb.closeSession()
     meta.validateMetadata(cattype, opsimid)
     metaOutfile = os.path.join(outBase,"metadata_%i.dat"%(obsid))

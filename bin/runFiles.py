@@ -12,14 +12,17 @@ def getIds(offset, number, fhids):
   fhids.close()
   return ids
 
-def run(id, csize=50000, radius=2.1, outdir='/state/partition1/krughoff', repodir='/share/pogo3/krughoff/trimsPT1.2', compress=True, cleanup=False):
+def run(id, csize=50000, radius=2.1, outdir='./testOut/', repodir='./testRepo/', compress=True, cleanup=False):
     je = jobDB.LogEvents("Test job number %i"%(id), jobid=id)
     print "Job number is %i"%(je._jobid)
     try:
-        rtc.runTrim(csize, id, radius, outdir, repodir, je, compress=compress, cleanup=cleanup)
+        rtc.runTrim(
+          csize, id, radius, outdir, repodir, je, compress=compress,
+          cleanup=cleanup)
+        exit(0)
     except Exception, e:
         rtc.writeJobEvent(je, "Exception", description=e.__str__())
-        raise e
+        exit(1)
 
 if __name__ == "__main__":
-  run(int(sys.argv[1]), radius=float(sys.argv[2]), repodir='/share/pogo3/krughoff/testDir', csize=10000, cleanup=True)
+  run(int(sys.argv[1]), radius=float(sys.argv[2]), repodir='./testRepo/', csize=20000, cleanup=True)
