@@ -31,6 +31,8 @@ def run(id, csize=50000, radius=2.1, outdir='./testOut/', repodir='./testRepo/',
             retry = True
             nTriesAllowed -= 1
             if nTriesAllowed < 1: raise e
+            # Simon says this is needed to re-establish DB connection
+            reload(jobDB)
 
 if __name__ == "__main__":
   run(int(sys.argv[1]), radius=float(sys.argv[2]), repodir='./testRepo/', csize=55000, cleanup=True)
