@@ -30,7 +30,7 @@ def run(id, csize=50000, radius=2.1, outdir='./testOut/', repodir='./testRepo/',
             print 'Woke up and retrying.'
             retry = True
             nTriesAllowed -= 1
-            raise e
+            if nTriesAllowed < 1: raise e
 
 if __name__ == "__main__":
-  run(int(sys.argv[1]), radius=float(sys.argv[2]), repodir='./testRepo/', csize=10000, cleanup=True)
+  run(int(sys.argv[1]), radius=float(sys.argv[2]), repodir='./testRepo/', csize=55000, cleanup=True)
