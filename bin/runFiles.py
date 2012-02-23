@@ -19,10 +19,10 @@ def run(id, csize=50000, radius=2.1, outdir='./testOut/', repodir='./testRepo/',
         rtc.runTrim(
           csize, id, radius, outdir, repodir, je, compress=compress,
           cleanup=cleanup)
-        exit(0)
+        sys.exit(0)
     except Exception, e:
         rtc.writeJobEvent(je, "Exception", description=e.__str__())
-        exit(1)
+        sys.exit(1)
 
 if __name__ == "__main__":
   run(int(sys.argv[1]), radius=float(sys.argv[2]), repodir='./testRepo/', csize=20000, cleanup=True)
