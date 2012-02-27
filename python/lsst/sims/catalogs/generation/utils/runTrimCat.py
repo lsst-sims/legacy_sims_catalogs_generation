@@ -38,7 +38,6 @@ def runTrim(csize, obsid, radius=2.1, outdir='.', repodir=None, je=None, compres
     files = []
     writeJobEvent(je, 'start')
     cattype = "TRIM"
-#    objtypes = ['WDSTARS']
 #    objtypes = ['DWARFCOMPANION','MSSTARS', 'BHBSTARS', 'RRLYSTARS', 'EBSTARS', 'CEPHEIDSTARS',\
 #            'GALAXY_BULGE', 'GALAXY_DISK', 'AGN', 'GLENS', 'IMAGE', 'EASTEREGGS', 'WDSTARS']
     objtypes = ['MSSTARS','WDSTARS','BHBSTARS','RRLYSTARS','SSM', \
@@ -96,7 +95,6 @@ def runTrim(csize, obsid, radius=2.1, outdir='.', repodir=None, je=None, compres
                 ic = None
             cnum += 1
         writeJobEvent(je, 'Finished Object:%s'%(objtype), 'Finished object %s'%(objtype))
-        myqdb.closeSession()
     meta.validateMetadata(cattype, opsimid)
     metaOutfile = os.path.join(outBase,"metadata_%i.dat"%(obsid))
     meta.writeMetadata(metaOutfile, cattype, opsimid, newfile=True, filelist=files, compress=False)
