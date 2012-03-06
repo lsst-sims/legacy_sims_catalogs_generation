@@ -61,8 +61,8 @@
 #    fmt = "%d %.9g %.9g %.9g %.9g %.9g %.9g %.9g %.9g %.9g 0. 0. 0. 0. 0"
 
   [[ZPOINT]]
-    attributes = galtileid, raJ2000, decJ2000, glat, glon, sedFilename, uDerived,gDerived,rDerived,iDerived,zDerived,yDerived,redshift
-    conv = x, math.degrees(x), math.degrees(x), x, x, x, x, x, x, x 
+    attributes = galtileid, raJ2000, decJ2000, glat, glon, agnSedFilename, uDerived,gDerived,rDerived,iDerived,zDerived,yDerived,redshift
+    conv = x, math.degrees(x), math.degrees(x), x, x, x, x, x, x, x, x, x, x
     fmt = "%d %.9g %.9g %.9g %9.g %s %.9g %.9g %.9g %.9g %.9g %.9g %.9g"
 
   [[MOVINGPOINT]]    
@@ -72,12 +72,12 @@
 
   [[ASSEMBLEDGALAXY]]
     attributes = galtileid, raJ2000, decJ2000, glat, glon, uDerived,gDerived,rDerived,iDerived,zDerived,yDerived,redshift, semiMajorBulge, semiMinorBulge, semiMajorDisk, semiMinorDisk, isAGN
-    conv = x, math.degrees(x), math.degrees(x), x, x, x, x, x, x, x, x, x, x, x, x
+    conv = x, math.degrees(x), math.degrees(x), x, x, x, x, x, x, x, x, x, x, x, x, x, x
     fmt = "%d %.9g %.9g %.9g %.9g %.9g %.9g %.9g %.9g %.9g %.9g %.9g %.9g %.9g %.9g %.9g %d"
 
   [[SERSIC2D]]
     attributes = galtileid, raJ2000, decJ2000, glat, glon,uDerived,gDerived,rDerived,iDerived,zDerived,yDerived,redshift, semiMajorBulge, semiMinorBulge
-    conv = x, math.degrees(x), math.degrees(x), x, x, x, x, x, x, x, x, x, x
+    conv = x, math.degrees(x), math.degrees(x), x, x, x, x, x, x, x, x, x, x, x
     fmt = "%d %.9g %.9g %.9g %.9g %.9g %.9g %.9g %.9g %.9g %.9g %.9g %.9g %.9g 0.0 0.0 0"
 
 [DIASOURCE]

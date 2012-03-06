@@ -2,8 +2,7 @@
 import sys
 sys.path.append("./movingObjects")
 import math
-import psycopg2
-#import pg
+import pg
 #import pyPgSQL as pg
 import movingObject as mo
 import movingObjectList as mol
@@ -36,18 +35,18 @@ class cosmoDB:
     def getMovingObjectsById(self, ids):
         objects = []
         for id in ids:
-            query = "select q,e,i,node,argperi,t_peri,epoch,h_g,g,index,"
-            query += "n_par,moid,objid,type,isvar,t0,timescale,varfluxmax,sed_filename,"
+            query = "select q,e,inclination,node,argperi,t_peri,epoch,h_g,phasegv,index,"
+            query += "n_par,moid,objid,otype,isvar,t0,timescale,varfluxmax,sed_filename,"
             query += "u_opp, g_opp, r_opp, i_opp, z_opp, y_opp from " 
             query += "orbits where objid = %i"%(id)
             res = self.connection.query(query)
             results = res.dictresult()
             r = results[0]
-            mymo = mo.MovingObject(r['q'], r['e'], r['i'], r['node'],
+            mymo = mo.MovingObject(r['q'], r['e'], r['inclination'], r['node'],
                                    r['argperi'], r['t_peri'], r['epoch'],
-                                   magHv=r['h_g'], phaseGv=r['g'], index=r['index'],
+                                   magHv=r['h_g'], phaseGv=r['phasegv'], index=r['index'],
                                    n_par=r['n_par'], moid=r['moid'], 
-                                   objid=r['objid'], objtype=r['type'],
+                                   objid=r['objid'], objtype=r['otype'],
                                    isVar=r['isvar'], var_t0=r['t0'],
                                    var_timescale=r['timescale'], var_fluxmax=r['varfluxmax'],
                                    sedname=r['sed_filename'],
@@ -80,35 +79,27 @@ class cosmoDB:
             poptable = 'neonightlyephem'):
         ramax = ra+radius/math.cos(self.deg2rad(dec))
         ramin = ra-radius/math.cos(self.deg2rad(dec))
+        if ramax > 360:
+            ramax = ramax - 360
+        if ramin < 0:
+            ramin = ramin + 360
         decmax = dec+radius
         decmin = dec-radius
         if decmin < -90:
             decmin = -90
-            if((-90 - decmin) > (decmax + 90)):
-                decmax = -190 - decmin
-            else:
-                decmax = decmax
-        elif decmax > 90:
+        if decmax > 90:
             decmax = 90
-            if((decmax - 90) > (90 - decmin)):
-                decmin = 180 - decmax
-            else:
-                decmin = decmin
-        else:
-            pass
                 
-
         mjdmax = obsdate + 0.5
         mjdmin = obsdate - 0.5
-        if ramin < 0 and ramax > 360:
-            query = "select o.* from %s n, orbits o where decl between %f and %f and obsdate between %f and %f and o.objid = n.objid"%(poptable, decmin, decmax, mjdmin, mjdmax)
-        elif ramax > 360:
-            query = "select o.* from %s n, orbits o where (ra between %f and 0. or ra between 0. and %f) and decl between %f and %f and obsdate between %f and %f and o.objid = n.objid"%(poptable, ramin,ramax-360.,decmin,decmax, mjdmin, mjdmax)
-        elif ramin < 0:
-            query = "select o.* from %s n, orbits o where (ra between %f and 360. or ra between 0. and %f) and decl between %f and %f and obsdate between %f and %f and o.objid = n.objid"%(poptable, ramin+360.,ramax,decmin,decmax, mjdmin, mjdmax)
-        else:
-            query = "select o.* from %s n, orbits o where ra between %f and %f and decl between %f and %f and obsdate between %f and %f and o.objid = n.objid"%(poptable, ramin, ramax, decmin, decmax, mjdmin, mjdmax)
 
+
+        # simple query, didn't wrap around 0
+        if ramin < ramax: 
+            query = "select o.* from %s n, orbits o where (decl between %f and %f) and (ra between %f and %f) and (obsdate between %f and %f) and o.objid=n.objid" %(poptable, decmin, decmax, ramin, ramax, mjdmin, mjdmax)
+        # else wrapped around zero
+        elif ramin >= ramax:
+            query  = "select o.* from %s n, orbits o where (decl between %f and %f) and (ra>=%f or ra<=%f) and (obsdate between %f and %f) and o.objid=n.objid" %(poptable, decmin, decmax, ramin, ramax, mjdmin, mjdmax)
         res = self.connection.query(query)
         results = res.dictresult()
         #print "Got results from cosmoDB query %s" %(query)
@@ -117,11 +108,11 @@ class cosmoDB:
         #    print r
         objects = []
         for r in results:
-            mymo = mo.MovingObject(r['q'], r['e'], r['i'], r['node'],
+            mymo = mo.MovingObject(r['q'], r['e'], r['inclination'], r['node'],
                                    r['argperi'], r['t_peri'], r['epoch'],
-                                   magHv=r['h_g'], phaseGv=r['g'], index=r['index'],
+                                   magHv=r['h_g'], phaseGv=r['phasegv'], index=r['index'],
                                    n_par=r['n_par'], moid=r['moid'], 
-                                   objid=r['objid'], objtype=r['type'],
+                                   objid=r['objid'], objtype=r['otype'],
                                    isVar=r['isvar'], var_t0=r['t0'],
                                    var_timescale=r['timescale'], var_fluxmax=r['varfluxmax'],
                                    sedname=r['sed_filename'],

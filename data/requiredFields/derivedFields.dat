@@ -60,6 +60,8 @@
       yDerived = float
       isVar = int
   [[EXTRAGALACTIC]]
+    [[[ZPOINT]]]
+    [[[SERSIC2D]]]
     [[[ASSEMBLEDGALAXY]]]
       varsimobjid = int
       appendint = int

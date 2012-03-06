@@ -18,6 +18,8 @@
     Opsim_moonphase = float, 'moonphase',x
     Opsim_obshistid = long, 'obshistid',x
     Opsim_expmjd = float, 'expmjd',x
+    Opsim_altitude = float, 'altitude',math.degrees(x)
+    Opsim_azimuth = float, 'azimuth',math.degrees(x)
 
 #Metadata for testing purposes file information
 [TEST]

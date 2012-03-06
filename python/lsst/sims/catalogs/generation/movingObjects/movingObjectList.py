@@ -3,8 +3,6 @@
 ljones, jmyers
 $Id$
 
-(2/12/2010)
-
 This class holds and uses lists of MovingObjects, letting you do functions which are better called on
 an aggregated bunch of MovingObjects than on the independent MovingObjects themselves. 
  * generateEphemeridesForAllObjects
@@ -153,7 +151,7 @@ class MovingObjectList(object):
         for i in range(len(self._mObjects)):
             for j in range(len(mjdTaiList)):
                 eph = ephems[i][j]
-                dradt = eph[6]/n.cos(n.radians(eph[2]))
+                dradt = eph[6]  #/n.cos(n.radians(eph[2]))  -- sky motion (including cos(dec) is coord motion)
                 ddecdt = eph[7]                 
                 self._mObjects[i].Ephemerides[mjdTaiListStr[j]] = mo.Ephemeris(mjdTai=mjdTaiList[j],
                                                                                ra=eph[1], dec=eph[2],
@@ -219,8 +217,12 @@ class MovingObjectList(object):
                 # Instantiate and read the throughput file. 
                 bandpass[f] = Bandpass()
                 bandpass[f].readThroughput(filename)
-        # read in and set up sed files - FIX this in the future (when more seds)
-        sedtypes = ('C.dat', 'S.dat')
+        # Read in and set up sed files. Assumes asteroid SEDS end in .dat
+        possiblesedtypes = os.listdir(rootSEDdir)
+        sedtypes = []
+        for p in possiblesedtypes:
+            if p.endswith('.dat'):
+                sedtypes.append(p)
         sed={}
         sedmag = {}
         sedcol = {}
@@ -244,7 +246,7 @@ class MovingObjectList(object):
             mjdTaiListStr.append(movingobj.mjdTaiStr(mjdTai))
             # mjdTaiListStr will be the same for all objects.
 
-        # now loop through each object and assign appropriate magnitudes for this observation
+        # now loop through each object and assign appropriate magnitudes values for this observation
         for movingobj in self._mObjects:
             # loop through mjdTaiList
             for mjdTaiStr in mjdTaiListStr:
@@ -256,28 +258,34 @@ class MovingObjectList(object):
                 sedname = movingobj.getsedname()
                 # Check if sedname in list of known seds.
                 if sed.has_key(sedname)==False:
-                    raise Exception("SED (%s) of moving object not in movingObjectList's directory." %(sedname))
+                    # HACK  - FIX when catalogs updated
+                    sedname = 'S.dat'
+                    #raise Exception("SED (%s) of moving object (#%d) not in movingObjectList's directory."
+                    #                %(sedname, movingobj.getobjid()))
                 # calculate magnitudes
                 filtmag = vmag + sedcol[sedname][filt]
                 imsimmag = vmag + sedcol[sedname]['imsim']
-                # set fluxnorm in ephemeris - not really needed presently.
-                #fluxnorm = sed[sedname].calcFluxNorm(vmag, bandpass['V'])
-                #movingobj.Ephemerides[mjdTaiStr].setfluxnorm(fluxnorm)
-                # set filter magnitude in ephemeris - needed.
+                # set filter magnitude in ephemeris 
                 movingobj.Ephemerides[mjdTaiStr].setmagFilter(filtmag)  
                 movingobj.Ephemerides[mjdTaiStr].setmagImsim(imsimmag)
-                # calculate errors in ra/dec/mag from magnitude/m5
+                # Add SNR measurement if given 5-sigma limiting mag for exposure.
+                if fiveSigmaLimitingMag != None:
+                    flux_ratio = n.power(10, 0.4*(fiveSigmaLimitingMag - filtmag))
+                    snr = 5 * (flux_ratio)
+                    movingobj.Ephemerides[mjdTaiStr].setsnr(snr)                    
+                # Calculate approx errors in ra/dec/mag from magnitude/m5.
                 if withErrors:
                     if fiveSigmaLimitingMag == None:
-                        raise Exception, "To calculate errors, fiveSigmaLimitingMag must be passed in"
+                        raise Exception("To calculate errors, fiveSigmaLimitingMag is needed.")
                     # calculate error in ra/dec
                     rgamma = 0.039
                     # average seeing is 0.7" (or 700 mas)
-                    flux_ratio = n.power(10, 0.4*(fiveSigmaLimitingMag - filtmag))
                     error_rand = n.sqrt((0.04-rgamma)*flux_ratio + rgamma*flux_ratio*flux_ratio)
                     ast_error_rand = 700.0 * error_rand
                     ast_error_sys = 10.0
                     astrom_error = n.sqrt(ast_error_sys**2 + ast_error_rand**2)
+                    # convert from mas to deg
+                    astrom_error = astrom_error / 100.0 / 60.0/ 60.0
                     movingobj.Ephemerides[mjdTaiStr].setastErr(astrom_error)
                     mag_error_sys = 0.005
                     mag_error = n.sqrt(error_rand**2 + mag_error_sys**2)
@@ -288,31 +296,29 @@ class MovingObjectList(object):
     def cutAllSNR(self, fiveSigmaLimitingMag, SNRcutoff, mjdTai):
         """calculate SNR for each object and create new moving object list of objects above the SNR cutoff """
         """ Given five sigma limiting mag for image and SNR cutoff """
-        # this method is ONLY applicable to ONE time and ONE five sigma limiting magnitude at once
+        # This method is ONLY applicable to ONE time and ONE five sigma limiting magnitude at once
         outputList = []
-        # calculate magnitude equivalent of SNR cutoff, for simple cut
-        flux_ratio = SNRcutoff / 5.0
-        magSNRcutoff = fiveSigmaLimitingMag -2.5 *n.log10(flux_ratio)
-        # just check that ephemerides exist and magnitudes calculated on this date
+        # Uses SNR generated in calcAllMags when used with error generation. 
+        # Check that ephemerides exist and magnitudes/snr calculated on this date
         movingobj = self._mObjects[0]
         mjdTaiStr = movingobj.mjdTaiStr(mjdTai)
         try:
             movingobj.Ephemerides[mjdTaiStr]
         except AttributeError:
-            raise Exception, "Need to set up ephemerides and magnitudes for this date (%f) first" %(mjdTai)
+            raise Exception("Need to set up ephemerides and magnitudes for this date (%f) first" %(mjdTai))
         try: 
-            movingobj.Ephemerides[mjdTaiStr].getmagFilter()
+            movingobj.Ephemerides[mjdTaiStr].getsnr()
         except AttributeError:
-            raise Exception, "Have an ephemeride for this date (%f), but no magnitude yet - calcAllMags first" %(mjdTai)
+            raise Exception("Have an ephemeride for this date (%f), but no SNR yet - calcAllMags first with a 5-sigma limiting magnitude value" %(mjdTai))
         for movingobj in self._mObjects:
-            if (movingobj.Ephemerides[mjdTaiStr].getmagFilter() < magSNRcutoff):
+            if (movingobj.Ephemerides[mjdTaiStr].getsnr() > SNRcutoff):
                 # then object was above the SNR cutoff
                 outputList.append(movingobj)
         return MovingObjectList(outputList)
 
     def printList(self, mjdTaiList):
         """ Simple print of all the parameters associated with a particular object """
-        output = ['objid', 'mjdTai', 'ra', 'dec', 'dradt', 'ddecdt','distance', 'magImsim', 'magFilter', 'filter']
+        output = ['objid', 'mjdTai', 'ra', 'dec', 'dradt', 'ddecdt', 'distance', 'magImsim', 'magFilter', 'filter']
 
         # set up mjdTaiListStr for access to ephemeris dictionaries
         movingobj = self._mObjects[0]
@@ -334,9 +340,8 @@ class MovingObjectList(object):
                                                         ephem.getfilter())
         return
 
-
+"""
     def makeListOutput_imsim(self, mjdTai):
-        """ Put output together in a list of lists for imsim Trimcat """
         # want to send out : 
         #  objid  RA(deg)  Dec(deg)  
         #  imsimMag  SED_filename   
@@ -362,28 +367,42 @@ class MovingObjectList(object):
                        ephem.getddecdt()]
             outList.append(outLine)
         return outList, descriptionList
-                                        
-    def makeListOutput_diasource(self, mjdTai):
-        """ Put output together in a list of lists for DiaSource catalogs """
-        # for diasource need:
-        # objid RA(deg) Dec(Deg) raerrors(deg) declerrors(deg)
-        # magFilter,  magError  (Taimidpoint/start, filter id) 
-        # this method works on ONE time only
-        descriptionList = ['objid', 'ra', 'decl', 'raError', 'declError', 'magFilter', 'magError']
 
+
+    def makeListOutput(self, mjdTai):
+        # want to send out : 
+        #  objid  RA(deg)  Dec(deg)  
+        #  imsimMag  SED_filename   
+        #  dRA/dt(deg/day)  dDec/dt (deg/day)  
+        descriptionList = [ 'objid',
+                            'ra', 'ra_err', 'dradt',
+                            'dec', 'dec_err', 'ddecdt',
+                            'distance', 
+                            'magFilter', 'magErr',
+                            'magImsim', 'flux_scale', 'sedname']
+        
+        outList = []
+        if self.countList() == 0:
+            warning.warn('No moving objects in this MovingObjectList.')
+            return outList, descriptionList
         # set up mjdTaiListStr for access to ephemeris dictionaries
         movingobj = self._mObjects[0]
         mjdTaiStr = movingobj.mjdTaiStr(mjdTai)
-
-        outList = []
         for movingobj in self._mObjects:
             ephem = movingobj.Ephemerides[mjdTaiStr]
             outLine = [movingobj.getobjid(),
                        ephem.getra(),
+                       ephem.getastErr(),
+                       ephem.getdradt(),
                        ephem.getdec(),
                        ephem.getastErr(),
-                       ephem.getastErr(),
+                       ephem.getddecdt(),
+                       ephem.getdistance(),
                        ephem.getmagFilter(),
-                       ephem.getmagErr()]
+                       ephem.getmagErr(),
+                       ephem.getmagImsim(),
+                       ephem.getfluxnorm(),
+                       movingobj.getsedname()]
             outList.append(outLine)
         return outList, descriptionList
+"""

@@ -12,8 +12,9 @@ if __name__ == "__main__":
       obsid = 88533591
   csize = 5000
 
-  objtypes = ['GALAXY_BULGE', 'AGN', 'ALLSTARS', 'SSM', 'GLENS', 'IMAGE', 'EASTEREGGS', 'GALAXY_BULGE', 'GALAXY_DISK', 'AGN']
- #  objtypes = ['DWARFCOMPANION']
+  objtypes = ['SSM', 'CEPHEIDSTARS', 'EBSTARS', 'MSSTARS', 'WDSTARS', 'BHBSTARS', 'RRLYSTARS', 'GLENS', 'IMAGE', 'EASTEREGGS', 'GALAXY_BULGE', 'GALAXY_DISK', 'AGN']
+  #objtypes = ['ASSEMBLEDGALAXY', 'GLENS', 'EASTEREGGS', 'SSM', 'CEPHEIDSTARS', 'EBSTARS', 'MSSTARS', 'WDSTARS',
+  #        'BHBSTARS', 'RRLYSTARS', 'EASTEREGGS', 'IMAGE', 'GLENS', 'ASSEMBLEDGALAXY']
   varobj = ['CEPHEIDSTARS','EBSTARS','MSSTARS', 'WDSTARS', 'BHBSTARS', 'RRLYSTARS', 'AGN', 'IMAGE']
   warnings.simplefilter('ignore', category=exceptions.UserWarning)
   for objtype in objtypes:
