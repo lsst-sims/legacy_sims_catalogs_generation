@@ -2,9 +2,19 @@
 
 #Trim file information
 [TRIM]
-  Unrefracted_Altitude = float, ''
-  Unrefracted_Azimuth = float, ''
-  Slalib_date = str, ''
+  Unrefracted_Altitude = float, '',math.degrees(x)
+  Unrefracted_Azimuth = float, '',math.degrees(x)
+  Slalib_date = str, '',x
+  SIM_MINSOURCE = int, '',x	
+  SIM_TELCONFIG = int, '',x
+  SIM_VISTIME = float, '',x
 
+#Reference file information
+[REFERENCECATALOG]
+#
+#Difference image source  file information
+[DIASOURCE]
+
+#stub file information
 [STUB]
-  TEST3 = str, ''
+  TEST3 = str, '',x

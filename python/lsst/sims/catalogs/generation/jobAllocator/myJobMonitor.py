@@ -1,8 +1,10 @@
 import sys, random, time
 from lsst.sims.catalogs.generation.db import jobDB
 
-def howManyJobs(eM, tableId):
-    eM = jobDB.JobState(tableId)
+def howManyJobs(eM, tableId, jobInt):
+    tableStr = str(tableId)
+    tableInt = int(tableId)
+    eM = jobDB.JobState(tableInt)
     tableStr = str(tableId)
     t0 = eM.queryState(tableStr + 'NumJobs')
     if t0 == None: t0 = 0
@@ -10,27 +12,28 @@ def howManyJobs(eM, tableId):
     print 'howManyJobs: Current num: ', t0
     return t0
 
-def qsubJob(tableId, jobId, jobName):
-    eM = jobDB.JobState(tableId)
+def qsubJob(eM, tableId, jobId):
     tableStr = str(tableId)
     t0 = eM.queryState(tableStr + 'NumJobs')
     if t0 == None: t0 = 0
-    print 'addJob: Current num: ', t0
+    print 'AddedJob: Current num: ', t0
     t1 = int(t0) + 1
     eM.updateState(tableStr + 'NumJobs', str(t1))
-    print 'addJob: New num: ', t1
-    jobKey = tableId + '_' + jobId + 'JS'
+    print 'AddedJob: New num: ', t1
+    jobKey = tableStr + '_%s' %(jobId) + 'JS'
     eM.updateState(jobKey, 'QSUBBED')
     eM.updateState(jobKey + 'QT', time.ctime())
-    jobKeyN = tableId + '_' + jobId + 'N'
-    eM.updateState(jobKeyN, jobName)
-    eM.showStates()
+    print 'Updated the state of jobId %s as QSUBBED.' %(jobId)
+    #howManyJobs(eM, tableId, jobId)
+    #eM.showStates()
 
 def jobRunning(eM, tableId, jobId):
-    jobKey = tableId + '_' + jobId + 'JS'
+    tableStr = str(tableId) 
+    jobKey = tableStr + '_%s' %(jobId) + 'JS'
     eM.updateState(jobKey, 'RUNNING')
     eM.updateState(jobKey + 'RT', time.ctime())
-    eM.showStates()
+    print 'Updated the state of jobId %s as RUNNING.' %(jobId)
+    #eM.showStates()
 
 def jobFinished(eM, tableId, jobId):
     tableStr = str(tableId)
@@ -39,12 +42,12 @@ def jobFinished(eM, tableId, jobId):
     t1 = int(t0) - 1
     eM.updateState(tableStr + 'NumJobs', str(t1))
     print 'addJob: New num: ', t1
-    jobKey = tableId + '_' + jobId + 'JS'
+    jobKey = tableStr + '_%s' %(jobId) + 'JS'
     eM.updateState(jobKey, 'FINISHED')
     eM.updateState(jobKey + 'FT', time.ctime())
-    eM.showStates()
+    print 'Updated the state of %s as FINISHED.' %(jobId)
+    #eM.showStates()
 
-    
 def throttle(eM, tableId, maxNumJobs, throttleTime):
     print 'throttle: maxNumJobs is ', maxNumJobs
     done = False
@@ -58,40 +61,31 @@ def throttle(eM, tableId, maxNumJobs, throttleTime):
         else:
             done = True
 
+if not len(sys.argv) == 4:
+    print "usage: %python myJobMonitor.py tableId state jobId"
+    quit()
+    
+tableId = sys.argv[1]
+state = sys.argv[2]
+jobId = sys.argv[3]
 
-
-
-usage = "usage: %prog obsid rx ry sx sy ex datadir"
-parser = OptionParser(usage=usage)
-(options, args) = parser.parse_args()
-
-tableId = args[0]
-state = args[1]
-jobId = args[2]
-print 'Using tableId: ', tableId
-
-
-## for i in range(10):
-##     jobId = 'Job' + str(i)
-##     print '%i:  Current num jobs' % i
-##     howManyJobs(eM, tableId)
-##     print '--------'
-##     print '%s: qsubbing Job (for pretend)' % jobId
-##     qsubJob(eM, tableId, jobId, 'MyJobNameForJob%i' % i)
-##     print '%s: Job running (for pretend)' % jobId
-##     jobRunning(eM, tableId, jobId)
-##     print '%s: Job finished (for pretend)' % jobId
-##     jobFinished(eM, tableId, jobId)
-##     print '--------'
-
-## print 'The final state of the table:'
-## eM.showStates()
+if state == 'qsubbed':
+    tableId = int(tableId)
+    eM = jobDB.JobState(tableId)
+    qsubJob(eM, tableId, jobId)
 
 if state == 'running':
+    tableId = int(tableId)
     eM = jobDB.JobState(tableId)
     jobRunning(eM, tableId, jobId)
 
 if state == 'finished':
+    #jid = jobDB.JobId(id, owner)
+    tableId = int(tableId)
     eM = jobDB.JobState(tableId)
     jobFinished(eM, tableId, jobId) 
 
+if state == 'howmany':
+    tableId = int(tableId)
+    eM = jobDB.JobState(tableId)
+    howManyJobs(eM, tableId, jobId)

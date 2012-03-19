@@ -1,3 +1,5 @@
+import warnings
+from sqlalchemy.pool import NullPool
 from sqlalchemy.orm import scoped_session, sessionmaker
 from sqlalchemy.sql import expression
 from sqlalchemy import create_engine
@@ -6,24 +8,17 @@ import sqlalchemy.databases as sd
 from sqlalchemy import func
 from sqlalchemy import schema
 from elixir import *
+from sqlalchemy import exc as sa_exc
 
-
-a_engine = create_engine("postgresql://cosmouser:cosmouser@172.25.79.34/cosmoDB.11.19.2009",
-        echo=False, server_side_cursors=True)
-a_session = scoped_session(sessionmaker(autoflush=True, 
-    bind=a_engine))
-a_metadata = metadata
-a_metadata.bind = a_engine
-
-b_engine = create_engine("postgresql://jobreporter:jobreporter@172.25.79.34/joblog",
-        echo=False)
+warnings.simplefilter("ignore", category=sa_exc.SAWarning)
+b_engine = create_engine("postgresql://jobreporter:jobreporter@128.208.190.71/joblog",
+        echo=False, convert_unicode=False, poolclass=NullPool)
 b_session = application_session = scoped_session(sessionmaker(autoflush=True,
      bind=b_engine))
 b_metadata = ThreadLocalMetaData()
 b_metadata.bind = b_engine
-
 '''
-c_engine = create_engine("postgresql://calibuser:calibuser@128.95.99.32/calibDB.05.05.2010",
+c_engine = create_engine("postgresql://calibuser:calibuser@128.208.190.117/calibDB.05.05.2010",
         echo=False)
 c_session = application_session = scoped_session(sessionmaker(autoflush=True,
      bind=c_engine))
@@ -35,50 +30,6 @@ class CalibStar(Entity):
           session=c_session)
   using_mapper_options(primary_key=['simobjid'])
 '''
-class Star(Entity):
-  using_options(tablename="stars", autoload=True, metadata=a_metadata,
-          session=a_session)
-
-class Wd(Entity):
-  using_options(tablename="starswd", autoload=True, metadata=a_metadata,
-          session=a_session)
-
-class Galaxy(Entity):
-  using_options(tablename="galaxy_11182010", autoload=True, metadata=a_metadata,
-          session=a_session)
-
-class GalaxyRect(Entity):
-  using_options(tablename="galaxy_rect", autoload=True, metadata=a_metadata,
-          session=a_session)
-  using_mapper_options(primary_key=['id'])
-
-class QsoImage(Entity):
-  using_options(tablename="tdsl_qso_image", autoload=True, metadata=a_metadata,
-          session=a_session)
-  using_mapper_options(primary_key=['id'])
-
-class GalaxyLens(Entity):
-  using_options(tablename="galaxy_lens", autoload=True, metadata=a_metadata,
-          session=a_session)
-  using_mapper_options(primary_key=['id'])
-
-class Ephems(Entity):
-  using_options(tablename="ephems", autoload=True, metadata=a_metadata,
-          session=a_session)
-  using_mapper_options(primary_key=['objid','obsdate'])
-
-class Orbits(Entity):
-  using_options(tablename="orbits", autoload=True, metadata=a_metadata,
-          session=a_session)
-
-class Tiles(Entity):
-  using_options(tablename="tiles", autoload=True, metadata=a_metadata,
-          session=a_session)
-
-class OpSim3_61(Entity):
-  using_options(tablename="output_opsim3_61", autoload=True,
-          metadata=a_metadata, session=a_session)
-
 class CatalogEventLog (Entity):
   using_options(tablename='eventlog', metadata=b_metadata, session=b_session)
   jobid = Field(Integer, index=True)
@@ -95,9 +46,9 @@ class CatalogEventLog (Entity):
 class JobStateLog (Entity):
   using_options(tablename='statelog', metadata=b_metadata, session=b_session)
   jobid = Field(Integer, index=True)
-  owner = Field(UnicodeText)
-  pkey = Field(UnicodeText)
-  pvalue = Field(UnicodeText)
+  owner = Field(Text)
+  pkey = Field(Text)
+  pvalue = Field(Text)
   time = Field(DateTime(timezone=True))
   def __repr__(self):
     return '<Log state (%s,%s) at %s>' % (self.pkey, self.pvalue, self.time)

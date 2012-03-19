@@ -5,7 +5,7 @@ import time
 
 js = jobDB.JobState()
 jobid = js.getJobId()
-print jobid
+print jobid.getId(), jobid.getOwner()
 js.updateState("mykey","my value")
 while True:
   print js.queryState("mykey")

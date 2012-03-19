@@ -4,27 +4,29 @@ from sqlalchemy import func
 import datetime as dt
 from pytz import timezone
 import socket
+import time
 
 class LogEvents(object):
-  def __init__(self, jobdescription="", ip = None):
+  def __init__(self, jobdescription="", jobid=None, ip = None):
     setup_all()
     create_all()
     self._tasknumber = None
-    self._jobid = None
-    jobid = b_session.query(func.max(CatalogEventLog.jobid)).one()[0]
-    print "my Jobid is",jobid
     if jobid is None:
-      self._jobid = 1
+      jobid = b_session.query(func.max(CatalogEventLog.jobid)).one()[0]
+      if jobid is None:
+        self._jobid = 1
+      else:
+        self._jobid = jobid + 1
     else:
-      self._jobid = jobid + 1
+      self._jobid = int(jobid)
     self._jobdescription = jobdescription
     if ip is None:
       self._ip = socket.gethostbyname(socket.gethostname())
     else:
       self._ip = ip
+    self.persist('__REGISTRATION__', 'Registered job %i'%self._jobid, '')
 
   def persist(self, key, value, description):
-    print "Persisting Task number %s"%(str(self._tasknumber))
     CatalogEventLog(jobid=self._jobid, pkey=unicode(key),
             pvalue=unicode(value),
             time=dt.datetime(1,1,1).now(timezone('US/Pacific')),
@@ -36,13 +38,11 @@ class LogEvents(object):
     key = "TASK_START" 
     if tasknumber is None:
       tasknumber = b_session.query(func.max(CatalogEventLog.taskNumber)).one()[0]
-      print "Task number %s"%(str(tasknumber))
       if tasknumber is None:
         tasknumber = 1
     else:
       pass
     self._tasknumber = tasknumber
-    print "Task number %s"%(str(self._tasknumber))
     value = "Task started"
     self.persist(key, value, self._jobdescription)
     
@@ -91,9 +91,18 @@ class JobState(object):
               '%s'"%(self._jobid.getId(),self._jobid.getOwner())).all()
       for state in statearr:
         self._states[state.pkey] = state
+    self.updateState("__Registration__", "Completed job registration")
 
   def getJobId(self):
     return self._jobid
+
+  def getJobIdsByOwner(self, owner):
+    jids = []
+    idarr = b_session.query(func.distinct(JobStateLog.jobid)).filter("owner = '%s'"%(owner)).all()
+    for id in idarr:
+      jids.append(JobId(id[0], owner))
+    return jids
+
 
   def updateState(self, key, state):
     if self._states.has_key(key):
@@ -106,6 +115,7 @@ class JobState(object):
               pvalue=unicode(state),
               time=dt.datetime(1,1,1).now(timezone('US/Pacific')))
       b_session.commit()
+
   def queryState(self, key):
     if self._states.has_key(key):
       b_session.refresh(self._states[key])
@@ -114,9 +124,17 @@ class JobState(object):
       return None
 
   def showStates(self):
+    states = {}
+    keys = self._states.keys()
     for k in self._states.keys():
       b_session.refresh(self._states[k])
-      print k, self._states[k].pvalue
+      #print k, self._states[k].pvalue
+      states[k] = self._states[k].pvalue
+    return states
+
+  def refreshStates(self):
+    for k in self._states.keys():
+      b_session.refresh(self._states[k])
 
   def deleteStates(self):
     for key in self._states.keys():

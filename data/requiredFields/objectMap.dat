@@ -1,6 +1,18 @@
 # Mapping of object types to their database repr
 
+
 #Start mapping
+#The following is not suggested for making files where the object id needs to
+#be tracked as the appendint will be the same for all the star types.  Use
+#ALLSTARS instead
+[ALLSTARSVIEW]
+  formatas = 'POINT'
+  component = 'GALACTIC'
+  [[ALLSTARS]]
+    table = 'AllStar'
+    ptype = 'POINT'
+    idkey = 'id'
+    constraint =
 [ALLSTARS]
   formatas = 'POINT'
   component = 'GALACTIC'
@@ -11,6 +23,48 @@
     constraint =
   [[WDSTARS]]
     table = 'Wd'
+    ptype = 'POINT'
+    idkey = 'id'
+    constraint =
+  [[BHBSTARS]]
+    table = 'BHB'
+    ptype = 'POINT'
+    idkey = 'id'
+    constraint =
+  [[RRLYSTARS]]
+    table = 'RRLy'
+    ptype = 'POINT'
+    idkey = 'id'
+    constraint =
+[EASTEREGGS]
+  formatas = 'POINT'
+  component = 'GALACTIC'
+  [[ASTROMEASTEREGGS]]
+    table = 'AstromEggs'
+    ptype = 'POINT'
+    idkey = 'id'
+    constraint =
+[EBSTARS]
+  formatas = 'POINT'
+  component = 'GALACTIC'
+  [[EBSTARS]]
+    table = 'EBSTARS'
+    ptype = 'POINT'
+    idkey = 'id'
+    constraint =
+[CEPHEIDSTARS]
+  formatas = 'POINT'
+  component = 'GALACTIC'
+  [[CEPHEIDSTARS]]
+    table = 'CEPHEIDSTARS'
+    ptype = 'POINT'
+    idkey = 'id'
+    constraint =
+[DWARFCOMPANION]
+  formatas = 'POINT'
+  component = 'GALACTIC'
+  [[DWSTARS]]
+    table = 'DWARFGALAXYSTARS'
     ptype = 'POINT'
     idkey = 'id'
     constraint =
@@ -38,66 +92,86 @@
     ptype = 'POINT'
     idkey = 'id'
     constraint =
+[BHBSTARS]
+  formatas = 'POINT'
+  component = 'GALACTIC'
+  [[BHBSTARS]]
+    table = 'BHB'
+    ptype = 'POINT'
+    idkey = 'id'
+    constraint =
+[RRLYSTARS]
+  formatas = 'POINT'
+  component = 'GALACTIC'
+  [[RRLYSTARS]]
+    table = 'RRLy'
+    ptype = 'POINT'
+    idkey = 'id'
+    constraint =
 [ASSEMBLEDGALAXY]
   formatas = 'ASSEMBLEDGALAXY'
   component = 'EXTRAGALACTIC'
   [[ASSEMBLEDGALAXY]]
-    table = 'GalaxyRect'
-    ptype = 'ASSEMBLEDGALAXY'
-    idkey = 'id'
-    constraint = 
-[NEWASSEMBLEDGALAXY]
-  formatas = 'ASSEMBLEDGALAXY'
-  component = 'EXTRAGALACTIC'
-  [[NEWASSEMBLEDGALAXY]]
     table = 'Galaxy'
     ptype = 'ASSEMBLEDGALAXY'
-    idkey = 'id'
+    idkey = 'galtileid'
     constraint = 
-[GALAXY]
+[GALAXY_BULGE]
   formatas = 'SERSIC2D'
   component = 'EXTRAGALACTIC'
   [[BULGE]]
     table = 'Galaxy'
     ptype = 'SERSIC2D_BULGE'
-    idkey = 'id'
-    constraint = 'fluxnorm_bulge < 99'
+    idkey = 'galtileid'
+    constraint = 'sedFilename is not NULL'
+[GALAXY_DISK]
+  formatas = 'SERSIC2D'
+  component = 'EXTRAGALACTIC'
   [[DISK]]
     table = 'Galaxy'
     ptype = 'SERSIC2D_DISK'
-    idkey = 'id'
-    constraint = 'fluxnorm_disk < 99'
+    idkey = 'galtileid'
+    constraint = 'sedFilename is not NULL'
 [AGN]
-  formatas = 'POINT'
+  formatas = 'ZPOINT'
   component = 'EXTRAGALACTIC'
   [[AGN]]
-    table = 'GALAXY'
-    ptype = 'POINT'
+    table = 'Galaxy'
+    ptype = 'ZPOINT'
+    idkey = 'galtileid'
+    constraint = 'sedFilename is not NULL'
+[GLENS]
+  formatas = 'SERSIC2D'
+  component = 'EXTRAGALACTIC'
+  [[LENS]]
+    table = 'LENS'
+    ptype = 'SERSIC2D_BULGE'
     idkey = 'id'
-    constraint = 'isagn > 0'
+    constraint = ''
+[IMAGE]
+  formatas = 'ZPOINT'
+  component = 'EXTRAGALACTIC'
+  [[IMAGE]]
+    table = 'IMAGE'
+    ptype = 'ZPOINT'
+    idkey = 'id'
+    constraint = ''
+
 [SSM]
   formatas = 'MOVINGPOINT'
-  component = 'SOLARSYSTEM'
+  component = 'SOLAR'
   [[EPHEMS]]
     table = 'Ephems'
     ptype = 'MOVINGPOINT'
     idkey = 'dbid'
-    constraint = "%%'obsdate between %f - 0.5 and %f + 0.5'%(self.expmjd, self.expmjd)"
-[ORBIT]
-  formatas = 'ORBIT'
-  component = 'SOLARSYSTEM'
-  [[ORBIT0]]
-    table = 'Orbits'
-    ptype = 'ORBIT'
-    idkey = 'id'
-    constraint =
+    constraint = 
 [METADATA]
   component = 'OPSIM361'
   [[OPSIM361]]
     table = 'OpSim3_61'
     idkey = 'Opsim_obshistid'
-    raradkey = 'Unrefracted_RA'
-    decradkey = 'Unrefracted_Dec'
+    rakey = 'Unrefracted_RA'
+    deckey = 'Unrefracted_Dec'
     expmjdkey = 'Opsim_expmjd'
     filterkey = 'Opsim_filter'
     constraint =

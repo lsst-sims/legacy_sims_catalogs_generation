@@ -2,11 +2,13 @@
 from lsst.sims.catalogs.generation.db import jobDB
 import sys
 
-if len(sys.argv) < 2:
-  print "Usage jobstate_update_test.py jobid"
+if len(sys.argv) < 3:
+  print "Usage jobstate_update_test.py jobid owner"
   sys.exit(1)
 
-jid = int(sys.argv[1])
+id = int(sys.argv[1])
+owner = sys.argv[2]
+jid = jobDB.JobId(id, owner)
 js = jobDB.JobState(jobid=jid)
 jobid = js.getJobId()
 print jobid
@@ -16,3 +18,4 @@ js.updateState("mykey","value from second process")
 print js.queryState("mykey")
 js.updateState("newprocesskey", "brand new key/value from second process")
 print js.queryState("newprocesskey")
+print js.showStates()

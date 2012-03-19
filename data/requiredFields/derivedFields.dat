@@ -1,41 +1,73 @@
 [TRIM]
   [[GALACTIC]]
     [[[POINT]]]
-      raHelio =float
-      decHelio =  float
       raTrim = float
       decTrim = float
-  [[SOLARSYSTEM]]
+  [[SOLAR]]
     [[[MOVINGPOINT]]]
-      raHelio = float
-      decHelio = float
       raTrim = float
       decTrim = float
   [[EXTRAGALACTIC]]
     [[[SERSIC2D]]]
-      raHelio = float
-      decHelio = float
       raTrim = float
       decTrim = float
+      galacticExtinctionModel = str
+      galacticAv = float
+      galacticRv = float
     [[[SERSIC2D_BULGE]]]
-      raHelio = float
-      decHelio = float
       raTrim = float
       decTrim = float
+      galacticExtinctionModel = str
+      galacticAv = float
+      galacticRv = float
     [[[SERSIC2D_DISK]]]
-      raHelio = float
-      decHelio = float
       raTrim = float
       decTrim = float
-    [[[POINT]]]
-      raHelio = float
-      decHelio = float
+      galacticExtinctionModel = str
+      galacticAv = float
+      galacticRv = float
+    [[[ZPOINT]]]
       raTrim = float
       decTrim = float
-
+      galacticExtinctionModel = str
+      galacticAv = float
+      galacticRv = float
 
 [STUB]
   [[GALACTIC]]
     [[[POINT]]]
       raHelio = float
       decHelio = float
+
+[TEST]
+  [[GALACTIC]]
+    [[[POINT]]]
+[DIASOURCE]
+  [[SOLAR]]
+    [[[MOVINGPOINT]]]
+[REFERENCECATALOG]
+  [[SOLAR]]
+    [[[MOVINGPOINT]]]
+  [[GALACTIC]]
+    [[[POINT]]]
+      varsimobjid = int
+      appendint = int
+      uDerived = float
+      gDerived = float
+      rDerived = float
+      iDerived = float
+      zDerived = float
+      yDerived = float
+      isVar = int
+  [[EXTRAGALACTIC]]
+    [[[ZPOINT]]]
+    [[[SERSIC2D]]]
+    [[[ASSEMBLEDGALAXY]]]
+      varsimobjid = int
+      appendint = int
+      uDerived = float
+      gDerived = float
+      rDerived = float
+      iDerived = float
+      zDerived = float
+      yDerived = float

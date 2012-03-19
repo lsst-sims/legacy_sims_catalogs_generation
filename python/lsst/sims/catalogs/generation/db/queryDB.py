@@ -1,64 +1,76 @@
 #!/usr/bin/env python
-from dbModel import *
+from dbMsModel import *
+import time
+from copy import deepcopy
 import re
 import os
 import math
 import numpy
+import warnings
 import pyoorb
 from lsst.sims.catalogs.generation.config import ConfigObj
-import lsst.sims.catalogs.generation.movingObjects as mo
 from lsst.sims.catalogs.measures.instance import InstanceCatalog
+from lsst.sims.catalogs.measures.instance import CatalogDescription
+from lsst.sims.catalogs.measures.instance import Metadata
 from lsst.sims.catalogs.measures.astrometry import Bbox
+from sqlalchemy import select 
+from sqlalchemy.orm import join
+from sqlalchemy.orm import aliased
+from sqlalchemy.sql.expression import text
+from sqlalchemy.sql.expression import select
+from sqlalchemy.sql.expression import between
 
 
 class queryDB(object):
-  def __init__(self, objtype = 'STARS', filetypes=('TRIM',), chunksize=100000):
+  def __init__(self, objtype = 'STARS', filetypes=('TRIM',), chunksize=100000,
+          makeCat=True):
     if os.environ.has_key("CATALOG_DESCRIPTION_PATH"):
       catalogDescriptionPath = os.environ["CATALOG_DESCRIPTION_PATH"]
     else:
       raise Exception("Environment variable CATALOG_DESCRIPTION_PATH not set to location of the catalog description files")
-    if os.environ.has_key("SED_DATA"):
-      sedDataPath = os.environ["SED_DATA"]
-    else:
-      raise Exception("Environment variable SED_DATA not set to location of the default SED files")
+    catalogDescriptionPath = self.getEnvironPath("CATALOG_DESCRIPTION_PATH")
     dbMapConfigFile = catalogDescriptionPath+"requiredFields.dat"
     objConfigFile = catalogDescriptionPath+"objectMap.dat"
+    objEnumConfigFile = catalogDescriptionPath+"objectEnum.dat"
     metaConfigFile = catalogDescriptionPath+"requiredMetadata.dat"
-    setup_all()
+    self.catDescription = CatalogDescription(catalogDescriptionPath+"/config.dat")
+    self.metadata = Metadata(catalogDescriptionPath+"/config.dat")
     self.filetypes = filetypes
     self.objtype = objtype
     self.chunksize=chunksize
-    self.rootSEDdir=sedDataPath
     self.dm = ConfigObj(dbMapConfigFile)
     self.om = ConfigObj(objConfigFile)
+    self.em = ConfigObj(objEnumConfigFile)['OBJECTTYPES']
     self.mm = ConfigObj(metaConfigFile)
     self.queries = None
+    self.coldesc = None
     self.ptype = 'POINT'
+    self.ftype = 'POINT'
     self.component = None
     self.expmjd = None
     self.centradeg = None
     self.centdecdeg = None
+    self.radiusdeg = None
     self.filter = None
     self.opsimmeta = None
     self.opsim = ""
     self.curtile = None
+    self.makeCat = makeCat
+
+  def closeSession(self):
+    session.close_all()
 
   def getNextChunk(self):
-    result = []
-    for q in self.queries:
-      if len(result) == self.chunksize:
-          break
-      else:
-          result += q.fetchmany(self.chunksize - len(result))  
+    result = self.queries.fetchmany(self.chunksize)
     if len(result) == 0:
+      self.closeSession()
       return None
     else:
-      return self.makeCatalogFromQuery(result)
-    """
-    except Exception, e:
-      print "Exception of type: %s"%(type(e))
-      raise Exception(e)
-    """
+      if self.makeCat:
+        cat = self.makeCatalogFromQuery(result)
+      else:
+	cat = True
+      return cat
 
   def getOpsimMetadataById(self, id, opsim="OPSIM361"):
     self.opsim = opsim
@@ -81,44 +93,78 @@ class queryDB(object):
       query = query.add_column(cols[k])
     self.opsimmeta = query.first()
     self.centradeg =\
-    eval("self.opsimmeta.%s"%(omap['raradkey']))*180./math.pi
+    math.degrees(eval("self.opsimmeta.%s"%(omap['rakey'])))
     self.centdecdeg =\
-    eval("self.opsimmeta.%s"%(omap['decradkey']))*180./math.pi
+    math.degrees(eval("self.opsimmeta.%s"%(omap['deckey'])))
+    if self.centdecdeg < -90.:
+        self.centdecdeg = -self.centdecdeg - 180.
+        self.centradeg += 180.
+        self.centradeg = self.centradeg%360.
+    if self.centdecdeg > 90.:
+        self.centdecdeg = -self.centdecdeg + 180.
+        self.centradeg += 180.
+        self.centradeg = self.centradeg%360.
     self.expmjd =\
     eval("self.opsimmeta.%s"%(omap['expmjdkey']))
     self.filter =\
     eval("self.opsimmeta.%s"%(omap['filterkey']))
 
-  def getQueryList(self, filter=""):  
+  def addSpacial(self, query, map, type, ta):
+    if type == "circle":
+      sel = select(["htmidstart, htmidend"],
+              whereclause="innerflag=0",
+              from_obj=["LSST.dbo.fHtmCoverBinaryAdvanced([LSST].sph.fSimplifyString('REGION\
+              CIRCLE j2000 %f %f %f' ))"%(self.centradeg, self.centdecdeg,
+              self.radiusdeg*60.)])
+      sela = sel.alias('c')
+      onclause = between(ta.htmID, text("c.htmidstart"), text("c.htmidend"))
+      query = query.join((sela, onclause))
+      aperture = "[LSST].sph.fSimplifyString('REGION CIRCLE j2000 %f %f %f')"%(self.centradeg, 
+                self.centdecdeg, self.radiusdeg*60.)
+      filterstr = "%s = 1"%(str(func.LSST.sph.fRegioncontainsXYZ(text(aperture), ta.cx, ta.cy, ta.cz)))
+      query = query.filter(filterstr)
+      return query
+    else:
+        return query
+
+  def getUnionQuery(self, filter=None, type="circle"):  
     queries = []
     for omkey in self.om[self.objtype].keys():
       if omkey == "formatas":
         continue
       if omkey == "component":
-        self.component = self.om[self.objtype][omkey]
-        continue
+	self.component = self.om[self.objtype][omkey]
+	continue
+      appint = int(self.em[omkey]['id'])
       map = self.om[self.objtype][omkey]
-      idcolstr = self.dm[self.filetypes[0]][self.component][map['ptype']][map['idkey']][1]
+      idcolstr = self.dm[self.filetypes[0]][self.component][self.ptype][map['idkey']][1]
       if idcolstr.startswith("%%"):
           idcolstr = idcolstr.lstrip("%%")
           idcolstr = eval(idcolstr)
-      query = session.query(eval("%s.%s.label(\"%s\")"%(map['table'],
-          idcolstr,
-          map['idkey'])))
+      ta = eval("aliased(%s, name='star_alias')"%map['table'])
+      query = session.query(eval("ta.%s.label(\"%s\")"%(idcolstr, map['idkey'])))
+      query = query.add_column(expression.literal_column("%i"%(appint)).label("appendint"))
+      query = self.addSpacial(query, map, "circle", ta)
       query = self.addUniqueCols(map, query)
-      query = query.filter(filter)
+      if filter is not None:
+        query = query.filter(filter)
       if not len(map['constraint'].strip()) == 0:
         const = map['constraint']
         if const.startswith("%%"):
           const = const.lstrip("%%")
           const = eval(const)
         query = query.filter(const)
-      print query
-      queries.append(session.execute(query))
-    return queries
+      queries.append(query)
+    self.coldesc = query.column_descriptions
+    #Workaround for adding a hint
+    query = queries[0]
+    for i in range(len(queries)-1):
+      query=query.union_all(queries[i+1])
+    #End workaround
+    query = session.execute(query)
+    return query
 
   def addUniqueCols(self, map, query):
-    print map, query
     cols = self.getUniqueColNames(map)
     for k in cols.keys():
       cols[k] = expression.literal_column(cols[k]).label(k)
@@ -131,10 +177,6 @@ class queryDB(object):
       dmap = self.dm[ft][self.component][map['ptype']]
       for k in dmap.keys():
         colstr = dmap[k][1]
-        if colstr.startswith("%%"):
-          colstr = colstr.lstrip("%%")
-          print colstr
-          colstr = eval(colstr)
         if k == map['idkey']:
           continue
         else:
@@ -145,101 +187,6 @@ class queryDB(object):
             cols[k] = colstr 
     return cols
 
-  def getUniqueColNamesMO(self, idkey):
-    cols = {}
-    for ft in self.filetypes:
-      dmap = self.dm[ft]['SOLARSYSTEM']['MOVINGPOINT']
-      for k in dmap.keys():
-        colstr = dmap[k][1]
-        if cols.has_key(k):
-          print "Replacing expression %s with %s for key %s"%(cols[k], colstr, k)
-          cols[k] = colstr
-        else:
-          cols[k] = colstr 
-    return cols
-
-  def getInstanceCatalogByBbox(self, bbox, expmjd=0., filter='r'): 
-    self.expmjd = expmjd
-    self.centradeg = bbox.getCentDeg()[0]
-    self.centdecdeg = bbox.getCentDeg()[1]
-    self.filter = filter
-    objtype = self.objtype
-    om = self.om[objtype]
-    if om.has_key('formatas'):
-      self.ptype = om['formatas']
-    else:
-      self.ptype = om[om.keys()[0]]['ptype']
-    if re.search("GALAXY", objtype):
-      '''We need to get galaxies from every tile in the overlap region
-      '''
-      tiles = self.getTilesBbox(bbox)
-      queries = []
-      for tile in tiles:
-	self.curtile = tile
-        queries += self.getQueryList("point @ spoly '%s' and (point + strans(0,\
-			              %f*PI()/180.,  %f*PI()/180., 'XYZ')) @ spoly\
-				      '%s'"%(tile['tbox'],-tile['decmid'],tile['ramid'],tile['bbox']))
-        #queries += self.getQueryList("point @ spoly '%s' and point @ spoly\
-    	#		              '%s'"%(tile['tbox'],tile['tbbox']))
-      self.queries = queries
-      return self.getNextChunk()
-    elif objtype == 'SSM':
-      '''Need to do query and then do the ephemeris calculation
-      '''
-      if self.expmjd == 0.:
-        raise Exception("Expmjd cannot be None if you want to get Solar System Objects out")
-      oom = self.om['ORBIT']
-      #We need the orbit map for the join.  I'm assuming that if the orbit map
-      #is length 1 there is only one orbit table and if > 1 there is one orbit
-      #table per ephemeride table.
-      queries = []
-      n = 0
-      for k in om.keys():
-        if k == "formatas":
-          continue
-        if k == "component":
-          self.component = om['component']
-          continue
-        map = om[k]
-        #equery = session.query(eval("%s.objid"%(map['table'])))
-        if len(oom) == 1:
-          omap = oom['ORBIT0']
-        elif len(oom) == len(om):
-          omap = oom['ORBIT%i'%(n)]
-        else:
-          raise Exception('Getting orbits...', 'The orbit map and ephemeride\
-                  map do not agree in length')
-        eid = eval("%s.%s.label(\"%s\")"%(map['table'],
-                      self.dm[self.filetypes[0]][self.component][map['ptype']][map['idkey']][1],
-                      map['idkey']))
-        oid = eval("%s.%s.label(\"%s\")"%(omap['table'],
-                      self.dm[self.filetypes[0]][self.component][omap['ptype']][omap['idkey']][1],
-                      omap['idkey']))
-        equery = session.query(eid,oid).filter(eid == oid)
-        #equery = self.addUniqueCols(map, equery)
-        equery = self.addUniqueCols(omap, equery)
-        if not len(map['constraint'].strip()) == 0:
-          const = map['constraint'].strip()
-          if const.startswith("%%"):
-            const = const.lstrip("%%")
-            const = eval(const)
-          equery = equery.filter(const)
-        if not len(omap['constraint'].strip()) == 0:
-          const = omap['constraint'].strip()
-          if const.startswith("%%"):
-            const = const.lstrip("%%")
-            const = eval(const)
-          equery = equery.filter(const)
-        query = equery.filter(self.getRaDecBounds(bbox))
-        queries.append(session.execute(query))
-        n += 1
-      self.queries = queries
-      return self.getNextChunk()
-    else:
-      filterstr = "point @ sbox \'((%fd,%fd),(%fd,%fd))\'"%(
-		  bbox.getRaMin(), bbox.getDecMin(), bbox.getRaMax(), bbox.getDecMax())
-      self.queries = self.getQueryList(filter=filterstr)
-      return self.getNextChunk()
 
   def getInstanceCatalogById(self, id, opsim="OPSIM361", radiusdeg=2.1):
     self.getOpsimMetadataById(id, opsim)
@@ -250,231 +197,129 @@ class queryDB(object):
           filter = 'r'): 
     self.centradeg = centradeg
     self.centdecdeg = centdecdeg
+    self.radiusdeg = radiusdeg
     self.filter = filter
     self.expmjd = expmjd
 
     objtype = self.objtype
     om = self.om[objtype]
-    if om.has_key('formatas'):
-      self.ptype = om['formatas']
-    else:
-      self.ptype = om[om.keys()[0]]['ptype']
-    if re.search("GALAXY", objtype):
+    const = None
+    self.ftype = om['formatas']
+    if re.search("GALAXY", objtype) or re.search("AGN", objtype):
       '''We need to get galaxies from every tile in the overlap region
       '''
-      tiles = self.getTilesCirc(self.centradeg,
-              self.centdecdeg, radiusdeg)
-      queries = []
-      for tile in tiles:
-	self.curtile = tile
-        queries += self.getQueryList("point @ scircle '%s' and (point + strans(0,\
-			              %f*PI()/180.,  %f*PI()/180., 'XYZ')) @ spoly\
-				      '%s'"%(tile['circ'],-tile['decmid'],tile['ramid'],tile['bbox']))
-      self.queries = queries
+      colstr = ""
+      const = None
+      for omkey in om.keys():
+        if omkey == "formatas":
+          continue
+        if omkey == "component":
+  	  self.component = om[omkey]
+	  continue
+        self.ptype = om[omkey]['ptype']
+        appint = int(self.em[omkey]['id'])
+        map = om[omkey]
+        cols = self.getUniqueColNames(map)
+        colarr = []
+        for k in cols.keys():
+          if cols[k].startswith("'") and cols[k].endswith("'"):
+            cols[k] = "'"+cols[k]+"'"
+          colarr.append("%s as %s"%(cols[k], k))
+        colarr.append("%i as appendint"%(appint))
+        colstr = ",".join(colarr)
+        if not len(map['constraint'].strip()) == 0:
+          const = map['constraint']
+          if const.startswith("%%"):
+            const = const.lstrip("%%")
+            const = eval(const)
+          const = "WHERE %s"%(const)
+      self.queries, self.coldesc = initGalaxy(self.centradeg, self.centdecdeg,
+              self.radiusdeg, colstr, constraint = const)
       return self.getNextChunk()
+
     elif objtype == 'SSM':
       '''Need to do query and then do the ephemeris calculation
       '''
       if self.expmjd == 0.:
         raise Exception("Expmjd cannot be None if you want to get Solar System Objects out")
-      oom = self.om['ORBIT']
-      #We need the orbit map for the join.  I'm assuming that if the orbit map
-      #is length 1 there is only one orbit table and if > 1 there is one orbit
-      #table per ephemeride table.
-      queries = []
-      n = 0
-      for k in om.keys():
-        if k == "formatas":
+      colstr = ""
+      const = None
+      for omkey in om.keys():
+        if omkey == "formatas":
           continue
-        if k == "component":
-          self.component = om[k]
-          continue
-        map = om[k]
-        #equery = session.query(eval("%s.objid"%(map['table'])))
-        if len(oom) == 1:
-          omap = oom['ORBIT0']
-        elif len(oom) == len(om):
-          omap = oom['ORBIT%i'%(n)]
-        else:
-          raise Exception('Getting orbits...', 'The orbit map and ephemeride\
-                  map do not agree in length')
-        eid = eval("%s.%s.label(\"%s\")"%(map['table'],
-                      self.dm[self.filetypes[0]][self.component][map['ptype']][map['idkey']][1],
-                      map['idkey']))
-        oid = eval("%s.%s.label(\"%s\")"%(omap['table'],
-                      self.dm[self.filetypes[0]][self.component][omap['ptype']][omap['idkey']][1],
-                      omap['idkey']))
-        equery = session.query(eid,oid).filter(eid == oid)
-        #equery = self.addUniqueCols(map, equery)
-        equery = self.addUniqueCols(omap, equery)
+        if omkey == "component":
+  	  self.component = om[omkey]
+	  continue
+        self.ptype = om[omkey]['ptype']
+        appint = int(self.em[omkey]['id'])
+        map = om[omkey]
+        cols = self.getUniqueColNames(map)
+        colarr = []
+        for k in cols.keys():
+          colarr.append("%s as %s"%(cols[k], k))
+        colarr.append("%i as appendint"%(appint))
+        colstr = ",".join(colarr)
         if not len(map['constraint'].strip()) == 0:
-          const = map['constraint'].strip()
+          const = map['constraint']
           if const.startswith("%%"):
             const = const.lstrip("%%")
             const = eval(const)
-          equery = equery.filter(const)
-        if not len(omap['constraint'].strip()) == 0:
-          const = omap['constraint'].strip()
-          if const.startswith("%%"):
-            const = const.lstrip("%%")
-            const = eval(const)
-          equery = equery.filter(const)
-        query = equery.filter(self.getRaDecBoundsCirc(self.centradeg,
-            self.centdecdeg, radiusdeg))
-        queries.append(session.execute(query))
-        n += 1
-      self.queries = queries
+          const = "WHERE %s"%(const)
+      if (self.expmjd > 50813.16 and self.expmjd < 51143.16):
+          self.queries, self.coldesc = initSSM(self.centradeg, self.centdecdeg,
+                  self.radiusdeg, self.expmjd, colstr, constraint = const)
+      else:
+          raise Exception("There no indexed ephemerides for this observation time")
+      
       return self.getNextChunk()
+
     else:
-      bbox = self.getRaDecBoundsCirc(self.centradeg, self.centdecdeg,
-              radiusdeg)
-      filterstr = "%s and point @ scircle \'<(%fd,%fd),%fd>\'"%(bbox,self.centradeg,
-              self.centdecdeg, radiusdeg)
-      self.queries = self.getQueryList(filter=filterstr)
+      '''Deal with all other types of objects
+      '''
+      for omkey in om.keys():
+        if omkey == "formatas":
+          continue
+        if omkey == "component":
+  	  self.component = om[omkey]
+	  continue
+        self.ptype = om[omkey]['ptype']
+        break
+      self.queries = self.getUnionQuery()
       return self.getNextChunk()
-
-  def makeMovingObjectsFromOrbitList(self, results):
-    objects = []
-    ephem_datfile = ""
-    pyoorb.pyoorb.oorb_init(ephemeris_fname=ephem_datfile)
-    for r in results:
-      #Hack since there are no sedfilenames in the db at the moment
-      mymo = mo.MovingObject(r['q'], r['e'], r['i'], r['node'],
-                             r['argPeri'], r['timePeri'], r['epoch'],
-                             magHv=r['magHv'], phaseGv=r['phaseGv'], index=r['index'],
-                             n_par=r['n_par'], moid=r['moid'], 
-                             objid=r['id'], objtype=r['objtype'],
-                             isVar=r['isVar'], var_t0=r['var_t0'],
-                             var_timescale=r['var_timescale'],
-                             var_fluxmax=r['var_fluxmax'],
-                             sedname="S.dat",
-                             u_opp=r['u_opp'],g_opp=r['g_opp'], r_opp=r['r_opp'],
-                             i_opp=r['i_opp'], z_opp=r['z_opp'], y_opp=r['y_opp'])  
-      '''
-      mymo = mo.MovingObject(r['q'], r['e'], r['i'], r['node'],
-                             r['argPeri'], r['timePeri'], r['epoch'],
-                             magHv=r['magHv'], phaseGv=r['phaseGv'], index=r['index'],
-                             n_par=r['n_par'], moid=r['moid'], 
-                             objid=r['id'], objtype=r['objtype'],
-                             isVar=r['isVar'], var_t0=r['var_t0'],
-                             var_timescale=r['var_timescale'],
-                             var_fluxmax=r['var_fluxmax'],
-                             sedname=r['sedname'],
-                             u_opp=r['u_opp'],g_opp=r['g_opp'], r_opp=r['r_opp'],
-                             i_opp=r['i_opp'], z_opp=r['z_opp'], y_opp=r['y_opp'])  
-      '''
-      objects.append(mymo)
-    # turn list of moving objects into movingObjectList object
-    objects = mo.MovingObjectList(objects)
-    # generate ephemerides for all objects at once
-    objects.generateEphemeridesForAllObjects([self.expmjd], obscode=807)
-    objects.calcAllMags(self.filter, [self.expmjd],
-            self.rootSEDdir+"/ssmSED/",withErrors=False)
-    self.thismjd = mymo.mjdTaiStr(self.expmjd)
-    # return the basic list of moving objects 
-    objects = objects._mObjects
-    return objects
-
-
-
-  class dbMovingObject(mo.MovingObject):
-    def keys(self):
-      return self.keyarr
-    def setkeys(keyarr):
-      self.keyarr = keyarr
 
   def makeCatalogFromQuery(self, result):
-    if os.environ.has_key("CATALOG_DESCRIPTION_PATH"):
-      catalogDescriptionPath = os.environ["CATALOG_DESCRIPTION_PATH"]
-    else:
-      raise Exception("Environment variable CATALOG_DESCRIPTION_PATH not set to location of the catalog description files")
-    nic = InstanceCatalog(catalogDescriptionPath+"/config.dat")
-    nic.objectType = self.ptype
+    nic = InstanceCatalog(cd=self.catDescription, md=deepcopy(self.metadata))
+    nic.objectType = self.ftype
     nic.neighborhoodType = self.component
     nic.catalogType = self.filetypes
     if self.opsimmeta is not None:
       for k in self.opsimmeta.keys():
         nic.metadata.addMetadata(k,eval("self.opsimmeta.%s"%(k)),"")
-    nic.catalogType = self.filetypes
-    data = {}
-    if self.ptype == "MOVINGPOINT":
-      result = self.makeMovingObjectsFromOrbitList(result)
-      thismjd = self.thismjd
-      om = self.om[self.objtype]
-      colkeys = self.getUniqueColNamesMO(om[om.keys()[2]]['idkey'])
-      idkey = om[om.keys()[2]]['idkey']
-      for k in colkeys:
-        data[k] = []
-      for s in result:
-        for k in colkeys:
-          if k == idkey:
-            continue
-          col = colkeys[k]
-          if colkeys[k].startswith("%%"):
-            col = col.lstrip("%%")
-            col = eval(col)
-            data[k].append(col)
-          else:
-            eval("data[k].append(s.%s)"%(col))
-      for k in colkeys:
-        arr = numpy.asarray(data[k])
-        nic.addColumn(arr, k)
     else:
-      colkeys = result[0].keys()
-      for k in colkeys:
-        data[k] = []
-      for s in result:
-        for k in colkeys:
-          eval("data[k].append(s.%s)"%(k))
-      for k in colkeys:
-        arr = numpy.asarray(data[k])
-        nic.addColumn(arr, k)
-
-
+        nic.metadata.addMetadata('filter', self.filter, "filter of observation")
+        nic.metadata.addMetadata('expmjd', self.expmjd, "mjd of observation")
+        nic.metadata.addMetadata('centradeg', self.centradeg, "ra of center of field")
+        nic.metadata.addMetadata('centdecdeg', self.centdecdeg, "dec of center of field")
+    nic.catalogType = self.filetypes
+    colkeys = zip(result[0].keys(),self.coldesc)
+    for i,k in enumerate(colkeys):
+      if k[0] == u'variabilityParameters':
+        #need to cast to string in case the result is None which happens
+        #when an object is not variable
+        nic.addColumn( numpy.array([eval(str(s[k[0]])) for s in result]), k[1]['name'])
+      else:
+        nic.addColumn( numpy.array([s[k[0]] for s in result]), k[1]['name'])
+    if nic.neighborhoodType == "EXTRAGALACTIC":
+        nic.dataArray['raJ2000'] *= math.pi/180.
+        nic.dataArray['decJ2000'] *= math.pi/180.
     if nic == None:
         raise RuntimeError, '*** nic is None'
     if nic.metadata == None:
         raise RuntimeError, '*** nic.metadata is None'
     if len(nic.dataArray) < 0:
-        raise RuntimeError, '*** nic.dataArray has len < 1'
+        raise RuntimeError, '*** nic.dataArray has len < 0'
 
     return nic
-
-  def getTilesBbox(self, bbox):
-    sq = session.query(Tiles.id, Tiles.ramid, Tiles.decmid, Tiles.bbox).filter("sbox\
-            '((%fd, %fd), (%fd,%fd))' && bbox"%(bbox.getRaMin(),bbox.getDecMin(),
-            bbox.getRaMax(),bbox.getDecMax())).subquery().alias(name="mytiles")
-    col1 = expression.literal_column("spoly '{(%fd, %fd), (%fd, %fd), (%fd, %fd), (%fd, %fd)}'+\
-            strans(-%s.ramid*PI()/180., %s.decmid*PI()/180.,0.0,\
-            'ZYX')"%(\
-            bbox.getRaMin(),bbox.getDecMin(), bbox.getRaMin(), bbox.getDecMax(),
-	    bbox.getRaMax(),bbox.getDecMax(), bbox.getRaMax(),
-            bbox.getDecMin(),"mytiles","mytiles")).label("tbox")
-    col2 = expression.literal_column("bbox +\
-            strans(-%s.ramid*PI()/180., %s.decmid*PI()/180.,0.0,\
-            'ZYX')"%("mytiles","mytiles")).label("tbbox")
-    query = session.query(col1,col2,sq.c.id,sq.c.ramid,sq.c.decmid,sq.c.bbox)
-    result = query.all()
-    tiles = []
-    for r in result:
-      tiles.append({'tid':r.id, 'tbox':r.tbox, 'tbbox':r.tbbox, 'ramid':r.ramid, 'decmid':r.decmid,
-            'bbox':r.bbox})
-    return tiles
-  def getTilesCirc(self, raDeg, decDeg, radiusDeg):
-    sq = session.query(Tiles.id, Tiles.ramid, Tiles.decmid, Tiles.bbox).filter("scircle\
-            '<(%fd, %fd), %fd>' && bbox"%(raDeg, decDeg,
-            radiusDeg)).subquery().alias(name="mytiles")
-    col = expression.literal_column("scircle '<(%fd, %fd), %fd>'+\
-            strans(-%s.ramid*PI()/180., %s.decmid*PI()/180.,0.0,\
-            'ZYX')"%(raDeg,
-            decDeg, radiusDeg,"mytiles","mytiles")).label("circ")
-    query = session.query(col,sq.c.id,sq.c.ramid,sq.c.decmid,sq.c.bbox)
-    result = query.all()
-    tiles = []
-    for r in result:
-      tiles.append({'tid':r.id, 'circ':r.circ, 'ramid':r.ramid, 'decmid':r.decmid,
-            'bbox':r.bbox})
-    return tiles
 
   def deg2rad(self, ang):
     return ang*math.pi/180.
@@ -506,3 +351,10 @@ class queryDB(object):
     decmin = dec-radius
     bbox = Bbox(ramin,ramax,decmin,decmax)
     return self.getRaDecBounds(bbox)
+
+  def getEnvironPath(self, var):
+    if os.environ.has_key(var):
+      return os.environ[var]
+    else:
+      raise Exception("Environment variable %s not set."%(var))
+

@@ -48,7 +48,7 @@ eM = jobDB.JobState(tableId)
 for i in range(100):
     howManyJobs(eM, tableId)
     print '--------'
-    throttle(eM, tableId, 10, 60)
+    throttle(eM, tableId, 100, 60)
     addJob(eM, tableId)
     print '--------'
 
