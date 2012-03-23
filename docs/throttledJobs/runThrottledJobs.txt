@@ -1,0 +1,67 @@
+To run a throttled set of jobs... it's very easy.
+
+Create an input list of obsids.  Call this file "inList.txt".  If you want, you can change the input file name in the code.
+
+Source setupOldAthena.csh to set up the old LSST stack environment on minerva.  That script calls:
+-------------
+unsetenv PYTHONPATH
+source /share/apps/lsst_gcc440/loadLSST.csh
+setenv CAT_SHARE_DATA /share/pogo3/krughoff/shared/
+setup -r ./generation/branches/mssql/
+setup -r ./measures/trunk/
+setup throughputs
+setup python
+setup numpy
+setup pyfits
+-------------
+Obviously, you need to have the directories set up, etc.
+
+Run testThrottleObsList.py with an argument giving the maximum number of jobs to run simultaneously.  For example:
+python testThrottleObsList.py 50
+
+There are a few parameters coded in that you can change if you want to.
+
+# The time (in seconds) to sleep between checks for job state
+waitTime = 5
+
+# The radius of the trim catalog FoV
+radDeg = 2.1
+
+For each new job, the code creates a new minerva PBS script in the directory:
+/astro/net/pogo3/rgibson/testFramework011312/sTScripts/
+Obviously, you may want to change this.
+
+Each PBS script looks something like this:
+-------------
+#!/bin/csh
+#PBS -N 99_sTanon_28_99
+#PBS -l qos=astro,walltime=47:59:59,nodes=1:ppn=1
+#PBS -e /share/pogo3/rgibson/testFramework011312/out/sTanon_28_99.err
+#PBS -o /share/pogo3/rgibson/testFramework011312/out/sTanon_28_99.out
+
+cd /share/pogo3/rgibson/testFramework011312
+source setupOldAthena.csh
+python ./testThrottleObsListRun.py anon_28 anon_28_99 88151308 2.1 testMode
+echo Finished.
+-------------
+
+You can see that the script specifies a directory to hold output and error files when each job terminates.  You can change this default directory in testThrottleObsList.py as well.  I delete the scripts in this directory frequently to keep it clean.  Don't delete it while a given job is running, though.
+
+For a script named "tempSTanon_28_99.csh," the job database handle is "anon_28" and this is the 100 (zero-based) job in the sequence, corresponding to obsid 88151308 (in this case) taken from the inList.txt file.
+
+I recommend deleting before each run the ./out/ directory where the output and error scripts are placed.  You'll want to check these files for any problems with the runs.
+
+You may want to see a graphic display of the script status, based on the information in the job database.  To do this, go to the directory with the java files:
+generation/python/lsst/sims/catalogs/generation/utils/
+
+You can compile the java files as:
+javac -classpath . DisplayLog.java
+
+That should also compile all the dependent classes.
+
+You can run the GUI as:
+java DisplayLog anon ${1} 
+
+where ${1} is the job database identification number associated with the set of jobs that is running, and "anon" is the user name.  So for the job script "tempSTanon_28_99.csh", we would look at the status of all jobs submitted in that category using "java DisplayLog anon 28".
+
+The GUI will look for a few files to be present.  You'll want a link to inList.txt to be local to the java classes.
