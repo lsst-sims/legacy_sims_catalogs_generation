@@ -40,7 +40,8 @@ def runTrim(csize, obsid, radius=2.1, outdir='.', repodir=None, je=None, compres
     cattype = "TRIM"
 #    objtypes = ['DWARFCOMPANION','MSSTARS', 'BHBSTARS', 'RRLYSTARS', 'EBSTARS', 'CEPHEIDSTARS',\
 #            'GALAXY_BULGE', 'GALAXY_DISK', 'AGN', 'GLENS', 'IMAGE', 'EASTEREGGS', 'WDSTARS']
-    objtypes = ['MSSTARS','WDSTARS','BHBSTARS','RRLYSTARS','SSM', \
+    print "Warning -- SSM objects removed for testing"
+    objtypes = ['MSSTARS','WDSTARS','BHBSTARS','RRLYSTARS', \
             'GLENS','IMAGE','EBSTARS','CEPHEIDSTARS','EASTEREGGS','GALAXY_BULGE','GALAXY_DISK','AGN']
     varobj = ['MSSTARS', 'RRLYSTARS', 'AGN', 'IMAGE', 'WDSTARS', 'EBSTARS', 'CEPHEIDSTARS']
     warnings.simplefilter('ignore', category=exceptions.UserWarning)

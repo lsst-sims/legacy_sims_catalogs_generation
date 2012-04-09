@@ -30,12 +30,14 @@ if __name__ == '__main__':
     t0 = int(startTime)
     d.updateState(procId, 'JobRunning_%s_%i' % (obsId, t0))
     print 'Update state: %s to JobRunning_%s_%i' % (procId, obsId, t0)
+    #HACK this should be changed to just call the catalog generation classes
+    #Rob says this may be an issue because he checks the error code on exit.
     if testMode == False:
-        t0 = 'python ./generation/branches/mssql/bin/runFiles.py %s %s'
+        t0 = 'python $CATALOGS_GENERATION_DIR/bin/runFiles.py %s %s'
         t1 = t0 % (obsId, rad)
     else:
         t0 = None
-        t1 = 'python ./generation/branches/mssql/bin/fakeRunFiles.py'
+        t1 = 'python $CATALOGS_GENERATION_DIR/bin/fakeRunFiles.py'
         
     succeeded = False
     nAttempsRemaining = 10
@@ -68,6 +70,7 @@ if __name__ == '__main__':
     t0 = int(time.time()-startTime)
     extraStr = '%s_%i_%i' % (obsId, numRetries, t0)
     if succeeded == True:
+        print "Writing success to database"
         throttleUtils.removeFinishedJob(d, procId, extraStr)
     else:
         throttleUtils.removeFailedJob(d, procId, extraStr)
