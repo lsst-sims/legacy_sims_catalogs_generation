@@ -20,6 +20,30 @@
     Opsim_expmjd = float, 'expmjd',x
     Opsim_altitude = float, 'altitude',math.degrees(x)
     Opsim_azimuth = float, 'azimuth',math.degrees(x)
+    isDithered = float, '0',x
+    ditherRaOffset = float, '0',x
+    ditherDecOffset = float, '0',x
+  [[DITHEREDOPSIM361]]
+    SIM_SEED = long, 'expdate',x
+    Unrefracted_RA = float, 'hexdithra',math.degrees(x)
+    Unrefracted_Dec = float, 'hexdithdec',math.degrees(x)
+    Opsim_moonra = float, 'moonra',math.degrees(x)
+    Opsim_moondec = float, 'moondec',math.degrees(x)
+    Opsim_rotskypos = float, 'rotskypos',math.degrees(x)
+    Opsim_rottelpos = float, 'rottelpos',math.degrees(x)
+    Opsim_filter = int, 'filter',x
+    Opsim_rawseeing = float, 'rawseeing',x
+    Opsim_sunalt = float, 'sunalt',math.degrees(x)
+    Opsim_moonalt = float, 'moonalt',math.degrees(x)
+    Opsim_dist2moon = float, 'dist2moon',math.degrees(x)
+    Opsim_moonphase = float, 'moonphase',x
+    Opsim_obshistid = long, 'obshistid',x
+    Opsim_expmjd = float, 'expmjd',x
+    Opsim_altitude = float, 'altitude',math.degrees(x)
+    Opsim_azimuth = float, 'azimuth',math.degrees(x)
+    isDithered = float, '1',x
+    ditherRaOffset = float, 'hexdithra - fieldra',math.degrees(x)
+    ditherDecOffset = float, 'hexdithdec - fielddec',math.degrees(x)
 
 #Metadata for testing purposes file information
 [TEST]

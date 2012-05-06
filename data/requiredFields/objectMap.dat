@@ -157,6 +157,27 @@
     idkey = 'id'
     constraint = ''
 
+[LENSOBJECT]
+  formatas = 'SERSIC2D'
+  component = 'EXTRAGALACTIC'
+  [[BULGE]]
+    table = 'GalaxyLens'
+    ptype = 'SERSIC2D_BULGE'
+    idkey = 'id'
+    constraint = 
+  [[DISK]]
+    table = 'GalaxyLens'
+    ptype = 'SERSIC2D_DISK'
+    idkey = 'id'
+    constraint = "fluxnorm_disk > 0"
+[QSOIMAGE]
+  formatas = 'POINT'
+  component = 'EXTRAGALACTIC'
+  [[IMAGE]]
+    table = 'QsoImage'
+    ptype = 'IMAGEPOINT'
+    idkey = 'id'
+    constraint = 
 [SSM]
   formatas = 'MOVINGPOINT'
   component = 'SOLAR'
@@ -172,6 +193,21 @@
     idkey = 'Opsim_obshistid'
     rakey = 'Unrefracted_RA'
     deckey = 'Unrefracted_Dec'
+    expmjdkey = 'Opsim_expmjd'
+    filterkey = 'Opsim_filter'
+    constraint =
+  [[DITHEREDOPSIM361]]
+    table = 'OpSim3_61'
+    idkey = 'Opsim_obshistid'
+    rakey = 'Unrefracted_RA'
+    deckey = 'Unrefracted_Dec'
+    moonrakey = 'Opsim_moonra'
+    moondeckey = 'Opsim_moondec'
+    dist2moonkey = 'Opsim_dist2moon'
+    rotskykey = 'Opsim_rotskypos'
+    rottelkey = 'Opsim_rottelpos'
+    altkey = 'Opsim_altitude'
+    azkey = 'Opsim_azimuth'
     expmjdkey = 'Opsim_expmjd'
     filterkey = 'Opsim_filter'
     constraint =
