@@ -12,7 +12,7 @@ def getIds(offset, number, fhids):
   fhids.close()
   return ids
 
-def run(id, csize=50000, radius=2.1, outdir='./testOut/', repodir='./testRepo/', compress=True, cleanup=False):
+def run(id, csize=50000, radius=2.1, outdir='/state/partition1/krughoff/', repodir='./testRepo', compress=True, cleanup=False):
     je = jobDB.LogEvents("Test job number %i"%(id), jobid=id)
     print "Job number is %i"%(je._jobid)
     try:
@@ -25,4 +25,4 @@ def run(id, csize=50000, radius=2.1, outdir='./testOut/', repodir='./testRepo/',
         sys.exit(1)
 
 if __name__ == "__main__":
-  run(int(sys.argv[1]), radius=float(sys.argv[2]), repodir='./testRepo/', csize=20000, cleanup=True)
+  run(int(sys.argv[1]), radius=float(sys.argv[2]), repodir='/share/imsim1/summer2012trims', csize=20000, cleanup=True)

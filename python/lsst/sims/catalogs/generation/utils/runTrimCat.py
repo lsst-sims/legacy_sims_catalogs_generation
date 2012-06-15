@@ -40,8 +40,7 @@ def runTrim(csize, obsid, radius=2.1, outdir='.', repodir=None, je=None, compres
     cattype = "TRIM"
 #    objtypes = ['DWARFCOMPANION','MSSTARS', 'BHBSTARS', 'RRLYSTARS', 'EBSTARS', 'CEPHEIDSTARS',\
 #            'GALAXY_BULGE', 'GALAXY_DISK', 'AGN', 'GLENS', 'IMAGE', 'EASTEREGGS', 'WDSTARS']
-    print "Warning -- SSM objects removed for testing"
-    objtypes = ['MSSTARS','WDSTARS','BHBSTARS','RRLYSTARS', \
+    objtypes = ['SSM', 'MSSTARS','WDSTARS','BHBSTARS','RRLYSTARS',\
             'GLENS','IMAGE','EBSTARS','CEPHEIDSTARS','EASTEREGGS','GALAXY_BULGE','GALAXY_DISK','AGN']
     varobj = ['MSSTARS', 'RRLYSTARS', 'AGN', 'IMAGE', 'WDSTARS', 'EBSTARS', 'CEPHEIDSTARS']
     warnings.simplefilter('ignore', category=exceptions.UserWarning)
@@ -60,8 +59,8 @@ def runTrim(csize, obsid, radius=2.1, outdir='.', repodir=None, je=None, compres
         writeJobEvent(je, 'Object:%s'%(objtype), 'Doing %s out of: %s'%(objtype, ",".join(objtypes)))
         filename = "trim_%i_%s.dat"%(obsid,objtype)
         outfile = os.path.join(popsPath,filename)
-        myqdb = queryDB.queryDB(chunksize=csize,objtype=objtype)
-        ic = myqdb.getInstanceCatalogById(obsid, radiusdeg=radius)        
+        myqdb = queryDB.queryDB(chunksize=csize,objtype=objtype,dithered=True)
+        ic = myqdb.getInstanceCatalogById(obsid, radiusdeg=radius, opsim="DITHEREDOPSIM361")        
         if opsimid is None:
             opsimid = myqdb.opsim
         cnum = 0

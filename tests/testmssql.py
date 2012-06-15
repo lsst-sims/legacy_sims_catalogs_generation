@@ -12,7 +12,7 @@ if __name__ == "__main__":
       obsid = 88533591
   csize = 5000
 
-  objtypes = ['SSM', 'CEPHEIDSTARS', 'EBSTARS', 'MSSTARS', 'WDSTARS', 'BHBSTARS', 'RRLYSTARS', 'GLENS', 'IMAGE', 'EASTEREGGS', 'GALAXY_BULGE', 'GALAXY_DISK', 'AGN']
+  objtypes = ['GLENS', 'IMAGE', 'EASTEREGGS', 'GALAXY_BULGE', 'GALAXY_DISK', 'AGN']
   #objtypes = ['ASSEMBLEDGALAXY', 'GLENS', 'EASTEREGGS', 'SSM', 'CEPHEIDSTARS', 'EBSTARS', 'MSSTARS', 'WDSTARS',
   #        'BHBSTARS', 'RRLYSTARS', 'EASTEREGGS', 'IMAGE', 'GLENS', 'ASSEMBLEDGALAXY']
   varobj = ['CEPHEIDSTARS','EBSTARS','MSSTARS', 'WDSTARS', 'BHBSTARS', 'RRLYSTARS', 'AGN', 'IMAGE']
@@ -21,8 +21,8 @@ if __name__ == "__main__":
       outfile = "test_%i_%s.dat"%(obsid,objtype)
       refoutfile = "test_%i_%s_REF.dat"%(obsid,objtype)
       print "doing %s"%(objtype)
-      myqdb = queryDB.queryDB(chunksize=csize,objtype=objtype,filetypes=['TRIM',])
-      ic = myqdb.getInstanceCatalogById(obsid, radiusdeg=0.1)
+      myqdb = queryDB.queryDB(chunksize=csize,objtype=objtype,filetypes=['TRIM',], dithered=True)
+      ic = myqdb.getInstanceCatalogById(obsid, radiusdeg=0.1, opsim="DITHEREDOPSIM361")
       cnum = 0
       while ic is not None:
           #ic.makeReferenceCoords()
