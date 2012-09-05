@@ -30,21 +30,21 @@ def cleanUpDirs(dirs, je = None):
     else:
         writeJobEvent(je, "RemoveDirs", "Directory %s does not exist"%(dirs))
        
-def runTrim(csize, obsid, radius=2.1, outdir='.', repodir=None, je=None, compress=True, cleanup=False):
+def runTrim(csize, obsid, radius=2.1, outdir='.', repodir=None, je=None, compress=True, cleanup=False, dodither=False,
+        objtypes = ['SSM', 'MSSTARS','WDSTARS','BHBSTARS','RRLYSTARS',\
+        'GLENS','IMAGE','EBSTARS','CEPHEIDSTARS','EASTEREGGS','GALAXY_BULGE','GALAXY_DISK','AGN'],
+        varobj = ['MSSTARS', 'RRLYSTARS', 'AGN', 'IMAGE', 'WDSTARS', 'EBSTARS', 'CEPHEIDSTARS']):
     if repodir is None:
         repodir = outdir
+    if dodither:
+        opsimname = 'DITHEREDOPSIM361'
+    else:
+        opsimname = 'OPSIM361'
     meta = None
     opsimid = None
     files = []
     writeJobEvent(je, 'start')
     cattype = "TRIM"
-#    objtypes = ['DWARFCOMPANION','MSSTARS', 'BHBSTARS', 'RRLYSTARS', 'EBSTARS', 'CEPHEIDSTARS',\
-#            'GALAXY_BULGE', 'GALAXY_DISK', 'AGN', 'GLENS', 'IMAGE', 'EASTEREGGS', 'WDSTARS']
-#    objtypes = ['SSM', 'MSSTARS','WDSTARS','BHBSTARS','RRLYSTARS',\
-#            'GLENS','IMAGE','EBSTARS','CEPHEIDSTARS','EASTEREGGS','GALAXY_BULGE','GALAXY_DISK','AGN']
-    objtypes = ['SSM', 'MSSTARS','WDSTARS','BHBSTARS','RRLYSTARS',\
-            'EBSTARS','CEPHEIDSTARS']
-    varobj = ['MSSTARS', 'RRLYSTARS', 'AGN', 'IMAGE', 'WDSTARS', 'EBSTARS', 'CEPHEIDSTARS']
     warnings.simplefilter('ignore', category=exceptions.UserWarning)
     arcroot = "obsid%i"%(obsid)
     outBase = os.path.join(outdir, arcroot)
@@ -61,8 +61,8 @@ def runTrim(csize, obsid, radius=2.1, outdir='.', repodir=None, je=None, compres
         writeJobEvent(je, 'Object:%s'%(objtype), 'Doing %s out of: %s'%(objtype, ",".join(objtypes)))
         filename = "trim_%i_%s.dat"%(obsid,objtype)
         outfile = os.path.join(popsPath,filename)
-        myqdb = queryDB.queryDB(chunksize=csize,objtype=objtype,dithered=True)
-        ic = myqdb.getInstanceCatalogById(obsid, radiusdeg=radius, opsim="DITHEREDOPSIM361")        
+        myqdb = queryDB.queryDB(chunksize=csize,objtype=objtype,dithered=dodither)
+        ic = myqdb.getInstanceCatalogById(obsid, radiusdeg=radius, opsim=opsimname)        
         if opsimid is None:
             opsimid = myqdb.opsim
         cnum = 0
