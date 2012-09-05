@@ -58,6 +58,7 @@ def runTrim(csize, obsid, radius=2.1, outdir='.', repodir=None, je=None, compres
     files = []
 
     for objtype in objtypes:
+        print "Doing object type: %s"%(objtype)
         writeJobEvent(je, 'Object:%s'%(objtype), 'Doing %s out of: %s'%(objtype, ",".join(objtypes)))
         filename = "trim_%i_%s.dat"%(obsid,objtype)
         outfile = os.path.join(popsPath,filename)
