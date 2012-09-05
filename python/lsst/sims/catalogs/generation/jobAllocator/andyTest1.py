@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-import pyoorb
 import numpy
 import math
 import copy

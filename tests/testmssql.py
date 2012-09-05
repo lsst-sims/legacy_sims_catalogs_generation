@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-import pyoorb,math,sys,time
+import math,sys,time
 import exceptions,warnings
 import lsst.sims.catalogs.measures.utils as mUtils
 from lsst.sims.catalogs.generation.db import queryDB

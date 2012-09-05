@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-import pyoorb, copy
+import copy
 from lsst.sims.catalogs.generation.db import queryDB
 from lsst.sims.catalogs.measures.astrometry import Bbox
 

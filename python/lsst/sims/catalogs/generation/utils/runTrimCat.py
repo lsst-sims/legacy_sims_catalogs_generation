@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-import pyoorb,math,sys,tarfile,os,shutil
+import math,sys,tarfile,os,shutil
 from copy import deepcopy
 import exceptions,warnings
 import lsst.sims.catalogs.measures.utils as mUtils
@@ -40,8 +40,10 @@ def runTrim(csize, obsid, radius=2.1, outdir='.', repodir=None, je=None, compres
     cattype = "TRIM"
 #    objtypes = ['DWARFCOMPANION','MSSTARS', 'BHBSTARS', 'RRLYSTARS', 'EBSTARS', 'CEPHEIDSTARS',\
 #            'GALAXY_BULGE', 'GALAXY_DISK', 'AGN', 'GLENS', 'IMAGE', 'EASTEREGGS', 'WDSTARS']
+#    objtypes = ['SSM', 'MSSTARS','WDSTARS','BHBSTARS','RRLYSTARS',\
+#            'GLENS','IMAGE','EBSTARS','CEPHEIDSTARS','EASTEREGGS','GALAXY_BULGE','GALAXY_DISK','AGN']
     objtypes = ['SSM', 'MSSTARS','WDSTARS','BHBSTARS','RRLYSTARS',\
-            'GLENS','IMAGE','EBSTARS','CEPHEIDSTARS','EASTEREGGS','GALAXY_BULGE','GALAXY_DISK','AGN']
+            'EBSTARS','CEPHEIDSTARS']
     varobj = ['MSSTARS', 'RRLYSTARS', 'AGN', 'IMAGE', 'WDSTARS', 'EBSTARS', 'CEPHEIDSTARS']
     warnings.simplefilter('ignore', category=exceptions.UserWarning)
     arcroot = "obsid%i"%(obsid)

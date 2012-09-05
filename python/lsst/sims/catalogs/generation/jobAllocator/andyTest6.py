@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-import pyoorb, numpy, math, copy, cPickle, os, sys, cPickle
+import numpy, math, copy, cPickle, os, sys, cPickle
 from lsst.sims.catalogs.generation.db import queryDB
 from lsst.sims.catalogs.measures.astrometry import Bbox
 import lsst.sims.catalogs.measures.utils as mUtils

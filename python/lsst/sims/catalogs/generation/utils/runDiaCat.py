@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-import pyoorb,math,sys,tarfile,os,shutil
+import math,sys,tarfile,os,shutil
 from copy import deepcopy
 import exceptions,warnings
 import lsst.sims.catalogs.measures.utils as mUtils
