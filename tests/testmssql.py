@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+import scipy
 import math,sys,time
 import exceptions,warnings
 import lsst.sims.catalogs.measures.utils as mUtils
