@@ -140,12 +140,13 @@ class queryDB(object):
             return query
 
     def addSimpleSpatial(self, query, map, ta):
-      cols = self.getUniqueColNames(map)
-      onclause = self.getRaDecBoundsCirc(math.radians(self.centradeg), math.radians(self.centdecdeg), 
-              math.radians(self.radiusdeg), raName=cols['raJ2000'], decName=cols['decJ2000'])
-      query = query.filter(onclause)
-      print query
-      return query
+        #This is a stopgap to allow adding galaxies using a simple bounding box until the refactor is done.
+        #This should work o.k. for stars using master.
+        cols = self.getUniqueColNames(map)
+        onclause = self.getRaDecBoundsCirc(self.centradeg, self.centdecdeg, 
+              self.radiusdeg, raName=cols['raJ2000'], decName=cols['decJ2000'])
+        query = query.filter(onclause)
+        return query
 
 
     def getUnionQuery(self, filter=None, type="circle"):  
@@ -409,26 +410,27 @@ class queryDB(object):
         decmax = bbox.getDecMax()
         ramin = bbox.getRaMin()
         ramax = bbox.getRaMax()
+        maxval = 360.
 
         bound = ""
-        if ramin < 0 and ramax > 2.*math.pi:
+        if ramin < 0 and ramax > maxval:
             bound = "%s between %f and %f"%(decName, decmin, decmax)
-        elif ramax > 2.*math.pi:
+        elif ramax > maxval:
             bound = ("%s not between %f and %f "
                      "and %s between %f and %f" 
-                     % (raName, ramin, ramax%(2.*math.pi), decName, decmin, decmax))
+                     % (raName, ramin, ramax%(maxval), decName, decmin, decmax))
         elif ramin < 0:
             bound = ("%s not between %f and %f "
                      "and %s between %f and %f"
-                     % (raName, ramin%(2.*math.pi), ramax, decName, decmin, decmax))
+                     % (raName, ramin%(maxval), ramax, decName, decmin, decmax))
         else:
             bound = ("%s between %f and %f and %s between %f and %f"
                      % (raName, ramin, ramax, decName, decmin, decmax))
         return bound
 
     def getRaDecBoundsCirc(self, ra, dec, radius, raName="ra", decName="decl"):
-        ramax = ra+radius/math.cos(dec)
-        ramin = ra-radius/math.cos(dec)
+        ramax = ra+radius/math.cos(math.radians(dec))
+        ramin = ra-radius/math.cos(math.radians(dec))
         decmax = dec+radius
         decmin = dec-radius
         bbox = Bbox(ramin,ramax,decmin,decmax)
