@@ -1,4 +1,5 @@
 setupRequired(throughputs)
+setupRequired(scipy)
 
 envSet(CATALOG_DESCRIPTION_PATH, ${PRODUCT_DIR}/data/requiredFields/)
 envSet(FILE_MAP_PATH, ${PRODUCT_DIR}/data/fileMaps/)
