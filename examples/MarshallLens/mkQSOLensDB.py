@@ -6,7 +6,6 @@ import pyfits
 import math
 from copy import deepcopy
 import os
-from lsst.sims.catalogs.generation.config import ConfigObj
 from lsst.sims.catalogs.measures.photometry.Bandpass import *
 from lsst.sims.catalogs.measures.photometry.Sed import *
 
