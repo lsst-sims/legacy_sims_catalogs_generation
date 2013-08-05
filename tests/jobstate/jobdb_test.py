@@ -1,7 +1,7 @@
 #!/usr/bin/env python
-from lsst.sims.catalogs.generation.db import jobDB
-mj = jobDB.LogEvents()
-js = jobDB.JobState()
+from lsst.sims.catalogs.generation.db import LogEvents, JobState 
+mj = LogEvents()
+js = JobState()
 mj.registerTaskStart()
 for i in range(100):
   if(i%5 == 0):

@@ -1,5 +1,5 @@
 import scipy
-from lsst.sims.catalogs.generation.db.rewrite import DBObject, ObservationMetaData
+from lsst.sims.catalogs.generation.db import DBObject, ObservationMetaData
 
 if __name__ == '__main__':
     obsMD = DBObject.from_objid('opsim3_61')
@@ -8,25 +8,26 @@ if __name__ == '__main__':
                                                             dec=0.0,
                                                             radius=0.01))
 
-    star = DBObject.from_objid('msstars')
     galaxy = DBObject.from_objid('galaxyBase')
     galaxyTiled = DBObject.from_objid('galaxyTiled')
     galaxyBulge = DBObject.from_objid('galaxyBulge')
     galaxyDisk = DBObject.from_objid('galaxyDisk')
     galaxyAgn = DBObject.from_objid('galaxyAgn')
+    star = DBObject.from_objid('msstars')
 
-    objects = [star, galaxy, galaxyTiled, galaxyBulge, galaxyDisk, galaxyAgn]
+    objects = [galaxy, galaxyTiled, galaxyBulge, galaxyDisk, galaxyAgn, star]
 
-    constraints = ["rmag < 21.", "gr_total_rest > 0.8", "r_ab < 20.", "mass_bulge > 1.", 
-                   "DiskLSSTg < 20.", "t0_agn > 300."]
+    constraints = ["gr_total_rest < 0.3", "r_ab < 20.", "mass_bulge > 1.", 
+                   "DiskLSSTg < 20.", "t0_agn > 300.", "rmag < 21."]
 
-    metadataList = [obs_metadata, obs_metadata_gal, obs_metadata, 
+    metadataList = [obs_metadata_gal, obs_metadata, obs_metadata, 
                     obs_metadata, obs_metadata, obs_metadata]
 
     for object, constraint, md in zip(objects, constraints, metadataList):
         #Get results all at once
         result = object.query_columns(obs_metadata=md, constraint=constraint)
-        print ",".join(result.dtype.names)
+        if len(result) > 0:
+            print ",".join(result.dtype.names)
         print "Length of returned result set of %s is: %i"%(object.objid, len(result))
         #Or using an iterator over chunks
         ntot = 0

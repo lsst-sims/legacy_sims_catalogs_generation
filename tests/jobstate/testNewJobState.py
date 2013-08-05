@@ -1,15 +1,15 @@
-import lsst.sims.catalogs.generation.db.jobDB as jdb
+from lsst.sims.catalogs.generation.db import JobId, JobState 
 
 #Make a couple of ids...
-myid1 = jdb.JobId(10)
-myid2 = jdb.JobId(10,"simon")
+myid1 = JobId(10)
+myid2 = JobId(10,"simon")
 
 #make a couple of job states
 js = {}
-js["1"] = jdb.JobState(myid1)
-js["2"] = jdb.JobState(myid2)
-js["3"] = jdb.JobState()
-js["4"] = jdb.JobState(11)
+js["1"] = JobState(myid1)
+js["2"] = JobState(myid2)
+js["3"] = JobState()
+js["4"] = JobState(11)
 
 for k in js.keys():
   js[k].updateState("Updating with key", "Key is %s"%k)

@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 import time
-from lsst.sims.catalogs.generation.db import jobDB
+from lsst.sims.catalogs.generation.db import JobId, JobState
 import sys
 
 if __name__ == "__main__":
@@ -15,8 +15,8 @@ if __name__ == "__main__":
         owner = sys.argv[2]
     else:
         print "usage: python getStateList.py [jobid] [owner]"
-    jobid = jobDB.JobId(id=jid, owner=owner)
-    js = jobDB.JobState(jobid=jobid)
+    jobid = JobId(id=jid, owner=owner)
+    js = JobState(jobid=jobid)
     states = js.showStates()
     print "***Printing all keys***"
     for k in states.keys():

@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-from lsst.sims.catalogs.generation.db import jobDB
+from lsst.sims.catalogs.generation.db import JobId, JobState
 import sys
 
 if len(sys.argv) < 3:
@@ -8,8 +8,8 @@ if len(sys.argv) < 3:
 
 id = int(sys.argv[1])
 owner = sys.argv[2]
-jid = jobDB.JobId(id, owner)
-js = jobDB.JobState(jobid=jid)
+jid = JobId(id, owner)
+js = JobState(jobid=jid)
 jobid = js.getJobId()
 print jobid
 print js.queryState("mykey")

@@ -1,9 +1,9 @@
 #!/usr/bin/env python
-from lsst.sims.catalogs.generation.db import jobDB
+from lsst.sims.catalogs.generation.db import JobState
 import sys
 import time
 
-js = jobDB.JobState()
+js = JobState()
 jobid = js.getJobId()
 print jobid.getId(), jobid.getOwner()
 js.updateState("mykey","my value")
