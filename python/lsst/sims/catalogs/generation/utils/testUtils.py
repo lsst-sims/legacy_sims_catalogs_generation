@@ -5,6 +5,14 @@ import numpy
 
 from lsst.sims.catalogs.generation.db import DBObject, ObservationMetaData
 
+def writeResult(result, fname):
+    fh = open(fname, 'w')
+    if len(result) > 0:
+        fh.write(",".join([str(el) for el in result.dtype.names])+"\n")
+        for i in xrange(len(result)):
+            fh.write(",".join([str(result[name][i]) for name in result.dtype.names])+"\n")
+    fh.close()
+
 class myTestStars(DBObject):
     objid = 'teststars'
     tableid = 'stars'
@@ -16,8 +24,8 @@ class myTestStars(DBObject):
     decColName = 'decl'
     spatialModel = 'POINT'
     columns = [('id', None, int),
-               ('ra', None),
-               ('decl', None),
+               ('raJ2000', 'ra*%f'%(numpy.pi/180.)),
+               ('decJ2000', 'decl*%f'%(numpy.pi/180.)),
                ('umag', None),
                ('gmag', None),
                ('rmag', None),
