@@ -26,6 +26,8 @@ if __name__ == '__main__':
     for object, constraint, md in zip(objects, constraints, metadataList):
         #Get results all at once
         result = object.query_columns(obs_metadata=md, constraint=constraint)
+        #Since there is only one chunck,
+        result = result.next()
         if len(result) > 0:
             print ",".join(result.dtype.names)
         print "Length of returned result set of %s is: %i"%(object.objid, len(result))

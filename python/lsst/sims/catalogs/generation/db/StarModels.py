@@ -1,4 +1,3 @@
-
 from dbConnection import DBObject
 class StarObj(DBObject):
     # XXX: this is incomplete.  We need to use all the column values from
@@ -8,16 +7,13 @@ class StarObj(DBObject):
     idColKey = 'id'
     raColName = 'ra'
     decColName = 'decl'
-    appendint = 4
+    objectTypeId = 4
     spatialModel = 'POINT'
+    dbDefaultValues = {'varsimobjid':-1, 'runid':-1, 'ismultiple':-1, 'run':-1,
+                       'runobjid':-1}
     #These types should be matched to the database.
     #: Default map is float.  If the column mapping is the same as the column name, None can be specified
     columns = [('id','simobjid', int),
-               ('umag', None),
-               ('gmag', None),
-               ('rmag', None),
-               ('imag', None),
-               ('zmag', None),
                ('raJ2000', 'ra*PI()/180.'),
                ('decJ2000', 'decl*PI()/180.'),
                ('glon', 'gal_l*PI()/180.'),
@@ -26,7 +22,17 @@ class StarObj(DBObject):
                ('properMotionRa', '(mudecl/(1000.*3600.))*PI()/180.'),
                ('properMotionDec', '(mura/(1000.*3600.))*PI()/180.'),
                ('galacticAv', 'CONVERT(float, ebv*3.1)'),
-               ('parallax', None),
                ('radialVelocity', 'vrad'),
                ('variabilityParameters', 'varParamStr', str, 256),
                ('sedFilename', 'sedfilename', unicode, 40)]
+
+class StarObj(DBObject):
+    # XXX: this is incomplete.  We need to use all the column values from
+    #      the requiredFields file.
+    objid = 'msstars2'
+    tableid = 'starsMSRGB_forceseek'
+    idColKey = 'id'
+    raColName = 'ra'
+    decColName = 'decl'
+    objectTypeId = 99
+    spatialModel = 'POINT'

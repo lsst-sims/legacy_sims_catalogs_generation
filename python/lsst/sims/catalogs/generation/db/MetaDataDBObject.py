@@ -43,6 +43,8 @@ class MetaDataDBObject(DBObject):
     """
     objid = 'opsim3_61'
     tableid = 'output_opsim3_61'
+    objectTypeId = -1
+    spatialModel = 'none'
     #: Note that identical observations may have more than one unique
     #: obshistid, so this is the id, but not for unique visits.
     #: To do that, group by expdate.
@@ -71,24 +73,9 @@ class MetaDataDBObject(DBObject):
                ('Opsim_expmjd', 'expmjd'),
                ('Opsim_altitude', 'altitude'),
                ('Opsim_azimuth', 'azimuth')]
-
     def __init__(self, address=None):
-        if (self.objid is None) or (self.tableid is None):
-            raise ValueError("DBObject must be subclassed, and "
-                             "define objid and tableid.")
-        if self.columns is None:
-            raise ValueError("DBObject must be subclasses, and define "
-                             "columns.  The columns variable is a list "
-                             "of tuples containing column name, mapping to "
-                             "database name, type")
-
-        if address is None:
-            address = self.getDbAddress()
-
-        self.dbAddress = address
-
-        self._connect_to_engine()
-        self._get_table()
+        self.defaultColumns = [col[0] for col in self.columns]
+        super(MetaDataDBObject, self).__init__(address=address)
 
     def getObjectTypeId(self):
         raise NotImplementedError("Metadata has no object type")
@@ -96,8 +83,10 @@ class MetaDataDBObject(DBObject):
     def getSpatialModel(self):
         raise NotImplementedError("Metadata has no spatial model")
 
-    def getObservationMetaData(self, obshistid, radiusDeg, makeCircBounds=True, makeBoxBounds=False):
-        chunks = self.query_columns(constraint="obshistid=%i"%obshistid)
+    def getObservationMetaData(self, obshistid, radiusDeg, makeCircBounds=True, makeBoxBounds=False, colnames=None):
+        if colnames is None:
+            colnames = self.defaultColumns
+        chunks = self.query_columns(colnames=colnames, constraint="obshistid=%i"%obshistid)
         #The query will only return one row (hopefully)
         result = chunks.next()
         ra = result[self.raColKey][0]
