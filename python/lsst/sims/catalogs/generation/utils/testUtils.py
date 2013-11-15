@@ -7,10 +7,13 @@ from lsst.sims.catalogs.generation.db import DBObject, ObservationMetaData
 
 def writeResult(result, fname):
     fh = open(fname, 'w')
-    if len(result) > 0:
-        fh.write(",".join([str(el) for el in result.dtype.names])+"\n")
-        for i in xrange(len(result)):
-            fh.write(",".join([str(result[name][i]) for name in result.dtype.names])+"\n")
+    first = True
+    for chunk in result:
+        if first:
+            fh.write(",".join([str(el) for el in chunk.dtype.names])+"\n")
+            first = False
+        for i in xrange(len(chunk)):
+            fh.write(",".join([str(chunk[name][i]) for name in chunk.dtype.names])+"\n")
     fh.close()
 
 class myTestStars(DBObject):
