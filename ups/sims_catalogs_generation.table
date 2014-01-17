@@ -1,8 +1,8 @@
 setupRequired(base)
-setupRequired(sims_catalogs_measures)
 setupRequired(throughputs)
 setupRequired(scipy)
 
+setupOptional(sims_catalogs_measures)
 #This is needed by the mssql python module
 envPrepend(TDSVER, 7.0)
 
