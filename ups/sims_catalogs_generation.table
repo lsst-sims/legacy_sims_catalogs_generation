@@ -1,0 +1,9 @@
+setupRequired(base)
+setupRequired(sims_catalogs_measures)
+setupRequired(throughputs)
+setupRequired(scipy)
+
+#This is needed by the mssql python module
+envPrepend(TDSVER, 7.0)
+
+envPrepend(PYTHONPATH, ${PRODUCT_DIR}/python)
