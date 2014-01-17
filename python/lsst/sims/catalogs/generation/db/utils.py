@@ -3,11 +3,18 @@ from collections import OrderedDict
 import warnings
 import numpy
 from StringIO import StringIO
-from sqlalchemy import types as satypes, Column, Table, Index
+from sqlalchemy import (types as satypes, Column, Table, Index, 
+    create_engine, MetaData)
 import string, random
 #from http://stackoverflow.com/questions/2257441/python-random-string-generation-with-upper-case-letters-and-digits
 def id_generator(size=8, chars=string.ascii_lowercase):
     return ''.join(random.choice(chars) for x in range(size))
+
+def make_engine(dbAddress):
+    """create and connect to a database engine"""
+    engine = create_engine(dbAddress, echo=False)
+    metadata = MetaData(bind=engine)
+    return engine, metadata
 
 def guessDtype(dataPath, numGuess, delimiter, **kwargs):
     cnt = 0
@@ -32,7 +39,7 @@ def buildTypeMap():
                 pass
     return npTypeMap
 
-def createSQLTable(dtype, tableid, idCol, metadata, customTypeMap={}):
+def createSQLTable(dtype, tableid, idCol, metadata, customTypeMap={}, defaultPrecision=16, defaultScale=6):
     npTypeMap = buildTypeMap()
     nativeTypes = OrderedDict()
     for name in dtype.names:
@@ -48,11 +55,16 @@ def createSQLTable(dtype, tableid, idCol, metadata, customTypeMap={}):
             sqlType = satypes._type_map[nativeTypes[name]]
         except KeyError:
             warnings.warn("Could not find a mapping to a SQL type for native type: %s"%(nativeTypes[name]))
-        #Look for string like types
+        
         if name in customTypeMap:
             sqlColumns.append(Column(name, customTypeMap[name], primary_key=(idCol==name)))
+        #Look for string like types
         elif 'format' in dir(nativeTypes[name]):
             sqlColumns.append(Column(name, type(sqlType)(dtype[name].itemsize), primary_key=(idCol==name)))
+        #Look for numeric like types
+        elif 'scale' in dir(sqlType):
+            sqlColumns.append(Column(name, type(sqlType)(precision=defaultPrecision, 
+                              scale=defaultScale), primary_key=(idCol==name)))
         else:
             sqlColumns.append(Column(name, sqlType, primary_key=(idCol==name)))
     if tableid is None:
@@ -93,9 +105,20 @@ def loadTable(datapath, datatable, delimiter, dtype, engine, indexCols=[], skipL
 
         i.create(engine)
 
-def loadData(dataPath, dtype, delimiter, tableId, idCol, engine, metaData, numGuess, **kwargs):
+def loadData(dataPath, dtype, delimiter, tableId, idCol, engine, metaData, numGuess, append=False, **kwargs):
     if dtype is None:
         dtype = guessDtype(dataPath, numGuess, delimiter)
-    dataTable = createSQLTable(dtype, tableId, idCol, metaData)
+
+    if tableId is not None:
+        tableExists = engine.dialect.has_table(engine.connect(), tableId)
+
+    if append and tableId is None:
+        raise ValueError("Cannot append if the table name is missing")
+    elif tableExists and not append:
+        raise ValueError("Append is False but table exists")
+    elif not tableExists:
+        dataTable = createSQLTable(dtype, tableId, idCol, metaData)
+    else:
+        dataTable = Table(tableId, metaData, autoload=True)
     loadTable(dataPath, dataTable, delimiter, dtype, engine, **kwargs)
     return dataTable.name
