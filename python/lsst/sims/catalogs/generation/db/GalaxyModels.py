@@ -72,8 +72,8 @@ class GalaxyObj(DBObject):
     objid = 'galaxyBase'
     #: This is the base table for the galaxies
     #tableid = 'final_clone_db'
-    tableid = 'galaxy'
-    idColKey = 'id'
+    tableid = 'galaxy_reclone_origellip'
+    idColKey = 'myid'
     raColName = '((CAST(ra AS NUMERIC(9,6))%360.)+360.)%360.'
     decColName = 'dec'
     objectTypeId = 9
@@ -132,7 +132,8 @@ class GalaxyObj(DBObject):
             ('lsst_r', 'r_ab'),
             ('lsst_i', 'i_ab'),
             ('lsst_z', 'z_ab'),
-            ('lsst_y', 'y_ab')
+            ('lsst_y', 'y_ab'),
+            ('norm_e', 'SQRT(e1*e1+e2*e2)')
             ]
 
     def _final_pass(self, results):
