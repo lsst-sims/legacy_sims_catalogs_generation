@@ -69,7 +69,7 @@ def makeTestDB(size=1000):
     rmag = gmag - gmr
     imag = rmag - rmi
     zmag = imag - imz
-    ymag = zmag -zmy
+    ymag = zmag - zmy
     for i in xrange(size):
         c.execute('''INSERT INTO stars VALUES (%i, %f, %f, %f, %f, %f, %f, %f, %f, %f)'''%\
                   (i, numpy.degrees(ra[i]), numpy.degrees(dec[i]), umag[i], gmag[i], rmag[i], imag[i], zmag[i], ymag[i], mag_norm[i]))
