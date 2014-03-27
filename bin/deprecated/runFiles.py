@@ -1,5 +1,4 @@
 import sys, os, time
-import scipy
 import argparse
 
 def getIds(offset, number, fhids):

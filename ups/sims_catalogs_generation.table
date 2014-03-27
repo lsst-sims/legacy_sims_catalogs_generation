@@ -1,5 +1,4 @@
 setupRequired(base)
-setupRequired(scipy)
 
 setupOptional(sims_catalogs_measures)
 setupOptional(throughputs)

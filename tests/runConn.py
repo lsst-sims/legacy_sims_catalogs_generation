@@ -1,4 +1,3 @@
-import scipy
 from lsst.sims.catalogs.generation.db import DBObject, ObservationMetaData
 
 if __name__ == '__main__':
