@@ -1,5 +1,8 @@
-setupOptional(sims_catalogs_measures)
+setupRequired(pymssql)
 setupOptional(throughputs)
+#This package also requires sqlalchemy provided by
+#Anaconda
+
 #This is needed by the mssql python module
 envPrepend(TDSVER, 7.0)
 
