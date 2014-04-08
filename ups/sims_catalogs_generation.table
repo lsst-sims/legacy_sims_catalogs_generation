@@ -1,3 +1,4 @@
+setupRequired(sconsUtils)
 setupRequired(pymssql)
 setupOptional(throughputs)
 #This package also requires sqlalchemy provided by
