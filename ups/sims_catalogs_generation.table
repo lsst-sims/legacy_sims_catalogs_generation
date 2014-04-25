@@ -1,6 +1,7 @@
 setupRequired(sconsUtils)
 setupRequired(pymssql)
 setupOptional(throughputs)
+setupOptional(sims_sed_library)
 #This package also requires sqlalchemy provided by
 #Anaconda
 

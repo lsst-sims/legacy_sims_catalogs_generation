@@ -16,7 +16,7 @@ class LensIngester (object):
     #Read the data file.  This will presumably need to be specific to the data
     #Set paths to default throughputs and seds
     self.tpath = os.getenv('LSST_THROUGHPUTS_DEFAULT')
-    self.spath = os.getenv('SED_DATA')
+    self.spath = os.getenv('SIMS_SED_LIBRARY_DIR')
     self.bands = {}
     for k in self.keymap:
       self.bands[k] = Bandpass()

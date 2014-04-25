@@ -18,7 +18,7 @@ class testPhotTrim (object):
         self.datadir = os.environ.get("SIMS_DATA_DIR")
 
         self.tpath = os.getenv('LSST_THROUGHPUTS_DEFAULT')
-        self.spath = os.getenv('SED_DATA')
+        self.spath = os.getenv('SIMS_SED_LIBRARY_DIR')
         self.bands = {"u":None, "g":None, "r":None, "i":None, "z":None, "y":None}
         keys = self.bands.keys()
         for k in keys:

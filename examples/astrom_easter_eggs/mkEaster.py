@@ -9,9 +9,8 @@ import numpy
 
 class makeEaster (object):
     def __init__(self):
-        self.datadir = os.environ.get("SIMS_DATA_DIR")
         self.tpath = os.getenv('LSST_THROUGHPUTS_DEFAULT')
-        self.spath = os.getenv('SED_DATA')
+        self.spath = os.getenv('SIMS_SED_LIBRARY_DIR')
         self.specmap = self.makeSpecMap("../../data/fileMaps/spec_map.dat")
         self.eggs = []
         self.fields = ['id','filename', 'fieldid', 'ra', 'dec', 'gizisid', 'appmag', 'filtid',\
