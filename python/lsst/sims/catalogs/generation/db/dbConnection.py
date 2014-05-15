@@ -2,6 +2,7 @@ import warnings
 import math
 import numpy
 import os
+import inspect
 from collections import OrderedDict
 
 from .utils import loadData
@@ -68,7 +69,11 @@ class DBObjectMeta(type):
         else:
             # add this class to the registry
             if cls.objid in cls.registry:
-                warnings.warn('duplicate object identifier %s specified' % cls.objid)
+                srcfile = inspect.getsourcefile(cls.registry[cls.objid])
+                srcline = inspect.getsourcelines(cls.registry[cls.objid])[1]
+                warnings.warn('duplicate object identifier %s specified. '%(cls.objid)+\
+                              'This will override previous definition on line %i of %s'%
+                              (srcline, srcfile))
             cls.registry[cls.objid] = cls
 
         # check if the list of unique ids is specified
