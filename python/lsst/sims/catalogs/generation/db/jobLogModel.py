@@ -1,14 +1,10 @@
 import warnings
 from sqlalchemy.pool import NullPool
 from sqlalchemy.orm import scoped_session, sessionmaker
-from sqlalchemy.sql import expression
 from sqlalchemy import create_engine, Column, Table, Integer,\
                        UnicodeText, DateTime,\
                        Text
 from sqlalchemy import ThreadLocalMetaData
-import sqlalchemy.databases as sd 
-from sqlalchemy import func
-from sqlalchemy import schema
 from sqlalchemy import exc as sa_exc
 
 warnings.simplefilter("ignore", category=sa_exc.SAWarning)
