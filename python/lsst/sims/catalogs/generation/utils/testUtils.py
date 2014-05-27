@@ -1,7 +1,7 @@
 import sqlite3
 from numpy.random import random, seed
 from sqlite3 import dbapi2 as sqlite
-import numpy
+import numpy, json
 
 from lsst.sims.catalogs.generation.db import DBObject, ObservationMetaData
 
@@ -43,9 +43,9 @@ class myTestGals(DBObject):
                ('imag', None),
                ('zmag', None),
                ('ymag', None),
-               ('mag_norm_agn', None),
-               ('mag_norm_disk', None),
-               ('mag_norm_bulge', None),
+               ('magNormAgn', 'mag_norm_agn', None),
+               ('magNormDisk', 'mag_norm_disk', None),
+               ('magNormBulge', 'mag_norm_bulge', None),
                ('redshift', None),
                ('a_disk', None),
                ('b_disk', None),
@@ -54,7 +54,7 @@ class myTestGals(DBObject):
 
 def makeGalTestDB(size=1000, seedVal=None):
     """
-    Make a test database to serve information to the myTestStars objec
+    Make a test database to serve information to the myTestGals object
     @param size: Number of rows in the database
     @param seedVal: Random seed to use
     """
@@ -65,7 +65,7 @@ def makeGalTestDB(size=1000, seedVal=None):
                      (id int, ra real, decl real, umag real, gmag real, rmag real, 
                      imag real, zmag real, ymag real, 
                      mag_norm_agn real, mag_norm_bulge real, mag_norm_disk real,
-                     redshift real, a_disk real, b_disk real, a_bulge real, b_bulge real)''')
+                     redshift real, a_disk real, b_disk real, a_bulge real, b_bulge real, varParamStr text)''')
         conn.commit()
     except:
         raise RuntimeError("Error creating database.")
@@ -81,7 +81,7 @@ def makeGalTestDB(size=1000, seedVal=None):
     mag_norm_disk = random(size)*6. + 18.
     mag_norm_bulge = random(size)*6. + 18.
     mag_norm_agn = random(size)*6. + 19.
-    redshift = random(size)*3.
+    redshift = random(size)*2.5
 
     a_disk = random(size)*2.
     flatness = random(size)*0.8 # To prevent linear galaxies
@@ -101,10 +101,17 @@ def makeGalTestDB(size=1000, seedVal=None):
     zmag = imag - imz
     ymag = zmag - zmy
     for i in xrange(size):
-        c.execute('''INSERT INTO galaxies VALUES (%i, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f)'''%\
-                  (i, numpy.degrees(ra[i]), numpy.degrees(dec[i]), umag[i], gmag[i], rmag[i], imag[i],
+        period = random()*490. + 10.
+        amp = random()*5. + 0.2
+        varParam = {'varMethodName':'testVar', 'pars':{'period':period, 'amplitude':amp}}
+        paramStr = json.dumps(varParam)
+        qstr = '''INSERT INTO galaxies VALUES (%i, %f, %f, %f, 
+                     %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, 
+                     %f, %f, '%s')'''%\
+                   (i, numpy.degrees(ra[i]), numpy.degrees(dec[i]), umag[i], gmag[i], rmag[i], imag[i],
                    zmag[i], ymag[i], mag_norm_agn[i], mag_norm_bulge[i], mag_norm_disk[i], redshift[i], 
-                   a_disk[i], b_disk[i], a_bulge[i], a_bulge[i]))
+                   a_disk[i], b_disk[i], a_bulge[i], a_bulge[i], paramStr)
+        c.execute(qstr)
     c.execute('''CREATE INDEX gal_ra_idx ON galaxies (ra)''')
     c.execute('''CREATE INDEX gal_dec_idx ON galaxies (decl)''')
     conn.commit()
@@ -129,11 +136,11 @@ class myTestStars(DBObject):
                ('imag', None),
                ('zmag', None),
                ('ymag', None),
-               ('mag_norm', None)]
+               ('magNorm', 'mag_norm', float)]
 
 def makeStarTestDB(size=1000, seedVal=None):
     """
-    Make a test database to serve information to the myTestStars objec
+    Make a test database to serve information to the myTestStars object
     @param size: Number of rows in the database
     @param seedVal: Random seed to use
     """
@@ -142,7 +149,8 @@ def makeStarTestDB(size=1000, seedVal=None):
     try:
         c.execute('''CREATE TABLE stars
                      (id int, ra real, decl real, umag real, gmag real, rmag real, 
-                     imag real, zmag real, ymag real, mag_norm real)''')
+                     imag real, zmag real, ymag real, mag_norm real, 
+                     radialVelocity real, properMotionDec real, properMotionRa real, varParamStr text)''')
         conn.commit()
     except:
         raise RuntimeError("Error creating database.")
@@ -163,9 +171,18 @@ def makeStarTestDB(size=1000, seedVal=None):
     imag = rmag - rmi
     zmag = imag - imz
     ymag = zmag - zmy
+    radVel = random(size)*50. - 25.
+    pmRa = random(size)*4./(1000*3600.) # deg/yr
+    pmDec = random(size)*4./(1000*3600.) # deg/yr
     for i in xrange(size):
-        c.execute('''INSERT INTO stars VALUES (%i, %f, %f, %f, %f, %f, %f, %f, %f, %f)'''%\
-                  (i, numpy.degrees(ra[i]), numpy.degrees(dec[i]), umag[i], gmag[i], rmag[i], imag[i], zmag[i], ymag[i], mag_norm[i]))
+        period = random()*490. + 10.
+        amp = random()*5. + 0.2
+        varParam = {'varMethodName':'testVar', 'pars':{'period':period, 'amplitude':amp}}
+        paramStr = json.dumps(varParam)
+        qstr = '''INSERT INTO stars VALUES (%i, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, '%s')'''%\
+                  (i, numpy.degrees(ra[i]), numpy.degrees(dec[i]), umag[i], gmag[i], rmag[i], 
+                   imag[i], zmag[i], ymag[i], mag_norm[i], radVel[i], pmRa[i], pmDec[i], paramStr)
+        c.execute(qstr)
     c.execute('''CREATE INDEX star_ra_idx ON stars (ra)''')
     c.execute('''CREATE INDEX star_dec_idx ON stars (decl)''')
     conn.commit()

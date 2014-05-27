@@ -13,8 +13,8 @@ class DBObjectTestCase(unittest.TestCase):
         if os.path.exists('testDatabase.db'):
             print "deleting database"
             os.unlink('testDatabase.db')
-        tu.makeStarTestDB(size=100000)
-        tu.makeGalTestDB(size=100000)
+        tu.makeStarTestDB(size=100000, seedVal=1)
+        tu.makeGalTestDB(size=100000, seedVal=1)
         self.obsMd = ObservationMetaData(circ_bounds=dict(ra=210., dec=-60, radius=1.75),
                                          mjd=52000., bandpassName='r')
     def tearDown(self):
@@ -24,7 +24,7 @@ class DBObjectTestCase(unittest.TestCase):
         self.assertEqual(self.obsMd.bandpass, 'r')
         self.assertAlmostEqual(self.obsMd.mjd, 52000., 6)
 
-    def dbObj(self):
+    def testDbObj(self):
         mystars = DBObject.from_objid('teststars')
         mygals = DBObject.from_objid('testgals')
         result = mystars.query_columns(obs_metadata=self.obsMd)
