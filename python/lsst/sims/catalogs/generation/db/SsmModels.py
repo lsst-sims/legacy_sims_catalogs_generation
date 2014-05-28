@@ -6,7 +6,7 @@ class SolarSystemObj(DBObject):
     # There is no materialized table since this is a table valued function
     tableid = ''
     objectTypeId = 40
-    spatialModel = 'MOVINGPOINT'
+    spatialModel = 'movingpoint'
 
     #Turn off default column mapping since we are querying a dynamic resource
     generateDefaultColumnMap = False
