@@ -194,21 +194,6 @@ class DBObject(object):
     def getSpatialModel(self):
         return self.spatialModel
 
-    def getSpatialModelTrim(self):
-        """
-        return spatial model in a format that phoSim recognizes
-        """
-        
-        if self.spatialModel == 'SERSIC2D':
-            return 'sersic2d'
-        elif self.spatialModel == 'POINT' or self.spatialModel == 'ZPOINT':
-            return 'point'
-        elif self.spatialModel == 'SERSIC':
-            return 'sersic'
-        elif self.spatialModel == 'GAUSSIAN':
-            return 'gaussian'
-
-
     def _get_table(self):
         self.table = Table(self.tableid, self.metadata,
                            autoload=True)
