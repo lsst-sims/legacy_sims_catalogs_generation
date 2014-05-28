@@ -125,6 +125,11 @@ class DBObject(object):
     dbDefaultValues = {}
     raColName = None
     decColName = None
+
+    #Provide information if this object should be tested in the unit test
+    doRunTest = False
+    testObservationMetaData = None
+
     #: This is the default address.  Simply change this in the class definition for other
     #: endpoints.
     dbAddress = "mssql+pymssql://LSST-2:L$$TUser@fatboy.npl.washington.edu:1433/LSST"
@@ -215,7 +220,7 @@ class DBObject(object):
 
     def _connect_to_engine(self):
         """create and connect to a database engine"""
-        self.engine = create_engine(self.dbAddress, echo=False)
+        self.engine = create_engine(self.dbAddress, echo=self.verbose)
         self.session = scoped_session(sessionmaker(autoflush=True, 
                                                    bind=self.engine))
         self.metadata = MetaData(bind=self.engine)
@@ -391,7 +396,10 @@ class DBObject(object):
                     if k in self.dbDefaultValues and not result[k]:
                         retresults[i][k] = self.dbDefaultValues[k]
                     else:
-                        retresults[i][k] = result[k]
+                        try:
+                            retresults[i][k] = result[k]
+                        except TypeError:
+                            raise TypeError("Couldn't convert column %s"%(k))
         else:
             retresults = numpy.rec.fromrecords(results, dtype=dtype)
         return self._final_pass(retresults)

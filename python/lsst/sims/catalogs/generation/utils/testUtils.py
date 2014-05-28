@@ -5,6 +5,14 @@ import numpy, json
 
 from lsst.sims.catalogs.generation.db import DBObject, ObservationMetaData
 
+def getOneChunk(results):
+    try:
+        chunk = results.next()
+    except StopIteration:
+        raise RuntimeError("No results were returned.  Cannot run tests.  Try increasing the size of the"+
+                           " test database")
+    return chunk
+
 def writeResult(result, fname):
     fh = open(fname, 'w')
     first = True
