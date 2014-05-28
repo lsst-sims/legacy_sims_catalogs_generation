@@ -303,7 +303,7 @@ class GalaxyBulgeObj(GalaxyTileObj):
     raColName = 'ra'
     decColName = 'dec'
     objectTypeId = 26
-    spatialModel = 'SERSIC2D'
+    spatialModel = 'sersic2d'
     #: The following maps column names to database schema.  The tuples
     #: must be at least length 2.  If column name is the same as the name
     #: in the DB the mapping element may be None.  The rest of the tuple
@@ -341,7 +341,7 @@ class GalaxyDiskObj(GalaxyTileObj):
     raColName = 'ra'
     decColName = 'dec'
     objectTypeId = 27
-    spatialModel = 'SERSIC2D'
+    spatialModel = 'sersic2d'
     #: The following maps column names to database schema.  The tuples
     #: must be at least length 2.  If column name is the same as the name
     #: in the DB the mapping element may be None.  The rest of the tuple
@@ -379,7 +379,7 @@ class GalaxyAgnObj(GalaxyTileObj):
     raColName = 'ra'
     decColName = 'dec'
     objectTypeId = 28
-    spatialModel = 'ZPOINT'
+    spatialModel = 'point'
     #: The following maps column names to database schema.  The tuples
     #: must be at least length 2.  If column name is the same as the name
     #: in the DB the mapping element may be None.  The rest of the tuple
@@ -410,7 +410,7 @@ class ImageAgnObj(DBObject):
     raColName = 'ra'
     decColName = 'dec'
     objectTypeId = 29
-    spatialModel = 'ZPOINT'
+    spatialModel = 'point'
     dbDefaultValues = {'varsimobjid':-1, 'myid':-1}
     #: The following maps column names to database schema.  The tuples
     #: must be at least length 2.  If column name is the same as the name
@@ -437,7 +437,7 @@ class LensGalaxyObj(DBObject):
     raColName = 'ra'
     decColName = 'dec'
     objectTypeId = 30
-    spatialModel = 'SERSIC2D'
+    spatialModel = 'sersic2d'
     dbDefaultValues = {'varsimobjid':-1, 'myid':-1, 'variabilityParameters':None}
     #: The following maps column names to database schema.  The tuples
     #: must be at least length 2.  If column name is the same as the name
