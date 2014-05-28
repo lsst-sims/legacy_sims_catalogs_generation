@@ -25,7 +25,7 @@ class myTestStars(DBObject):
     dbAddress = 'sqlite:///testDatabase.db'
     raColName = 'ra'
     decColName = 'decl'
-    spatialModel = 'POINT'
+    spatialModel = 'point'
     columns = [('id', None, int),
                ('raJ2000', 'ra*%f'%(numpy.pi/180.)),
                ('decJ2000', 'decl*%f'%(numpy.pi/180.)),
