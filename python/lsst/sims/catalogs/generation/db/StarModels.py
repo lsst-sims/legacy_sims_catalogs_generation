@@ -6,7 +6,6 @@ class StarBase(DBObject):
     raColName = 'ra'
     decColName = 'decl'
     objectTypeId = -1
-    spatialModel = 'point'
     dbDefaultValues = {'varsimobjid':-1, 'runid':-1, 'ismultiple':-1, 'run':-1,
                        'runobjid':-1}
     #These types should be matched to the database.
