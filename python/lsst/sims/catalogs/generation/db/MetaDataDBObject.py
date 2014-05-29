@@ -44,7 +44,6 @@ class MetaDataDBObject(DBObject):
     objid = 'opsim3_61'
     tableid = 'output_opsim3_61'
     objectTypeId = -1
-    spatialModel = 'none'
     generateDefaultColumnMap = False
     #: Note that identical observations may have more than one unique
     #: obshistid, so this is the id, but not for unique visits.
@@ -80,9 +79,6 @@ class MetaDataDBObject(DBObject):
 
     def getObjectTypeId(self):
         raise NotImplementedError("Metadata has no object type")
-
-    def getSpatialModel(self):
-        raise NotImplementedError("Metadata has no spatial model")
 
     def getObservationMetaData(self, obshistid, radiusDeg, makeCircBounds=True, makeBoxBounds=False, colnames=None):
         if colnames is None:
