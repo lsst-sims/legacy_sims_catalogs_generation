@@ -14,10 +14,6 @@ class ExampleGalaxyObj(DBObject):
     raColName = 'ra'
     decColName = 'decl'
     objectTypeId = 23
-    #: There is no spatial model available for coadded galaxies 
-    #: This will cause a warning, but it just means we can't make
-    #: TRIM files with this object.    
-    spatialModel = None
 
     #: The following maps column names to database schema.  The tuples
     #: must be at least length 2.  If column name is the same as the name
@@ -75,10 +71,6 @@ class GalaxyObj(DBObject):
     raColName = '((CAST(ra AS NUMERIC(9,6))%360.)+360.)%360.'
     decColName = 'dec'
     objectTypeId = 24
-    #: There is no spatial model available for coadded galaxies 
-    #: This will cause a warning, but it just means we can't make
-    #: TRIM files with this object.
-    spatialModel = None
 
     #: Numpy can't cast a NoneType to an integer.  This works with floats
     #: as None is cast to nan, but for integers this raises and exception.
@@ -147,8 +139,6 @@ class GalaxyTileObj(DBObject):
     raColName = 'ra'
     decColName = 'dec'
     objectTypeId = 25
-    #: There is no spatial model available for coadded galaxies 
-    spatialModel = None
 
     #: Numpy can't cast a NoneType to an integer.  This works with floats
     #: as None is cast to nan, but for integers this raises and exception.
@@ -303,7 +293,7 @@ class GalaxyBulgeObj(GalaxyTileObj):
     raColName = 'ra'
     decColName = 'dec'
     objectTypeId = 26
-    spatialModel = 'sersic2d'
+
     #: The following maps column names to database schema.  The tuples
     #: must be at least length 2.  If column name is the same as the name
     #: in the DB the mapping element may be None.  The rest of the tuple
@@ -341,7 +331,7 @@ class GalaxyDiskObj(GalaxyTileObj):
     raColName = 'ra'
     decColName = 'dec'
     objectTypeId = 27
-    spatialModel = 'sersic2d'
+
     #: The following maps column names to database schema.  The tuples
     #: must be at least length 2.  If column name is the same as the name
     #: in the DB the mapping element may be None.  The rest of the tuple
@@ -379,7 +369,7 @@ class GalaxyAgnObj(GalaxyTileObj):
     raColName = 'ra'
     decColName = 'dec'
     objectTypeId = 28
-    spatialModel = 'point'
+
     #: The following maps column names to database schema.  The tuples
     #: must be at least length 2.  If column name is the same as the name
     #: in the DB the mapping element may be None.  The rest of the tuple
@@ -410,7 +400,7 @@ class ImageAgnObj(DBObject):
     raColName = 'ra'
     decColName = 'dec'
     objectTypeId = 29
-    spatialModel = 'point'
+
     dbDefaultValues = {'varsimobjid':-1, 'myid':-1}
     #: The following maps column names to database schema.  The tuples
     #: must be at least length 2.  If column name is the same as the name
@@ -437,7 +427,7 @@ class LensGalaxyObj(DBObject):
     raColName = 'ra'
     decColName = 'dec'
     objectTypeId = 30
-    spatialModel = 'sersic2d'
+
     dbDefaultValues = {'varsimobjid':-1, 'myid':-1, 'variabilityParameters':None}
     #: The following maps column names to database schema.  The tuples
     #: must be at least length 2.  If column name is the same as the name
