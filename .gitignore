@@ -4,6 +4,8 @@
 *.os
 *.pyc
 *.so
+*.db
+*.sqlite
 .sconf_temp
 .sconsign.dblite
 config.log

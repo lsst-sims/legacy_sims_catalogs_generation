@@ -2,6 +2,7 @@ import warnings
 import math
 import numpy
 import os
+import inspect
 from collections import OrderedDict
 
 from .utils import loadData
@@ -9,6 +10,7 @@ from sqlalchemy.orm import scoped_session, sessionmaker, mapper
 from sqlalchemy.sql import expression
 from sqlalchemy import (create_engine, ThreadLocalMetaData, MetaData,
                         Table, Column, BigInteger)
+from sqlalchemy import exc as sa_exc
 
 #The documentation at http://docs.sqlalchemy.org/en/rel_0_7/core/types.html#sqlalchemy.types.Numeric
 #suggests using the cdecimal module.  Since it is not standard, import decimal.
@@ -68,7 +70,11 @@ class DBObjectMeta(type):
         else:
             # add this class to the registry
             if cls.objid in cls.registry:
-                warnings.warn('duplicate object identifier %s specified' % cls.objid)
+                srcfile = inspect.getsourcefile(cls.registry[cls.objid])
+                srcline = inspect.getsourcelines(cls.registry[cls.objid])[1]
+                warnings.warn('duplicate object identifier %s specified. '%(cls.objid)+\
+                              'This will override previous definition on line %i of %s'%
+                              (srcline, srcfile))
             cls.registry[cls.objid] = cls
 
         # check if the list of unique ids is specified
@@ -78,9 +84,12 @@ class DBObjectMeta(type):
         else:
             if cls.skipRegistration:
                 pass
+            elif cls.objectTypeId is None:
+                pass #Don't add typeIds that are None
             elif cls.objectTypeId in cls.objectTypeIdList:
-                warnings.warn('duplicate object type id %s specified.'%cls.objectTypeId+\
-                              'Output object ids may not be unique')
+                warnings.warn('Duplicate object type id %s specified: '%cls.objectTypeId+\
+                              '\nOutput object ids may not be unique.\nThis may not be a problem if you do not'+\
+                              'want globally unique id values')
             else:
                 cls.objectTypeIdList.append(cls.objectTypeId)
         return super(DBObjectMeta, cls).__init__(name, bases, dct)
@@ -116,6 +125,11 @@ class DBObject(object):
     dbDefaultValues = {}
     raColName = None
     decColName = None
+
+    #Provide information if this object should be tested in the unit test
+    doRunTest = False
+    testObservationMetaData = None
+
     #: This is the default address.  Simply change this in the class definition for other
     #: endpoints.
     dbAddress = "mssql+pymssql://LSST-2:L$$TUser@fatboy.npl.washington.edu:1433/LSST"
@@ -136,16 +150,22 @@ class DBObject(object):
         """Given a string objid, return an instance of
         the appropriate DBObject class.
         """
+        if objid not in cls.registry:
+            raise RuntimeError('Attempting to construct an object that does not exist')
         cls = cls.registry.get(objid, DBObject)
         return cls(*args, **kwargs)
 
-    def __init__(self, address=None):
+    def __init__(self, address=None, verbose=False):
+        self.verbose = verbose
+        if not self.verbose:
+            with warnings.catch_warnings():
+                warnings.simplefilter("ignore", category=sa_exc.SAWarning)
         if self.idColKey is None:
             self.idColKey = self.getIdColKey()
         if (self.objid is None) or (self.tableid is None) or (self.idColKey is None):
             raise ValueError("DBObject must be subclassed, and "
                              "define objid, tableid and idColKey.")
-        if (self.objectTypeId is None) or (self.spatialModel is None):
+        if ((self.objectTypeId is None) or (self.spatialModel is None)) and self.verbose:
             warnings.warn("Either objectTypeId or spatialModel has not "
                           "been set.  Input files for phosim are not "
                           "possible.")
@@ -200,7 +220,7 @@ class DBObject(object):
 
     def _connect_to_engine(self):
         """create and connect to a database engine"""
-        self.engine = create_engine(self.dbAddress, echo=False)
+        self.engine = create_engine(self.dbAddress, echo=self.verbose)
         self.session = scoped_session(sessionmaker(autoflush=True, 
                                                    bind=self.engine))
         self.metadata = MetaData(bind=self.engine)
@@ -222,14 +242,16 @@ class DBObject(object):
             dbtypestr = self.table.c[col].type.__visit_name__
             dbtypestr = dbtypestr.upper()
             if col in colnames:
-                warnings.warn("Database column, %s, overridden in self.columns... "%(col)+
-                            "Skipping default assignment.")
+                if self.verbose: #Warn for possible column redefinition
+                    warnings.warn("Database column, %s, overridden in self.columns... "%(col)+
+                                  "Skipping default assignment.")
             elif dbtypestr in self.dbTypeMap:
                 self.columns.append((col, col)+self.dbTypeMap[dbtypestr])
             else:
-                warnings.warn("Can't create default column for %s.  There is no mapping "%(col)+
-                              "for type %s.  Modify the dbTypeMap, or make a custom columns "%(dbtypestr)+
-                              "list.")
+                if self.verbose:
+                    warnings.warn("Can't create default column for %s.  There is no mapping "%(col)+
+                                  "for type %s.  Modify the dbTypeMap, or make a custom columns "%(dbtypestr)+
+                                  "list.")
 
     def _get_column_query(self, colnames=None):
         """Given a list of valid column names, return the query object"""
@@ -374,7 +396,10 @@ class DBObject(object):
                     if k in self.dbDefaultValues and not result[k]:
                         retresults[i][k] = self.dbDefaultValues[k]
                     else:
-                        retresults[i][k] = result[k]
+                        try:
+                            retresults[i][k] = result[k]
+                        except TypeError:
+                            raise TypeError("Couldn't convert column %s"%(k))
         else:
             retresults = numpy.rec.fromrecords(results, dtype=dtype)
         return self._final_pass(retresults)
@@ -422,7 +447,7 @@ class fileDBObject(DBObject):
     #Column names to index.  Specify compound indexes using tuples of column names
     indexCols = []
     def __init__(self, dataLocatorString, runtable=None, dbAddress="sqlite:///:memory:",
-                dtype=None, numGuess=1000, delimiter=None, **kwargs):
+                dtype=None, numGuess=1000, delimiter=None, verbose=False, **kwargs):
         """
         Initialize an object for querying databases loaded from a file
 
@@ -434,10 +459,11 @@ class fileDBObject(DBObject):
         @param numGuess: The number of lines to use in guessing the dtype from the file.
         @param delimiter: The delimiter to use when parsing the file default is white space.
         """
+        self.verbose = verbose
         if(self.objid is None) or (self.idColKey is None):
             raise ValueError("DBObject must be subclassed, and "
                              "define objid and tableid and idColKey.")
-        if (self.objectTypeId is None) or (self.spatialModel is None):
+        if ((self.objectTypeId is None) or (self.spatialModel is None)) and self.verbose:
             warnings.warn("Either objectTypeId or spatialModel has not "
                           "been set.  Input files for phosim are not "
                           "possible.")
