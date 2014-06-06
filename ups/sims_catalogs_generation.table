@@ -1,4 +1,4 @@
-setupRequired(sconsUtils)
+setupRequired(utils)
 setupRequired(python)
 
 #This package also requires sqlalchemy provided by
