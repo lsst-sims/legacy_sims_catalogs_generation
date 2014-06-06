@@ -1,11 +1,7 @@
 setupRequired(sconsUtils)
-setupRequired(pymssql)
-setupOptional(throughputs)
-setupOptional(sims_sed_library)
+setupRequired(python)
+
 #This package also requires sqlalchemy provided by
 #Anaconda
-
-#This is needed by the mssql python module
-envPrepend(TDSVER, 7.0)
 
 envPrepend(PYTHONPATH, ${PRODUCT_DIR}/python)
