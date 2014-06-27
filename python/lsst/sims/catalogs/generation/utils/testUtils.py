@@ -24,9 +24,11 @@ def writeResult(result, fname):
             fh.write(",".join([str(chunk[name][i]) for name in chunk.dtype.names])+"\n")
     fh.close()
 
-def sampleSphere(size):
+def sampleSphere(size, ramin = 0., dra = 2.*numpy.pi):
     #From Shao 1996: "Spherical Sampling by Archimedes' Theorem"
-    ra = random(size)*2.*numpy.pi
+    ra = random(size)*dra
+    ra += ramin
+    ra %= 2*numpy.pi
     z = random(size)*2. - 1.
     dec = numpy.arccos(z) - numpy.pi/2.
     return ra, dec
@@ -60,7 +62,7 @@ class myTestGals(DBObject):
                ('a_bulge', None),
                ('b_bulge', None),]
 
-def makeGalTestDB(size=1000, seedVal=None):
+def makeGalTestDB(size=1000, seedVal=None, **kwargs):
     """
     Make a test database to serve information to the myTestGals object
     @param size: Number of rows in the database
@@ -79,7 +81,7 @@ def makeGalTestDB(size=1000, seedVal=None):
         raise RuntimeError("Error creating database.")
     if seedVal:
         seed(seedVal)
-    ra, dec = sampleSphere(size)
+    ra, dec = sampleSphere(size, **kwargs)
     #Typical colors for main sequece stars
     umg = 1.5
     gmr = 0.65
@@ -145,7 +147,7 @@ class myTestStars(DBObject):
                ('ymag', None),
                ('magNorm', 'mag_norm', float)]
 
-def makeStarTestDB(size=1000, seedVal=None):
+def makeStarTestDB(size=1000, seedVal=None, **kwargs):
     """
     Make a test database to serve information to the myTestStars object
     @param size: Number of rows in the database
@@ -163,7 +165,7 @@ def makeStarTestDB(size=1000, seedVal=None):
         raise RuntimeError("Error creating database.")
     if seedVal:
         seed(seedVal)
-    ra, dec = sampleSphere(size)
+    ra, dec = sampleSphere(size, **kwargs)
     #Typical colors
     umg = 1.5
     gmr = 0.65
