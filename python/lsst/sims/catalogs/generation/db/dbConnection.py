@@ -119,7 +119,6 @@ class DBObject(object):
     tableid = None
     idColKey = None
     objectTypeId = None
-    spatialModel = None
     columns = None
     generateDefaultColumnMap = True
     dbDefaultValues = {}
@@ -165,8 +164,9 @@ class DBObject(object):
         if (self.objid is None) or (self.tableid is None) or (self.idColKey is None):
             raise ValueError("DBObject must be subclassed, and "
                              "define objid, tableid and idColKey.")
-        if ((self.objectTypeId is None) or (self.spatialModel is None)) and self.verbose:
-            warnings.warn("Either objectTypeId or spatialModel has not "
+
+        if (self.objectTypeId is None) and self.verbose:
+            warnings.warn("objectTypeId has not "
                           "been set.  Input files for phosim are not "
                           "possible.")
         if address is None:
@@ -210,9 +210,6 @@ class DBObject(object):
 
     def getObjectTypeId(self):
         return self.objectTypeId
-
-    def getSpatialModel(self):
-        return self.spatialModel
 
     def _get_table(self):
         self.table = Table(self.tableid, self.metadata,
@@ -463,8 +460,9 @@ class fileDBObject(DBObject):
         if(self.objid is None) or (self.idColKey is None):
             raise ValueError("DBObject must be subclassed, and "
                              "define objid and tableid and idColKey.")
-        if ((self.objectTypeId is None) or (self.spatialModel is None)) and self.verbose:
-            warnings.warn("Either objectTypeId or spatialModel has not "
+
+        if (self.objectTypeId is None) and self.verbose:
+            warnings.warn("objectTypeId has not "
                           "been set.  Input files for phosim are not "
                           "possible.")
 
