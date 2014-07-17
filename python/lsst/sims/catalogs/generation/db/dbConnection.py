@@ -353,8 +353,8 @@ class DBObject(object):
         bound = ("%s between %f and %f and %s between %f and %f "
                      % (RAname, RAmin, RAmax, DECname, DECmin, DECmax))
         
-        bound = bound + ("and SQRT(%s * %s + %s * %s) < %f "
-             % (RAname,RAname,DECname,DECname,radius))
+        bound = bound + ("and SQRT(POWER(%s - %f,2) + POWER(%s - %f,2)) < %f "
+             % (RAname,RA,DECname,DEC,radius))
         
         return bound
 
