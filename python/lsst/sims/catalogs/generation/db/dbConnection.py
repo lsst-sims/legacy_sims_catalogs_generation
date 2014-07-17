@@ -353,9 +353,11 @@ class DBObject(object):
         bound = ("%s between %f and %f and %s between %f and %f "
                      % (RAname, RAmin, RAmax, DECname, DECmin, DECmax))
         
-        #return DBObject.box_bound_constraint(RAmin, RAmax,
-                                                        #DECmin, DECmax,
-                                                       # RAname, DECname)    
+        bound = bound + ("and SQRT(%s * %s + %s * %s) < %f "
+             % (RAname,RAname,DECname,DECname,radius))
+        
+        return bound
+
 
     def _final_pass(self, results):
         """ Make final modifications to a set of data before returning it to the user
