@@ -350,11 +350,17 @@ class DBObject(object):
         DECmax = DEC + radius
         DECmin = DEC - radius
         
+        #initially demand that all objects are within a box containing the circle 
         bound = ("%s between %f and %f and %s between %f and %f "
                      % (RAname, RAmin, RAmax, DECname, DECmin, DECmax))
         
-        bound = bound + ("and SQRT(POWER(%s - %f,2) + POWER(%s - %f,2)) < %f "
-             % (RAname,RA,DECname,DEC,radius))
+        #then use the Haversine function to constrain the angular distance form boresite to be within
+        #the desired radius.  See http://en.wikipedia.org/wiki/Haversine_formula
+        bound = bound + ("and 2 * ASIN(SQRT( POWER(0.5 * SIN((%s - %f) * PI() / 180.0),2)" % (DECname,DEC))
+        bound = bound +("+ COS(%s * PI() / 180.0) * COS(%f * PI() / 180.0) * POWER(SIN(0.5 * (%s - %f) * PI() / 180.0),2)))"
+             % (RAname, RA, RAname, RA))
+        bound = bound + (" < %f " %(radius*numpy.pi/180.0))
+        
         
         return bound
 
