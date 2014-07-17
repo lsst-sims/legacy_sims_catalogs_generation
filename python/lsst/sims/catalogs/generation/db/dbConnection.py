@@ -349,9 +349,13 @@ class DBObject(object):
         RAmin = RA - radius / math.cos(math.radians(DEC))
         DECmax = DEC + radius
         DECmin = DEC - radius
-        return DBObject.box_bound_constraint(RAmin, RAmax,
-                                                        DECmin, DECmax,
-                                                        RAname, DECname)    
+        
+        bound = ("%s between %f and %f and %s between %f and %f "
+                     % (RAname, RAmin, RAmax, DECname, DECmin, DECmax))
+        
+        #return DBObject.box_bound_constraint(RAmin, RAmax,
+                                                        #DECmin, DECmax,
+                                                       # RAname, DECname)    
 
     def _final_pass(self, results):
         """ Make final modifications to a set of data before returning it to the user
