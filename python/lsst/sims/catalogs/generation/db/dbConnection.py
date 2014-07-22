@@ -23,13 +23,23 @@ class ChunkIterator(object):
     """Iterator for query chunks"""
     def __init__(self, dbobj, query, chunk_size):
         self.dbobj = dbobj
+        
+        """
+        self.conn = self.dbobj.session.connection()
+        self.conn.create_function("COS",1,numpy.cos)
+        self.conn.create_function("SIN",1,numpy.sin)
+        self.conn.create_function("ASIN",1,numpy.arcsin)
+        self.conn.create_function("SQRT",1,numpy.sqrt)
+        """
+        
         self.exec_query = dbobj.session.execute(query)
         self.chunk_size = chunk_size
-
+        
     def __iter__(self):
         return self
 
     def next(self):
+
         if self.chunk_size is None and not self.exec_query.closed:
             chunk = self.exec_query.fetchall()
             if len(chunk) == 0:
@@ -218,9 +228,22 @@ class DBObject(object):
     def _connect_to_engine(self):
         """create and connect to a database engine"""
         self.engine = create_engine(self.dbAddress, echo=self.verbose)
+        
+        
+        self.conn = self.engine.raw_connection()
+        self.conn.create_function("COS",1,numpy.cos)
+        self.conn.create_function("SIN",1,numpy.sin)
+        self.conn.create_function("ASIN",1,numpy.arcsin)
+        self.conn.create_function("SQRT",1,numpy.sqrt)
+        
+        
         self.session = scoped_session(sessionmaker(autoflush=True, 
-                                                   bind=self.engine))
+                                                   bind=self.conn))
         self.metadata = MetaData(bind=self.engine)
+        
+        #self.session.begin()
+        
+
 
     def _make_column_map(self):
         self.columnMap = OrderedDict([(el[0], el[1] if el[1] else el[0])
