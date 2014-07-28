@@ -9,7 +9,7 @@ from .utils import loadData
 from sqlalchemy.orm import scoped_session, sessionmaker, mapper
 from sqlalchemy.sql import expression
 from sqlalchemy import (create_engine, ThreadLocalMetaData, MetaData,
-                        Table, Column, BigInteger)
+                        Table, Column, BigInteger, event)
 from sqlalchemy import exc as sa_exc
 
 #The documentation at http://docs.sqlalchemy.org/en/rel_0_7/core/types.html#sqlalchemy.types.Numeric
@@ -19,19 +19,23 @@ import decimal
 
 #------------------------------------------------------------
 # Iterator for database chunks
+
+def valueOfPi():
+    return numpy.pi
+
+def declareTrigFunctions(conn,connection_rec,connection_proxy):
+       
+        conn.create_function("COS",1,numpy.cos)
+        conn.create_function("SIN",1,numpy.sin)
+        conn.create_function("ASIN",1,numpy.arcsin)
+        conn.create_function("SQRT",1,numpy.sqrt)
+        conn.create_function("POWER",2,numpy.power)
+        conn.create_function("PI",0,valueOfPi)
+
 class ChunkIterator(object):
     """Iterator for query chunks"""
     def __init__(self, dbobj, query, chunk_size):
         self.dbobj = dbobj
-        
-        """
-        self.conn = self.dbobj.session.connection()
-        self.conn.create_function("COS",1,numpy.cos)
-        self.conn.create_function("SIN",1,numpy.sin)
-        self.conn.create_function("ASIN",1,numpy.arcsin)
-        self.conn.create_function("SQRT",1,numpy.sqrt)
-        """
-        
         self.exec_query = dbobj.session.execute(query)
         self.chunk_size = chunk_size
         
@@ -39,7 +43,6 @@ class ChunkIterator(object):
         return self
 
     def next(self):
-
         if self.chunk_size is None and not self.exec_query.closed:
             chunk = self.exec_query.fetchall()
             if len(chunk) == 0:
@@ -228,17 +231,10 @@ class DBObject(object):
     def _connect_to_engine(self):
         """create and connect to a database engine"""
         self.engine = create_engine(self.dbAddress, echo=self.verbose)
-        
-        """
-        self.conn = self.engine.raw_connection()
-        self.conn.create_function("COS",1,numpy.cos)
-        self.conn.create_function("SIN",1,numpy.sin)
-        self.conn.create_function("ASIN",1,numpy.arcsin)
-        self.conn.create_function("SQRT",1,numpy.sqrt)
-        """
-        
+        event.listen(self.engine,'checkout',declareTrigFunctions)
+   
         self.session = scoped_session(sessionmaker(autoflush=True, 
-                                                   bind=self.conn))
+                                                   bind=self.engine,autocommit=False))
         self.metadata = MetaData(bind=self.engine)
         
         #self.session.begin()
