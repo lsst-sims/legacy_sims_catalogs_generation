@@ -247,7 +247,7 @@ class DBObject(object):
             event.listen(self.engine,'checkout',declareTrigFunctions)
    
         self.session = scoped_session(sessionmaker(autoflush=True, 
-                                                   bind=self.engine,autocommit=False))
+                                                   bind=self.engine))
         self.metadata = MetaData(bind=self.engine)
         
         #self.session.begin()
