@@ -229,13 +229,13 @@ class DBObject(object):
         """create and connect to a database engine"""
         self.engine = create_engine(self.dbAddress, echo=self.verbose)
         
-        
+        """
         self.conn = self.engine.raw_connection()
         self.conn.create_function("COS",1,numpy.cos)
         self.conn.create_function("SIN",1,numpy.sin)
         self.conn.create_function("ASIN",1,numpy.arcsin)
         self.conn.create_function("SQRT",1,numpy.sqrt)
-        
+        """
         
         self.session = scoped_session(sessionmaker(autoflush=True, 
                                                    bind=self.conn))
