@@ -391,7 +391,7 @@ class DBObject(object):
         bound = bound + ("and 2 * ASIN(SQRT( POWER(0.5 * SIN((%s - %f) * PI() / 180.0),2)" % (DECname,DEC))
         bound = bound +("+ COS(%s * PI() / 180.0) * COS(%f * PI() / 180.0) * POWER(SIN(0.5 * (%s - %f) * PI() / 180.0),2)))"
              % (RAname, RA, RAname, RA))
-        bound = bound + (" < %f " %(radius*numpy.pi/180.0))
+        bound = bound + (" < %s " %(radius*numpy.pi/180.0))
         
         
         return bound
