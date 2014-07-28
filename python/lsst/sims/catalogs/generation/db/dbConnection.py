@@ -390,8 +390,8 @@ class DBObject(object):
         #the desired radius.  See http://en.wikipedia.org/wiki/Haversine_formula
         bound = bound + ("and 2 * ASIN(SQRT( POWER(0.5 * SIN((%s - %f) * PI() / 180.0),2)" % (DECname,DEC))
         bound = bound +("+ COS(%s * PI() / 180.0) * COS(%f * PI() / 180.0) * POWER(SIN(0.5 * (%s - %f) * PI() / 180.0),2)))"
-             % (RAname, RA, RAname, RA))
-        bound = bound + (" < %s " %(radius*numpy.pi/180.0))
+             % (DECname, DEC, RAname, RA))
+        bound = bound + (" < %s " % (radius*numpy.pi/180.0))
         
         
         return bound
