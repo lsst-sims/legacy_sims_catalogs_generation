@@ -21,16 +21,27 @@ import decimal
 # Iterator for database chunks
 
 def valueOfPi():
+    """
+    A function to return the value of pi.  This is needed for adding PI()
+    to sqlite databases
+    """
     return numpy.pi
 
 def declareTrigFunctions(conn,connection_rec,connection_proxy):
-       
-        conn.create_function("COS",1,numpy.cos)
-        conn.create_function("SIN",1,numpy.sin)
-        conn.create_function("ASIN",1,numpy.arcsin)
-        conn.create_function("SQRT",1,numpy.sqrt)
-        conn.create_function("POWER",2,numpy.power)
-        conn.create_function("PI",0,valueOfPi)
+    """
+    A database event listener
+    which will define the math functions necessary for evaluating the
+    Haversine function in sqlite databases (where they are not otherwise
+    defined)
+    
+    see:    http://docs.sqlalchemy.org/en/latest/core/events.html
+    """
+    conn.create_function("COS",1,numpy.cos)
+    conn.create_function("SIN",1,numpy.sin)
+    conn.create_function("ASIN",1,numpy.arcsin)
+    conn.create_function("SQRT",1,numpy.sqrt)
+    conn.create_function("POWER",2,numpy.power)
+    conn.create_function("PI",0,valueOfPi)
 
 class ChunkIterator(object):
     """Iterator for query chunks"""
