@@ -231,7 +231,9 @@ class DBObject(object):
     def _connect_to_engine(self):
         """create and connect to a database engine"""
         self.engine = create_engine(self.dbAddress, echo=self.verbose)
-        event.listen(self.engine,'checkout',declareTrigFunctions)
+        
+        if self.engine.dialect.name == 'sqlite':
+            event.listen(self.engine,'checkout',declareTrigFunctions)
    
         self.session = scoped_session(sessionmaker(autoflush=True, 
                                                    bind=self.engine,autocommit=False))
