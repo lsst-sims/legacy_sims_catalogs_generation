@@ -44,7 +44,7 @@ class ObservationMetaData(object):
         else:
             raise ValueError("You passed neither a dict nor a float as m5 to ObservationMetaData")
 
-   def m5(self,filterName):
+    def m5(self,filterName):
        
        if self.m5value is None:
            raise ValueError("m5 is None in ObservationMetaData")
