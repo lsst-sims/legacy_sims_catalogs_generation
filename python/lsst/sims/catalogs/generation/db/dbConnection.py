@@ -9,7 +9,7 @@ from .utils import loadData
 from sqlalchemy.orm import scoped_session, sessionmaker, mapper
 from sqlalchemy.sql import expression
 from sqlalchemy import (create_engine, ThreadLocalMetaData, MetaData,
-                        Table, Column, BigInteger)
+                        Table, Column, BigInteger, event)
 from sqlalchemy import exc as sa_exc
 
 #The documentation at http://docs.sqlalchemy.org/en/rel_0_7/core/types.html#sqlalchemy.types.Numeric
@@ -17,15 +17,39 @@ from sqlalchemy import exc as sa_exc
 #TODO: test for cdecimal and use it if it exists.
 import decimal
 
+def valueOfPi():
+    """
+    A function to return the value of pi.  This is needed for adding PI()
+    to sqlite databases
+    """
+    return numpy.pi
+
+def declareTrigFunctions(conn,connection_rec,connection_proxy):
+    """
+    A database event listener
+    which will define the math functions necessary for evaluating the
+    Haversine function in sqlite databases (where they are not otherwise
+    defined)
+    
+    see:    http://docs.sqlalchemy.org/en/latest/core/events.html
+    """
+    conn.create_function("COS",1,numpy.cos)
+    conn.create_function("SIN",1,numpy.sin)
+    conn.create_function("ASIN",1,numpy.arcsin)
+    conn.create_function("SQRT",1,numpy.sqrt)
+    conn.create_function("POWER",2,numpy.power)
+    conn.create_function("PI",0,valueOfPi)
+
 #------------------------------------------------------------
 # Iterator for database chunks
+
 class ChunkIterator(object):
     """Iterator for query chunks"""
     def __init__(self, dbobj, query, chunk_size):
         self.dbobj = dbobj
         self.exec_query = dbobj.session.execute(query)
         self.chunk_size = chunk_size
-
+        
     def __iter__(self):
         return self
 
@@ -218,6 +242,10 @@ class DBObject(object):
     def _connect_to_engine(self):
         """create and connect to a database engine"""
         self.engine = create_engine(self.dbAddress, echo=self.verbose)
+        
+        if self.engine.dialect.name == 'sqlite':
+            event.listen(self.engine,'checkout',declareTrigFunctions)
+   
         self.session = scoped_session(sessionmaker(autoflush=True, 
                                                    bind=self.engine))
         self.metadata = MetaData(bind=self.engine)
@@ -349,9 +377,21 @@ class DBObject(object):
         RAmin = RA - radius / math.cos(math.radians(DEC))
         DECmax = DEC + radius
         DECmin = DEC - radius
-        return DBObject.box_bound_constraint(RAmin, RAmax,
-                                                        DECmin, DECmax,
-                                                        RAname, DECname)    
+        
+        #initially demand that all objects are within a box containing the circle 
+        bound = ("%s between %f and %f and %s between %f and %f "
+                     % (RAname, RAmin, RAmax, DECname, DECmin, DECmax))
+        
+        #then use the Haversine function to constrain the angular distance form boresite to be within
+        #the desired radius.  See http://en.wikipedia.org/wiki/Haversine_formula
+        bound = bound + ("and 2 * ASIN(SQRT( POWER(SIN(0.5*(%s - %s) * PI() / 180.0),2)" % (DECname,DEC))
+        bound = bound +("+ COS(%s * PI() / 180.0) * COS(%s * PI() / 180.0) * POWER(SIN(0.5 * (%s - %s) * PI() / 180.0),2)))"
+             % (DECname, DEC, RAname, RA))
+        bound = bound + (" < %s " % (radius*numpy.pi/180.0))
+        
+        
+        return bound
+
 
     def _final_pass(self, results):
         """ Make final modifications to a set of data before returning it to the user
