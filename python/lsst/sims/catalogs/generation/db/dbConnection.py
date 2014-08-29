@@ -249,10 +249,6 @@ class DBObject(object):
         self.session = scoped_session(sessionmaker(autoflush=True, 
                                                    bind=self.engine))
         self.metadata = MetaData(bind=self.engine)
-        
-        #self.session.begin()
-        
-
 
     def _make_column_map(self):
         self.columnMap = OrderedDict([(el[0], el[1] if el[1] else el[0])
