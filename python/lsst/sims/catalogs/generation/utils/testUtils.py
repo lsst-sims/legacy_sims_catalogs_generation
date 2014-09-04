@@ -62,13 +62,13 @@ class myTestGals(DBObject):
                ('a_bulge', None),
                ('b_bulge', None),]
 
-def makeGalTestDB(size=1000, seedVal=None, **kwargs):
+def makeGalTestDB(filename='testDatabase.db', size=1000, seedVal=None, **kwargs):
     """
     Make a test database to serve information to the myTestGals object
     @param size: Number of rows in the database
     @param seedVal: Random seed to use
     """
-    conn = sqlite3.connect('testDatabase.db')
+    conn = sqlite3.connect(filename)
     c = conn.cursor()
     try:
         c.execute('''CREATE TABLE galaxies
@@ -147,13 +147,13 @@ class myTestStars(DBObject):
                ('ymag', None),
                ('magNorm', 'mag_norm', float)]
 
-def makeStarTestDB(size=1000, seedVal=None, **kwargs):
+def makeStarTestDB(filename='testDatabase.db', size=1000, seedVal=None, **kwargs):
     """
     Make a test database to serve information to the myTestStars object
     @param size: Number of rows in the database
     @param seedVal: Random seed to use
     """
-    conn = sqlite3.connect('testDatabase.db')
+    conn = sqlite3.connect(filename)
     c = conn.cursor()
     try:
         c.execute('''CREATE TABLE stars
