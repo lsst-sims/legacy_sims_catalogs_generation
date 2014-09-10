@@ -26,7 +26,9 @@ class ObservationMetaData(object):
 
     """
             
-    def __init__(self, circ_bounds=None, box_bounds=None, mjd=None, bandpassName=None, metadata=None):
+    def __init__(self, circ_bounds=None, box_bounds=None, mjd=None, bandpassName=None, 
+                 m5 = None, metadata=None):
+                 
         if circ_bounds is not None and box_bounds is not None:
             raise ValueError("Passing both circ_bounds and box_bounds")
         self.circ_bounds = circ_bounds
@@ -34,3 +36,23 @@ class ObservationMetaData(object):
         self.mjd = mjd
         self.bandpass = bandpassName
         self.metadata = metadata
+        
+        if m5 is None:
+            self.m5value = {}
+        elif isinstance(m5, dict) or isinstance(m5, float):
+            self.m5value = m5
+        else:
+            raise ValueError("You passed neither a dict nor a float as m5 to ObservationMetaData")
+
+    def m5(self,filterName):
+       
+       if self.m5value is None:
+           raise ValueError("m5 is None in ObservationMetaData")
+       elif isinstance(self.m5value,dict):
+           if filterName not in self.m5value:
+               raise ValueError("Filter %s is not in the m5 dict in ObservationMetaData" % filterName)
+           return self.m5value[filterName]
+       elif isinstance(self.m5value,float):
+           return self.m5value
+       else:
+           raise ValueError("Somehow, m5 is not set in ObservationMetaData")
