@@ -70,3 +70,6 @@ class ObservationMetaData(object):
         
         if self.UnrefractedDec is None and 'Unrefracted_Dec' in self.metadata:
             self.UnrefractedDec = self.metadata['Unrefracted_Dec'][0]
+        
+        if self.bandpass is None and 'Opsim_filter' in self.metadata:
+            self.bandpass = self.metadata['Opsim_filter'][0]
