@@ -32,10 +32,10 @@ class ObservationMetaData(object):
 
     """
             
-    def __init__(self, circ_bounds=None, box_bounds=None, mjd=None, bandpassName=None, 
-                 m5 = None, metadata=None, site = None):
-
-                 
+    def __init__(self, circ_bounds=None, box_bounds=None, 
+                 mjd=None, UnrefractedRA=None, UnrefractedDec=None, RotSkyPos=None,
+                 bandpassName=None, metadata={}, site=None, m5=None):
+             
         if circ_bounds is not None and box_bounds is not None:
             raise ValueError("Passing both circ_bounds and box_bounds")
         self.circ_bounds = circ_bounds
@@ -43,7 +43,22 @@ class ObservationMetaData(object):
         self.mjd = mjd
         self.bandpass = bandpassName
         self.metadata = metadata
+        self.UnrefractedRA = UnrefractedRA
+        self.UnrefractedDec = UnrefractedDec
+        self.RotSkyPos = RotSkyPos
         
+        if self.mjd is None and 'Opsim_expmjd' in self.metadata:
+            self.mjd = metadata['Opsim_expmjd'][0]
+        
+        if self.UnrefractedRA is None and 'Unrefracted_RA' is in self.metadata:
+            self.UnrefractedRA = metadata['Unrefracted_RA'][0]
+        
+        if self.RotSkyPos is None and 'Opsim_rotskypos' is in self.metadata:
+            self.RotSkyPos = metadata['Opsim_rotskypos'][0]
+        
+        if self.UnrefractedDec is None and 'Unrefracted_Dec' is in self.metadata:
+            self.UnrefractedDec = metadata['Unrefracted_Dec'][0]
+       
         if site is not None:
             self.site=site
         else:
