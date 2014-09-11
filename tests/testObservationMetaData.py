@@ -40,8 +40,16 @@ class ObservationMetaDataTest(unittest.TestCase):
         obsMD = ObservationMetaData(box_bounds=box_bounds, m5=m5float)
         self.assertAlmostEqual(obsMD.m5('u'),m5float,10)
         self.assertAlmostEqual(obsMD.m5('sally'),m5float,10)
-         
-    def testScalars(self):
+             
+    def testDefault(self):
+        testObsMD = ObservationMetaData()
+        
+        self.assertAlmostEqual(testObsMD.UnrefractedRA,0.0,10)
+        self.assertAlmostEqual(testObsMD.UnrefractedDec,-0.5,10)
+        self.assertAlmostEqual(testObsMD.RotSkyPos,0.0,10)
+        self.assertEqual(testObsMD.bandpass,'i')
+    
+    def testAssignment(self):
         mjd = 5120.0
         RA = 1.5
         Dec = -1.1
