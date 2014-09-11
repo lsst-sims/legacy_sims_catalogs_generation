@@ -74,7 +74,8 @@ class ObservationMetaData(object):
         """
         
         self.phoSimMetadata = metaData
-
+        
+        #overwrite member variables with values from the phoSimMetadata
         if 'Opsim_expmjd' in self.phoSimMetadata:
             self.mjd = phoSimMetadata['Opsim_expmjd'][0]
         
