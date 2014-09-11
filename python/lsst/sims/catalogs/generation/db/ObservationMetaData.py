@@ -1,4 +1,4 @@
-from lsst.sims.catalogs.generation.utils.Site import Site
+from .Site import Site
 
 class ObservationMetaData(object):
     """Observation Metadata
@@ -47,8 +47,8 @@ class ObservationMetaData(object):
         if site is not None:
             self.site=site
         else:
-            site=Site()
-        
+            self.site=Site()
+
         if m5 is None:
             self.m5value = {}
         elif isinstance(m5, dict) or isinstance(m5, float):
@@ -68,3 +68,4 @@ class ObservationMetaData(object):
            return self.m5value
        else:
            raise ValueError("Somehow, m5 is not set in ObservationMetaData")
+
