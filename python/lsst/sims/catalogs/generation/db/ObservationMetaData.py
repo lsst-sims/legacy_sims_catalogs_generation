@@ -30,7 +30,7 @@ class ObservationMetaData(object):
             
     def __init__(self, circ_bounds=None, box_bounds=None, 
                  mjd=None, UnrefractedRA=None, UnrefractedDec=None, RotSkyPos=None,
-                 bandpassName=None, metadata={}, site=None):
+                 bandpassName=None, phoSimMetadata={}, site=None):
                  
         if circ_bounds is not None and box_bounds is not None:
             raise ValueError("Passing both circ_bounds and box_bounds")
@@ -48,28 +48,28 @@ class ObservationMetaData(object):
             self.site=Site()
         
         if metadata is not None:
-            self.assignMetaData(metadata)    
+            self.assignPhoSimMetaData(phoSimMetadata)    
         else:
             self.metadata = None
         
-    def assignMetaData(self, metaData):
+    def assignPhoSimMetaData(self, metaData):
         """
         Assign the dict metaData to be the associated metadata dict of this object
         """
         
-        self.metadata = metaData
+        self.phoSimMetadata = metaData
 
-        if self.mjd is None and 'Opsim_expmjd' in self.metadata:
-            self.mjd = metadata['Opsim_expmjd'][0]
+        if 'Opsim_expmjd' in self.phoSimMetadata:
+            self.mjd = phoSimMetadata['Opsim_expmjd'][0]
         
-        if self.UnrefractedRA is None and 'Unrefracted_RA' in self.metadata:
-            self.UnrefractedRA = self.metadata['Unrefracted_RA'][0]
+        if 'Unrefracted_RA' in self.phoSimMetadata:
+            self.UnrefractedRA = self.phoSimMetadata['Unrefracted_RA'][0]
 
-        if self.RotSkyPos is None and 'Opsim_rotskypos' in self.metadata:
-            self.RotSkyPos = self.metadata['Opsim_rotskypos'][0]
+        if 'Opsim_rotskypos' in self.phoSimMetadata:
+            self.RotSkyPos = self.phoSimMetadata['Opsim_rotskypos'][0]
         
-        if self.UnrefractedDec is None and 'Unrefracted_Dec' in self.metadata:
-            self.UnrefractedDec = self.metadata['Unrefracted_Dec'][0]
+        if 'Unrefracted_Dec' in self.phoSimMetadata:
+            self.UnrefractedDec = self.phoSimMetadata['Unrefracted_Dec'][0]
         
-        if self.bandpass is None and 'Opsim_filter' in self.metadata:
-            self.bandpass = self.metadata['Opsim_filter'][0]
+        if 'Opsim_filter' in self.phoSimMetadata:
+            self.bandpass = self.phoSimMetadata['Opsim_filter'][0]
