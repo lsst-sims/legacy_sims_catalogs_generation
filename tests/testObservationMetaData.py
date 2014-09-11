@@ -48,6 +48,16 @@ class ObservationMetaDataTest(unittest.TestCase):
         self.assertAlmostEqual(testObsMD.UnrefractedDec,-0.5,10)
         self.assertAlmostEqual(testObsMD.RotSkyPos,0.0,10)
         self.assertEqual(testObsMD.bandpass,'i')
+        
+        self.assertAlmostEqual(testObsMD.site.longitude,-1.2320792,10)
+        self.assertAlmostEqual(testObsMD.site.latitude,-0.517781017,10)
+        self.assertAlmostEqual(testObsMD.site.height,2650,10)
+        self.assertAlmostEqual(testObsMD.site.xPolar,0,10)
+        self.assertAlmostEqual(testObsMD.site.yPolar,0,10)
+        self.assertAlmostEqual(testObsMD.site.meanTemperature,284.655,10)
+        self.assertAlmostEqual(testObsMD.site.meanPressure,749.3,10)
+        self.assertAlmostEqual(testObsMD.site.meanHumidity,0.4,10)
+        self.assertAlmostEqual(testObsMD.site.lapseRate,0.0065,10)
     
     def testAssignment(self):
         mjd = 5120.0
