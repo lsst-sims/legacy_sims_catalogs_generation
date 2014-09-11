@@ -1,4 +1,4 @@
-from lsst.sims.catalogs.generation.utils.Site import Site
+from .Site import Site
 
 class ObservationMetaData(object):
     """Observation Metadata
@@ -42,4 +42,4 @@ class ObservationMetaData(object):
         if site is not None:
             self.site=site
         else:
-            site=Site()
+            self.site=Site()
