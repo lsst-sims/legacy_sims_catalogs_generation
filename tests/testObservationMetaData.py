@@ -48,17 +48,19 @@ class ObservationMetaDataTest(unittest.TestCase):
         RotSkyPos = -0.2
         
         testObsMD = ObservationMetaData(mjd=mjd, UnrefractedRA=RA,
-            UnrefractedDec=Dec, RotSkyPos=RotSkyPos)
+            UnrefractedDec=Dec, RotSkyPos=RotSkyPos, bandpassName = 'z')
         
         self.assertAlmostEqual(testObsMD.mjd,5120.0,10)
         self.assertAlmostEqual(testObsMD.UnrefractedRA,1.5,10)
         self.assertAlmostEqual(testObsMD.UnrefractedDec,-1.1,10)
         self.assertAlmostEqual(testObsMD.RotSkyPos,-0.2,10)
+        self.assertEqual(testObsMD.bandpass,'z')
         
         phosimMD = OrderedDict([('Unrefracted_RA', (-2.0,float)), 
                                 ('Unrefracted_Dec', (0.9,float)),
                                 ('Opsim_rotskypos', (1.1,float)), 
-                                ('Opsim_expmjd',(4000.0,float))])
+                                ('Opsim_expmjd',(4000.0,float)),
+                                ('Opsim_filter',(1,int))])
         
         testObsMD.assignPhoSimMetaData(phosimMD)
         
@@ -66,6 +68,7 @@ class ObservationMetaDataTest(unittest.TestCase):
         self.assertAlmostEqual(testObsMD.UnrefractedRA,-2.0,10)
         self.assertAlmostEqual(testObsMD.UnrefractedDec,0.9,10)
         self.assertAlmostEqual(testObsMD.RotSkyPos,1.1,10)
+        self.assertEqual(testObsMD.bandpass,'g')
 
 
 def suite():
