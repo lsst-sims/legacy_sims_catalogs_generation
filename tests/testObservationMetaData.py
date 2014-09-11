@@ -2,7 +2,7 @@ import os
 import unittest
 import lsst.utils.tests as utilsTests
 from collections import OrderedDict
-from lsst.sims.catalogs.generation.db import ObservationMetaData
+from lsst.sims.catalogs.generation.db import ObservationMetaData, Site
 
 class ObservationMetaDataTest(unittest.TestCase):
     """
@@ -58,6 +58,24 @@ class ObservationMetaDataTest(unittest.TestCase):
         self.assertAlmostEqual(testObsMD.site.meanPressure,749.3,10)
         self.assertAlmostEqual(testObsMD.site.meanHumidity,0.4,10)
         self.assertAlmostEqual(testObsMD.site.lapseRate,0.0065,10)
+    
+    def testSite(self):
+        
+        testSite = Site(longitude = 2.0, latitude = -1.0, height = 4.0,
+            xPolar = 0.5, yPolar = -0.5, meanTemperature = 100.0,
+            meanPressure = 500.0, meanHumidity = 0.1, lapseRate = 0.1)
+        
+        testObsMD = ObservationMetaData(site=testSite)
+    
+        self.assertAlmostEqual(testObsMD.site.longitude,2.0,10)
+        self.assertAlmostEqual(testObsMD.site.latitude,-1.0,10)
+        self.assertAlmostEqual(testObsMD.site.height,4.0,10)
+        self.assertAlmostEqual(testObsMD.site.xPolar,0.5,10)
+        self.assertAlmostEqual(testObsMD.site.yPolar,-0.5,10)
+        self.assertAlmostEqual(testObsMD.site.meanTemperature,100.0,10)
+        self.assertAlmostEqual(testObsMD.site.meanPressure,500.0,10)
+        self.assertAlmostEqual(testObsMD.site.meanHumidity,0.1,10)
+        self.assertAlmostEqual(testObsMD.site.lapseRate,0.1,10)
     
     def testAssignment(self):
         mjd = 5120.0
