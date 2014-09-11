@@ -38,23 +38,35 @@ class ObservationMetaData(object):
         self.box_bounds = box_bounds
         self.mjd = mjd
         self.bandpass = bandpassName
-        self.metadata = metadata
         self.UnrefractedRA = UnrefractedRA
         self.UnrefractedDec = UnrefractedDec
         self.RotSkyPos = RotSkyPos
-        
-        if self.mjd is None and 'Opsim_expmjd' in self.metadata:
-            self.mjd = metadata['Opsim_expmjd'][0]
-        
-        if self.UnrefractedRA is None and 'Unrefracted_RA' is in self.metadata:
-            self.UnrefractedRA = metadata['Unrefracted_RA'][0]
-        
-        if self.RotSkyPos is None and 'Opsim_rotskypos' is in self.metadata:
-            self.RotSkyPos = metadata['Opsim_rotskypos'][0]
-        
-        if self.UnrefractedDec is None and 'Unrefracted_Dec' is in self.metadata:
-            self.UnrefractedDec = metadata['Unrefracted_Dec'][0]
+
         if site is not None:
             self.site=site
         else:
             self.site=Site()
+        
+        if metadata is not None:
+            self.assignMetaData(metadata)    
+        else:
+            self.metadata = None
+        
+    def assignMetaData(self, metaData):
+        """
+        Assign the dict metaData to be the associated metadata dict of this object
+        """
+        
+        self.metadata = metaData
+
+        if self.mjd is None and 'Opsim_expmjd' in self.metadata:
+            self.mjd = metadata['Opsim_expmjd'][0]
+        
+        if self.UnrefractedRA is None and 'Unrefracted_RA' in self.metadata:
+            self.UnrefractedRA = self.metadata['Unrefracted_RA'][0]
+
+        if self.RotSkyPos is None and 'Opsim_rotskypos' in self.metadata:
+            self.RotSkyPos = self.metadata['Opsim_rotskypos'][0]
+        
+        if self.UnrefractedDec is None and 'Unrefracted_Dec' in self.metadata:
+            self.UnrefractedDec = self.metadata['Unrefracted_Dec'][0]
