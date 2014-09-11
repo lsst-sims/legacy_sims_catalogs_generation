@@ -63,10 +63,10 @@ class ObservationMetaData(object):
         else:
             self.site=Site()
         
-        if metadata is not None:
+        if phoSimMetadata is not None:
             self.assignPhoSimMetaData(phoSimMetadata)    
         else:
-            self.metadata = None
+            self.phoSimMetadata = None
         
     def assignPhoSimMetaData(self, metaData):
         """
