@@ -1,6 +1,7 @@
 import os
 import unittest
 import lsst.utils.tests as utilsTests
+from collections import OrderedDict
 from lsst.sims.catalogs.generation.db import ObservationMetaData
 
 class ObservationMetaDataTest(unittest.TestCase):
@@ -23,7 +24,17 @@ class ObservationMetaDataTest(unittest.TestCase):
         self.assertAlmostEqual(testObsMD.UnrefractedDec,-1.1,10)
         self.assertAlmostEqual(testObsMD.RotSkyPos,-0.2,10)
         
-    
+        phosimMD = OrderedDict([('Unrefracted_RA', (-2.0,float)), 
+                                ('Unrefracted_Dec', (0.9,float)),
+                                ('Opsim_rotskypos', (1.1,float)), 
+                                ('Opsim_expmjd',(4000.0,float))])
+        
+        testObsMD.assignPhoSimMetaData(phosimMD)
+        
+        self.assertAlmostEqual(testObsMD.mjd,4000.0,10)
+        self.assertAlmostEqual(testObsMD.UnrefractedRA,-2.0,10)
+        self.assertAlmostEqual(testObsMD.UnrefractedDec,0.9,10)
+        self.assertAlmostEqual(testObsMD.RotSkyPos,1.1,10)
 
 def suite():
     """Returns a suite containing all the test cases in this module."""
