@@ -87,6 +87,9 @@ class ObservationMetaData(object):
         if self.UnrefractedDec is None and 'Unrefracted_Dec' is in self.metadata:
             self.UnrefractedDec = metadata['Unrefracted_Dec'][0]
        
+        if self.bandpass is None and 'Opsim_filter' in self.metadata:
+            self.bandpass = self.metadata['Opsim_filter'][0]
+       
     def m5(self,filterName):
        
        if self.m5value is None:
@@ -99,4 +102,3 @@ class ObservationMetaData(object):
            return self.m5value
        else:
            raise ValueError("Somehow, m5 is not set in ObservationMetaData")
-
