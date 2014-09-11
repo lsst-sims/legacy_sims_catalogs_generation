@@ -77,7 +77,7 @@ class ObservationMetaData(object):
         
         #overwrite member variables with values from the phoSimMetadata
         if 'Opsim_expmjd' in self.phoSimMetadata:
-            self.mjd = phoSimMetadata['Opsim_expmjd'][0]
+            self.mjd = self.phoSimMetadata['Opsim_expmjd'][0]
         
         if 'Unrefracted_RA' in self.phoSimMetadata:
             self.UnrefractedRA = self.phoSimMetadata['Unrefracted_RA'][0]
@@ -89,7 +89,8 @@ class ObservationMetaData(object):
             self.UnrefractedDec = self.phoSimMetadata['Unrefracted_Dec'][0]
         
         if 'Opsim_filter' in self.phoSimMetadata:
-            self.bandpass = self.phoSimMetadata['Opsim_filter'][0]
+            filters = ['u','g','r','i','z','y']
+            self.bandpass = filters[self.phoSimMetadata['Opsim_filter'][0]]
                
     def m5(self,filterName):
        
