@@ -1,3 +1,5 @@
+from lsst.sims.catalogs.generation.utils.Site import Site
+
 class ObservationMetaData(object):
     """Observation Metadata
     
@@ -26,7 +28,9 @@ class ObservationMetaData(object):
 
     """
             
-    def __init__(self, circ_bounds=None, box_bounds=None, mjd=None, bandpassName=None, metadata=None):
+    def __init__(self, circ_bounds=None, box_bounds=None, mjd=None, bandpassName=None, metadata=None,
+                 site=None):
+                 
         if circ_bounds is not None and box_bounds is not None:
             raise ValueError("Passing both circ_bounds and box_bounds")
         self.circ_bounds = circ_bounds
@@ -34,3 +38,8 @@ class ObservationMetaData(object):
         self.mjd = mjd
         self.bandpass = bandpassName
         self.metadata = metadata
+        
+        if site is not None:
+            self.site=site
+        else:
+            site=Site()
