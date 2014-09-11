@@ -29,8 +29,8 @@ class ObservationMetaData(object):
     """
             
     def __init__(self, circ_bounds=None, box_bounds=None, 
-                 mjd=None, UnrefractedRA=None, UnrefractedDec=None, RotSkyPos=None,
-                 bandpassName=None, phoSimMetadata={}, site=None):
+                 mjd=None, UnrefractedRA=0.0, UnrefractedDec=-0.5, RotSkyPos=0.0,
+                 bandpassName='i', phoSimMetadata={}, site=None):
                  
         if circ_bounds is not None and box_bounds is not None:
             raise ValueError("Passing both circ_bounds and box_bounds")
