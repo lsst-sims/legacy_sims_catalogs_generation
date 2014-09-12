@@ -33,7 +33,7 @@ class ObservationMetaData(object):
     """
             
     def __init__(self, circ_bounds=None, box_bounds=None, 
-                 mjd=None, UnrefractedRA=None, UnrefractedDec=None, RotSkyPos=0.0,
+                 mjd=None, unrefractedRA=None, unrefractedDec=None, rotSkyPos=0.0,
                  bandpassName='i', phoSimMetadata={}, site=None, m5=None):
                
         if circ_bounds is not None and box_bounds is not None:
@@ -42,21 +42,21 @@ class ObservationMetaData(object):
         self.box_bounds = box_bounds
         self.mjd = mjd
         self.bandpass = bandpassName
-        self.UnrefractedRA = UnrefractedRA
-        self.UnrefractedDec = UnrefractedDec
-        self.RotSkyPos = RotSkyPos
+        self.unrefractedRA = unrefractedRA
+        self.unrefractedDec = unrefractedDec
+        self.rotSkyPos = rotSkyPos
         
         if box_bounds is not None:
-            #if Unrefracted[RA,Dec] is outside of box, set them to the center of the box
-            if self.UnrefractedRA is None or
-               self.UnrefractedDec is None or
-               self.UnrefractedRA > box_bounds['ra_max'] or
-               self.UnrefractedRA < box_bounds['ra_min'] or
-               self.UnrefractedDec < box_bounds['dec_min'] or
-               self.UnrefractedDec > box_bounds['dec_max']:
+            #if unrefracted[RA,Dec] is outside of box, set them to the center of the box
+            if self.unrefractedRA is None or
+               self.unrefractedDec is None or
+               self.unrefractedRA > box_bounds['ra_max'] or
+               self.unrefractedRA < box_bounds['ra_min'] or
+               self.unrefractedDec < box_bounds['dec_min'] or
+               self.unrefractedDec > box_bounds['dec_max']:
                    
-                self.UnrefractedRA = 0.5*(box_bounds['ra_max']+box_bounds['ra_min'])
-                self.UnrefractedDec = 0.5*(box_bounds['dec_max']+box_bounds['dec_min'])    
+                self.unrefractedRA = 0.5*(box_bounds['ra_max']+box_bounds['ra_min'])
+                self.unrefractedDec = 0.5*(box_bounds['dec_max']+box_bounds['dec_min'])    
                 
         
          
@@ -94,13 +94,13 @@ class ObservationMetaData(object):
             self.mjd = self.phoSimMetadata['Opsim_expmjd'][0]
         
         if 'Unrefracted_RA' in self.phoSimMetadata:
-            self.UnrefractedRA = self.phoSimMetadata['Unrefracted_RA'][0]
+            self.unrefractedRA = self.phoSimMetadata['Unrefracted_RA'][0]
 
         if 'Opsim_rotskypos' in self.phoSimMetadata:
-            self.RotSkyPos = self.phoSimMetadata['Opsim_rotskypos'][0]
+            self.rotSkyPos = self.phoSimMetadata['Opsim_rotskypos'][0]
         
         if 'Unrefracted_Dec' in self.phoSimMetadata:
-            self.UnrefractedDec = self.phoSimMetadata['Unrefracted_Dec'][0]
+            self.unrefractedDec = self.phoSimMetadata['Unrefracted_Dec'][0]
         
         if 'Opsim_filter' in self.phoSimMetadata:
             filters = ['u','g','r','i','z','y']
