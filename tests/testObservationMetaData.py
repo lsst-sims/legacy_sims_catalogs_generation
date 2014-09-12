@@ -142,7 +142,37 @@ class ObservationMetaDataTest(unittest.TestCase):
         
         self.assertAlmostEqual(testObsMD.unrefractedRA,21.0,10)
         self.assertAlmostEqual(testObsMD.unrefractedDec,51.0,10)
-
+        
+        testObsMD = ObservationMetaData(box_bounds=box_bounds,
+                     unrefractedRA=9.0,unrefractedDec=1.0)
+        
+        self.assertAlmostEqual(testObsMD.unrefractedRA,15.0,10)
+        self.assertAlmostEqual(testObsMD.unrefractedDec,0.0,10)
+        
+        testObsMD = ObservationMetaData(box_bounds=box_bounds,
+                     unrefractedRA=21.0,unrefractedDec=1.0)
+        
+        self.assertAlmostEqual(testObsMD.unrefractedRA,15.0,10)
+        self.assertAlmostEqual(testObsMD.unrefractedDec,0.0,10)
+        
+        testObsMD = ObservationMetaData(box_bounds=box_bounds,
+                     unrefractedRA=15.0,unrefractedDec=-11.0)
+        
+        self.assertAlmostEqual(testObsMD.unrefractedRA,15.0,10)
+        self.assertAlmostEqual(testObsMD.unrefractedDec,0.0,10)
+        
+        testObsMD = ObservationMetaData(box_bounds=box_bounds,
+                     unrefractedRA=15.0,unrefractedDec=11.0)
+        
+        self.assertAlmostEqual(testObsMD.unrefractedRA,15.0,10)
+        self.assertAlmostEqual(testObsMD.unrefractedDec,0.0,10)
+        
+        testObsMD = ObservationMetaData(box_bounds=box_bounds,
+                     unrefractedRA=12.0,unrefractedDec=-8.0)
+        
+        self.assertAlmostEqual(testObsMD.unrefractedRA,12.0,10)
+        self.assertAlmostEqual(testObsMD.unrefractedDec,-8.0,10)
+        
 def suite():
     """Returns a suite containing all the test cases in this module."""
     utilsTests.init()
