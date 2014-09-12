@@ -3,7 +3,10 @@ import unittest
 import lsst.utils.tests as utilsTests
 from collections import OrderedDict
 from lsst.sims.catalogs.generation.db import ObservationMetaData, Site
+<<<<<<< HEAD
 from lsst.sims.catalogs.generation.db.observationMetadataUtils import *
+=======
+>>>>>>> FETCH_HEAD
 
 class ObservationMetaDataTest(unittest.TestCase):
     """
@@ -53,7 +56,6 @@ class ObservationMetaDataTest(unittest.TestCase):
         self.assertEqual(testObsMD.unrefractedDec,None)
         self.assertAlmostEqual(testObsMD.rotSkyPos,0.0,10)
         self.assertEqual(testObsMD.bandpass,'r')
-        
         self.assertAlmostEqual(testObsMD.site.longitude,-1.2320792,10)
         self.assertAlmostEqual(testObsMD.site.latitude,-0.517781017,10)
         self.assertAlmostEqual(testObsMD.site.height,2650,10)
@@ -68,7 +70,6 @@ class ObservationMetaDataTest(unittest.TestCase):
         """
         Test that site data gets passed correctly when it is not default
         """
-        
         testSite = Site(longitude = 2.0, latitude = -1.0, height = 4.0,
             xPolar = 0.5, yPolar = -0.5, meanTemperature = 100.0,
             meanPressure = 500.0, meanHumidity = 0.1, lapseRate = 0.1)
@@ -200,6 +201,7 @@ class ObservationMetaDataTest(unittest.TestCase):
         self.assertAlmostEqual(testObsMD.unrefractedRA,12.0,10)
         self.assertAlmostEqual(testObsMD.unrefractedDec,-8.0,10)
         
+
 def suite():
     """Returns a suite containing all the test cases in this module."""
     utilsTests.init()

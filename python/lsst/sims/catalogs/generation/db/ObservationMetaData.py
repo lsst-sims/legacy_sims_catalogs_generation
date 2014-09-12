@@ -41,7 +41,7 @@ class ObservationMetaData(object):
     def __init__(self, circ_bounds=None, box_bounds=None, 
                  mjd=None, unrefractedRA=None, unrefractedDec=None, rotSkyPos=0.0,
                  bandpassName='r', phoSimMetadata={}, site=None, m5=None):
-               
+
         if circ_bounds is not None and box_bounds is not None:
             raise ValueError("Passing both circ_bounds and box_bounds")
             
@@ -141,3 +141,4 @@ class ObservationMetaData(object):
            return self.m5value
        else:
            raise ValueError("Somehow, m5 is not set in ObservationMetaData")
+
