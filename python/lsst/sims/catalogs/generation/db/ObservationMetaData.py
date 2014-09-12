@@ -1,5 +1,5 @@
 from .Site import Site
-from .observationMetadatautils import *
+from .observationMetadataUtils import *
 
 class ObservationMetaData(object):
     """Observation Metadata
@@ -55,11 +55,11 @@ class ObservationMetaData(object):
        
         if box_bounds is not None:
             #if unrefracted[RA,Dec] is outside of box, set them to the center of the box
-            if self.unrefractedRA is None or
-               self.unrefractedDec is None or
-               self.unrefractedRA > box_bounds['ra_max'] or
-               self.unrefractedRA < box_bounds['ra_min'] or
-               self.unrefractedDec < box_bounds['dec_min'] or
+            if self.unrefractedRA is None or \
+               self.unrefractedDec is None or \
+               self.unrefractedRA > box_bounds['ra_max'] or \
+               self.unrefractedRA < box_bounds['ra_min'] or \
+               self.unrefractedDec < box_bounds['dec_min'] or \
                self.unrefractedDec > box_bounds['dec_max']:
                    
                 self.unrefractedRA = 0.5*(box_bounds['ra_max']+box_bounds['ra_min'])

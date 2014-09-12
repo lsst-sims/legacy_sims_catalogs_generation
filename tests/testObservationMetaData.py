@@ -7,7 +7,7 @@ from lsst.sims.catalogs.generation.db import ObservationMetaData, Site
 class ObservationMetaDataTest(unittest.TestCase):
     """
     This class will test that ObservationMetaData correctly assigns
-    and returns its class variables (UnrefractedRA, UnrefractedDec, etc.)
+    and returns its class variables (unrefractedRA, unrefractedDec, etc.)
     """
     def testInit(self):
         m5tuple = (0,1,2,3)
@@ -44,9 +44,9 @@ class ObservationMetaDataTest(unittest.TestCase):
     def testDefault(self):
         testObsMD = ObservationMetaData()
         
-        self.assertAlmostEqual(testObsMD.UnrefractedRA,0.0,10)
-        self.assertAlmostEqual(testObsMD.UnrefractedDec,-0.5,10)
-        self.assertAlmostEqual(testObsMD.RotSkyPos,0.0,10)
+        self.assertEqual(testObsMD.unrefractedRA,None)
+        self.assertEqual(testObsMD.unrefractedDec,None)
+        self.assertAlmostEqual(testObsMD.rotSkyPos,0.0,10)
         self.assertEqual(testObsMD.bandpass,'i')
         
         self.assertAlmostEqual(testObsMD.site.longitude,-1.2320792,10)
@@ -81,15 +81,15 @@ class ObservationMetaDataTest(unittest.TestCase):
         mjd = 5120.0
         RA = 1.5
         Dec = -1.1
-        RotSkyPos = -0.2
+        rotSkyPos = -0.2
         
-        testObsMD = ObservationMetaData(mjd=mjd, UnrefractedRA=RA,
-            UnrefractedDec=Dec, RotSkyPos=RotSkyPos, bandpassName = 'z')
+        testObsMD = ObservationMetaData(mjd=mjd, unrefractedRA=RA,
+            unrefractedDec=Dec, rotSkyPos=rotSkyPos, bandpassName = 'z')
         
         self.assertAlmostEqual(testObsMD.mjd,5120.0,10)
-        self.assertAlmostEqual(testObsMD.UnrefractedRA,1.5,10)
-        self.assertAlmostEqual(testObsMD.UnrefractedDec,-1.1,10)
-        self.assertAlmostEqual(testObsMD.RotSkyPos,-0.2,10)
+        self.assertAlmostEqual(testObsMD.unrefractedRA,1.5,10)
+        self.assertAlmostEqual(testObsMD.unrefractedDec,-1.1,10)
+        self.assertAlmostEqual(testObsMD.rotSkyPos,-0.2,10)
         self.assertEqual(testObsMD.bandpass,'z')
         
         phosimMD = OrderedDict([('Unrefracted_RA', (-2.0,float)), 
@@ -101,9 +101,9 @@ class ObservationMetaDataTest(unittest.TestCase):
         testObsMD.assignPhoSimMetaData(phosimMD)
         
         self.assertAlmostEqual(testObsMD.mjd,4000.0,10)
-        self.assertAlmostEqual(testObsMD.UnrefractedRA,-2.0,10)
-        self.assertAlmostEqual(testObsMD.UnrefractedDec,0.9,10)
-        self.assertAlmostEqual(testObsMD.RotSkyPos,1.1,10)
+        self.assertAlmostEqual(testObsMD.unrefractedRA,-2.0,10)
+        self.assertAlmostEqual(testObsMD.unrefractedDec,0.9,10)
+        self.assertAlmostEqual(testObsMD.rotSkyPos,1.1,10)
         self.assertEqual(testObsMD.bandpass,'g')
 
 
