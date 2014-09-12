@@ -3,13 +3,16 @@ import unittest
 import lsst.utils.tests as utilsTests
 from collections import OrderedDict
 from lsst.sims.catalogs.generation.db import ObservationMetaData, Site
+from lsst.sims.catalogs.generation.db.observationMetadataUtils import *
 
 class ObservationMetaDataTest(unittest.TestCase):
     """
     This class will test that ObservationMetaData correctly assigns
     and returns its class variables (unrefractedRA, unrefractedDec, etc.)
+    
+    It will also test the behavior of the m5 member variable.
     """
-    def testInit(self):
+    def testM5(self):
         m5tuple = (0,1,2,3)
         m5float = 25.
         m5dict = dict(u=25., g=23., r=22.)
@@ -106,6 +109,39 @@ class ObservationMetaDataTest(unittest.TestCase):
         self.assertAlmostEqual(testObsMD.rotSkyPos,1.1,10)
         self.assertEqual(testObsMD.bandpass,'g')
 
+    def testBounds(self):
+        
+        circ_bounds = dict(ra = 25., dec= 50., radius = 5.)
+        box_bounds = dict(ra_min = 10., ra_max = 20., 
+                          dec_min =-10., dec_max = 10.)
+        
+        
+        testObsMD = ObservationMetaData(circ_bounds=circ_bounds)
+        self.assertAlmostEqual(testObsMD.unrefractedRA,25.0,10)
+        self.assertAlmostEqual(testObsMD.unrefractedDec,50.0,10)
+        
+        testObsMD = ObservationMetaData(box_bounds=box_bounds)
+        self.assertAlmostEqual(testObsMD.unrefractedRA,15.0,10)
+        self.assertAlmostEqual(testObsMD.unrefractedDec,0.0,10)
+        
+        
+        testObsMD = ObservationMetaData(circ_bounds=circ_bounds,
+                    unrefractedRA=35.,unrefractedDec=50.)
+        
+        self.assertAlmostEqual(testObsMD.unrefractedRA,25.0,10)
+        self.assertAlmostEqual(testObsMD.unrefractedDec,50.0,10)
+
+        testObsMD = ObservationMetaData(circ_bounds=circ_bounds,
+                    unrefractedRA=25.0,unrefractedDec=56.0)
+        
+        self.assertAlmostEqual(testObsMD.unrefractedRA,25.0,10)
+        self.assertAlmostEqual(testObsMD.unrefractedDec,50.0,10)
+        
+        testObsMD = ObservationMetaData(circ_bounds=circ_bounds,
+                    unrefractedRA=21.0,unrefractedDec=51.0)
+        
+        self.assertAlmostEqual(testObsMD.unrefractedRA,21.0,10)
+        self.assertAlmostEqual(testObsMD.unrefractedDec,51.0,10)
 
 def suite():
     """Returns a suite containing all the test cases in this module."""
