@@ -13,6 +13,10 @@ class ObservationMetaDataTest(unittest.TestCase):
     It will also test the behavior of the m5 member variable.
     """
     def testM5(self):
+        """
+        Test behavior of ObservationMetaData's m5 member variable
+        """
+    
         m5tuple = (0,1,2,3)
         m5float = 25.
         m5dict = dict(u=25., g=23., r=22.)
@@ -45,12 +49,16 @@ class ObservationMetaDataTest(unittest.TestCase):
         self.assertAlmostEqual(obsMD.m5('sally'),m5float,10)
              
     def testDefault(self):
+        """
+        Test that ObservationMetaData's default variables are properly set
+        """
+    
         testObsMD = ObservationMetaData()
         
         self.assertEqual(testObsMD.unrefractedRA,None)
         self.assertEqual(testObsMD.unrefractedDec,None)
         self.assertAlmostEqual(testObsMD.rotSkyPos,0.0,10)
-        self.assertEqual(testObsMD.bandpass,'i')
+        self.assertEqual(testObsMD.bandpass,'r')
         
         self.assertAlmostEqual(testObsMD.site.longitude,-1.2320792,10)
         self.assertAlmostEqual(testObsMD.site.latitude,-0.517781017,10)
@@ -63,6 +71,9 @@ class ObservationMetaDataTest(unittest.TestCase):
         self.assertAlmostEqual(testObsMD.site.lapseRate,0.0065,10)
     
     def testSite(self):
+        """
+        Test that site data gets passed correctly when it is not default
+        """
         
         testSite = Site(longitude = 2.0, latitude = -1.0, height = 4.0,
             xPolar = 0.5, yPolar = -0.5, meanTemperature = 100.0,
@@ -81,6 +92,10 @@ class ObservationMetaDataTest(unittest.TestCase):
         self.assertAlmostEqual(testObsMD.site.lapseRate,0.1,10)
     
     def testAssignment(self):
+        """
+        Test that ObservationMetaData member variables get passed correctly
+        """
+        
         mjd = 5120.0
         RA = 1.5
         Dec = -1.1
@@ -110,6 +125,10 @@ class ObservationMetaDataTest(unittest.TestCase):
         self.assertEqual(testObsMD.bandpass,'g')
 
     def testBounds(self):
+        """
+        Test if ObservationMetaData correctly assigns the unrefracted[RA,Dec]
+        when circ_bounds or box_bounds are specified
+        """
         
         circ_bounds = dict(ra = 25., dec= 50., radius = 5.)
         box_bounds = dict(ra_min = 10., ra_max = 20., 
