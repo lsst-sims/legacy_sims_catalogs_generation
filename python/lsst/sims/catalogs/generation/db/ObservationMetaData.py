@@ -42,7 +42,7 @@ class ObservationMetaData(object):
             
     def __init__(self, circ_bounds=None, box_bounds=None, 
                  mjd=None, unrefractedRA=None, unrefractedDec=None, rotSkyPos=0.0,
-                 bandpassName='r', phoSimMetadata={}, site=None, m5=None, epoch=2000.0):
+                 bandpassName='r', phoSimMetadata={}, site=None, m5=None):
 
         if circ_bounds is not None and box_bounds is not None:
             raise ValueError("Passing both circ_bounds and box_bounds")
@@ -54,7 +54,6 @@ class ObservationMetaData(object):
         self.unrefractedRA = unrefractedRA
         self.unrefractedDec = unrefractedDec
         self.rotSkyPos = rotSkyPos
-        self.epoch = epoch
        
         if box_bounds is not None:
             #if unrefracted[RA,Dec] is outside of box, set them to the center of the box

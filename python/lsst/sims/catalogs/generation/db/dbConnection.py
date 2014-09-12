@@ -137,6 +137,7 @@ class DBObject(object):
     """
     __metaclass__ = DBObjectMeta
     
+    epoch = 2000.0
     skipRegistration = False
     objid = None
     tableid = None
