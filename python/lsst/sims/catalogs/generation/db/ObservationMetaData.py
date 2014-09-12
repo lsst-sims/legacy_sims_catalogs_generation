@@ -33,7 +33,7 @@ class ObservationMetaData(object):
     """
             
     def __init__(self, circ_bounds=None, box_bounds=None, 
-                 mjd=None, UnrefractedRA=0.0, UnrefractedDec=-0.5, RotSkyPos=0.0,
+                 mjd=None, UnrefractedRA=None, UnrefractedDec=None, RotSkyPos=0.0,
                  bandpassName='i', phoSimMetadata={}, site=None, m5=None):
                
         if circ_bounds is not None and box_bounds is not None:
@@ -46,6 +46,20 @@ class ObservationMetaData(object):
         self.UnrefractedDec = UnrefractedDec
         self.RotSkyPos = RotSkyPos
         
+        if box_bounds is not None:
+            #if Unrefracted[RA,Dec] is outside of box, set them to the center of the box
+            if self.UnrefractedRA is None or
+               self.UnrefractedDec is None or
+               self.UnrefractedRA > box_bounds['ra_max'] or
+               self.UnrefractedRA < box_bounds['ra_min'] or
+               self.UnrefractedDec < box_bounds['dec_min'] or
+               self.UnrefractedDec > box_bounds['dec_max']:
+                   
+                self.UnrefractedRA = 0.5*(box_bounds['ra_max']+box_bounds['ra_min'])
+                self.UnrefractedDec = 0.5*(box_bounds['dec_max']+box_bounds['dec_min'])    
+                
+        
+         
         if site is not None:
             self.site=site
         else:
