@@ -19,6 +19,9 @@ class ObservationMetaData(object):
           The canonical name of the bandpass for this observation..
         * metadata : dict (optional)
           a dictionary containing arbitrary metadata
+        * m5: float (optional) or dict (optional)
+          the m5 value for either all bands (if a float), or for each band
+          in the dict
 
     **Examples**::
 
