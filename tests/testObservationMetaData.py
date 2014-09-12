@@ -3,10 +3,6 @@ import unittest
 import lsst.utils.tests as utilsTests
 from collections import OrderedDict
 from lsst.sims.catalogs.generation.db import ObservationMetaData, Site
-<<<<<<< HEAD
-from lsst.sims.catalogs.generation.db.observationMetadataUtils import *
-=======
->>>>>>> FETCH_HEAD
 
 class ObservationMetaDataTest(unittest.TestCase):
     """
