@@ -126,7 +126,7 @@ class ObservationMetaData(object):
             self.unrefractedDec = self.phoSimMetadata['Unrefracted_Dec'][0]
         
         if 'Opsim_filter' in self.phoSimMetadata:
-            self.bandpass = filters[self.phoSimMetadata['Opsim_filter'][0]]
+            self.bandpass = self.phoSimMetadata['Opsim_filter'][0]
                
     def m5(self,filterName):
        

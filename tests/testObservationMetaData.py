@@ -105,7 +105,7 @@ class ObservationMetaDataTest(unittest.TestCase):
                                 ('Unrefracted_Dec', (0.9,float)),
                                 ('Opsim_rotskypos', (1.1,float)), 
                                 ('Opsim_expmjd',(4000.0,float)),
-                                ('Opsim_filter',(1,int))])
+                                ('Opsim_filter',('g',str))])
         
         testObsMD.assignPhoSimMetaData(phosimMD)
         
