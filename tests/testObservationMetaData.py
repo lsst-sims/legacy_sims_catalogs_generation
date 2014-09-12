@@ -20,23 +20,12 @@ class ObservationMetaDataTest(unittest.TestCase):
         m5tuple = (0,1,2,3)
         m5float = 25.
         m5dict = dict(u=25., g=23., r=22.)
-        circ_bounds = dict(ra = 25., dec= 50., radius = 5.)
-        box_bounds = dict(ra_min = 10., ra_max = 20., 
-                          dec_min =-10., dec_max = 10.)
-        
-        #make sure ObservationMetaData raises an exception when you try to
-        #set both box bounds and circular bounds
-        self.assertRaises(ValueError,ObservationMetaData,box_bounds=box_bounds,circ_bounds=circ_bounds)
-        
-        #make sure that ObservationMetaData raises an exception when you
-        #try to set m5 to something that is neither float nor dict
-        self.assertRaises(ValueError,ObservationMetaData,box_bounds=box_bounds,m5=m5tuple)
         
         #make sure ObservationMetaData.m5() throws an error when it does
         #not have the data you want
-        obsMD = ObservationMetaData(box_bounds=box_bounds)
+        obsMD = ObservationMetaData()
         self.assertRaises(ValueError,obsMD.m5,'u')
-        obsMD = ObservationMetaData(box_bounds=box_bounds,m5=m5dict)
+        obsMD = ObservationMetaData(m5=m5dict)
         self.assertRaises(ValueError,obsMD.m5,'i')
         
         #make sure that ObservationMetaData.m5() returns the correct values
@@ -44,9 +33,14 @@ class ObservationMetaDataTest(unittest.TestCase):
         self.assertAlmostEqual(obsMD.m5('g'),m5dict['g'],10)
         self.assertAlmostEqual(obsMD.m5('r'),m5dict['r'],10)
         
-        obsMD = ObservationMetaData(box_bounds=box_bounds, m5=m5float)
+        obsMD = ObservationMetaData(m5=m5float)
         self.assertAlmostEqual(obsMD.m5('u'),m5float,10)
         self.assertAlmostEqual(obsMD.m5('sally'),m5float,10)
+        
+        #make sure that ObservationMetaData raises an exception when you
+        #try to set m5 to something that is neither float nor dict
+        self.assertRaises(ValueError,ObservationMetaData,m5=m5tuple)
+
              
     def testDefault(self):
         """
@@ -123,7 +117,21 @@ class ObservationMetaDataTest(unittest.TestCase):
         self.assertAlmostEqual(testObsMD.unrefractedDec,0.9,10)
         self.assertAlmostEqual(testObsMD.rotSkyPos,1.1,10)
         self.assertEqual(testObsMD.bandpass,'g')
-
+    
+    def testBothBounds(self):
+        """
+        Make sure ObservationMetaData throws an error when you try to set both
+        circ_bounds and box_bounds
+        """
+        
+        circ_bounds = dict(ra = 25., dec= 50., radius = 5.)
+        box_bounds = dict(ra_min = 10., ra_max = 20., 
+                          dec_min =-10., dec_max = 10.)
+        
+        #make sure ObservationMetaData raises an exception when you try to
+        #set both box bounds and circular bounds
+        self.assertRaises(ValueError,ObservationMetaData,box_bounds=box_bounds,circ_bounds=circ_bounds)
+       
     def testBounds(self):
         """
         Test if ObservationMetaData correctly assigns the unrefracted[RA,Dec]
