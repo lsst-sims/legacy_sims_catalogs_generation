@@ -18,6 +18,8 @@ class ObservationMetaData(object):
           measured in degrees
         * mjd : float (optional)
           The MJD of the observation
+        * epoch : float (optional)
+          The epoch of the coordinate system
         * bandpassName : float (optional)
           The canonical name of the bandpass for this observation..
         * phoSimMetadata : dict (optional)
@@ -40,7 +42,7 @@ class ObservationMetaData(object):
             
     def __init__(self, circ_bounds=None, box_bounds=None, 
                  mjd=None, unrefractedRA=None, unrefractedDec=None, rotSkyPos=0.0,
-                 bandpassName='r', phoSimMetadata={}, site=None, m5=None):
+                 bandpassName='r', phoSimMetadata={}, site=None, m5=None, epoch=2000.0):
 
         if circ_bounds is not None and box_bounds is not None:
             raise ValueError("Passing both circ_bounds and box_bounds")
@@ -52,6 +54,7 @@ class ObservationMetaData(object):
         self.unrefractedRA = unrefractedRA
         self.unrefractedDec = unrefractedDec
         self.rotSkyPos = rotSkyPos
+        self.epoch = epoch
        
         if box_bounds is not None:
             #if unrefracted[RA,Dec] is outside of box, set them to the center of the box
