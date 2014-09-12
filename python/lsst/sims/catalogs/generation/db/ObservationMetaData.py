@@ -1,4 +1,5 @@
 from .Site import Site
+from .observationMetadatautils import *
 
 class ObservationMetaData(object):
     """Observation Metadata
@@ -19,12 +20,17 @@ class ObservationMetaData(object):
           The MJD of the observation
         * bandpassName : float (optional)
           The canonical name of the bandpass for this observation..
-        * metadata : dict (optional)
-          a dictionary containing arbitrary metadata
+        * phoSimMetadata : dict (optional)
+          a dictionary containing metadata used by PhoSim
         * m5: float (optional) or dict (optional)
           the m5 value for either all bands (if a float), or for each band
           in the dict.  This is accessed by the rest of the code through the
           m5(filterName) method.
+        * unrefracted[RA,Dec] float (optional)
+          The coordinates of the pointing (in degrees)
+        * rotSkyPos float (optional)
+          The orientation of the telescope (see PhoSim documentation) in degrees.
+          This is used by the Astrometry mixins in sims_coordUtils
 
     **Examples**::
 
@@ -38,6 +44,7 @@ class ObservationMetaData(object):
                
         if circ_bounds is not None and box_bounds is not None:
             raise ValueError("Passing both circ_bounds and box_bounds")
+            
         self.circ_bounds = circ_bounds
         self.box_bounds = box_bounds
         self.mjd = mjd
@@ -45,7 +52,7 @@ class ObservationMetaData(object):
         self.unrefractedRA = unrefractedRA
         self.unrefractedDec = unrefractedDec
         self.rotSkyPos = rotSkyPos
-        
+       
         if box_bounds is not None:
             #if unrefracted[RA,Dec] is outside of box, set them to the center of the box
             if self.unrefractedRA is None or
@@ -58,7 +65,23 @@ class ObservationMetaData(object):
                 self.unrefractedRA = 0.5*(box_bounds['ra_max']+box_bounds['ra_min'])
                 self.unrefractedDec = 0.5*(box_bounds['dec_max']+box_bounds['dec_min'])    
                 
-        
+        if circ_bounds is not None:
+            #if unfrefracted[RA,Dec] is outside fo the circle, default to the center
+            #of the circle (recall that the bounds are all set in degrees)
+            
+            
+            if self.unrefractedRA is None or self.unrefractedDec is None:
+                self.unrefractedRA = circ_bounds['ra']
+                self.unrefractedDec = circ_bounds['dec']
+            else:
+                distance = haversine(numpy.radians(self.unrefractedRA),
+                                     numpy.radians(self.unrefractedDec),
+                                     numpy.radians(circ_bounds['ra']),
+                                     numpy.radians(circ_bounds['dec']))
+                
+                if distance>numpy.radians(circ_bounds['radius']):
+                    self.unrefractedRA = circ_bounds['ra']
+                    self.unrefractedDec = circ_bounds['dec']
          
         if site is not None:
             self.site=site
