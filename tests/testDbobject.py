@@ -58,6 +58,22 @@ class DBObjectTestCase(unittest.TestCase):
     obsMd = ObservationMetaData(circ_bounds=dict(ra=210., dec=-60, radius=1.75),
                                      mjd=52000., bandpassName='r')
     
+    inFile = open('testData/CatalogsGenerationTestData.txt','r')
+    baselineData=None
+    for line in inFile:
+        values=line.split()
+            
+        if baselineData is None:
+            baselineData = numpy.array([(int(values[0]),float(values[1]),
+                                           float(values[2]),float(values[3]))], \
+                                       dtype=[('id',int),('ra',float),('dec',float),('mag',float)])
+        else:
+            baselineData = numpy.append(baselineData,numpy.array([(int(values[0]),float(values[1]),
+                                                                 float(values[2]),float(values[3]))],
+                                                          dtype=baselineData.dtype))  
+    inFile.close()
+    
+    
     def testObsMD(self):
         self.assertEqual(self.obsMd.bandpass, 'r')
         self.assertAlmostEqual(self.obsMd.mjd, 52000., 6)
@@ -83,7 +99,21 @@ class DBObjectTestCase(unittest.TestCase):
             for star in chunk:
                 self.assertTrue(numpy.degrees(star[1])<90.0+tol)
                 self.assertTrue(numpy.degrees(star[1])>45.0-tol)
-
+    
+    def testNonsenseConstraints(self):
+        myNonsense = DBObject.from_objid('Nonsense')
+        
+        circObsMd = ObservationMetaData(circ_bounds=dict(ra=210., dec=-60, radius=20.0),
+                                     mjd=52000., bandpassName='r')
+        
+        boxObsMd = ObservationMetaData(box_bounds=dict(ra_min=50.0, ra_max=150.0, 
+                                       dec_min=-20.0, dex_max=30.0), mjd=52000.,bandpassName='r')
+        
+        #circQuery = myNonsense.query_columns(obs_metadata=circObsMd)
+        
+        
+        
+        
     def testChunking(self):
         mystars = DBObject.from_objid('teststars')
         mycolumns = ['id','raJ2000','decJ2000','umag','gmag']
