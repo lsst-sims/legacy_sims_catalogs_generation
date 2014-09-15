@@ -374,8 +374,16 @@ class DBObject(object):
     @staticmethod
     def circle_bound_constraint(RA, DEC, radius,
                                 RAname, DECname):
-        RAmax = RA + 360.0 * numpy.arcsin(numpy.sin(0.5*numpy.radians(radius)) / numpy.cos(numpy.radians(DEC)))/numpy.pi
-        RAmin = RA - 360.0 * numpy.arcsin(numpy.sin(0.5*numpy.radians(radius)) / numpy.cos(numpy.radians(DEC)))/numpy.pi
+        
+        if DEC != 90.0 and DEC != -90.0:
+            RAmax = RA + 360.0 * numpy.arcsin(numpy.sin(0.5*numpy.radians(radius)) / numpy.cos(numpy.radians(DEC)))/numpy.pi
+            RAmin = RA - 360.0 * numpy.arcsin(numpy.sin(0.5*numpy.radians(radius)) / numpy.cos(numpy.radians(DEC)))/numpy.pi
+        else:
+           #just in case, for some reason, we are looking at the poles
+           RAmax = 360.0
+           RAmin = 0.0
+       
+       
         DECmax = DEC + radius
         DECmin = DEC - radius
         
