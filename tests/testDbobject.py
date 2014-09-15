@@ -40,20 +40,11 @@ class DBObjectTestCase(unittest.TestCase):
         myquery = mystars.query_columns(colnames = mycolumns, 
                                         constraint = 'ra < 90. and ra > 45.')
         
-        worstOffense=-1.0
-        for row in myquery:
-            for star in row:
-                offense=0.0
-                dd=numpy.degrees(star[1])
-                if dd<45.0:
-                    offense = 45.0-dd
-                elif dd>90.0:
-                    offense = dd-90.0
-                
-                if offense>worstOffense:
-                    worstOffense=offense
-        
-        print 'worstOffense ',worstOffense
+        tol=1.0e-3
+        for chunk in myquery:
+            for star in chunk:
+                self.assertTrue(numpy.degrees(star[1])<90.0+tol)
+                self.assertTrue(numpy.degrees(star[1])>45.0-tol)
         
 def suite():
     """Returns a suite containing all the test cases in this module."""
