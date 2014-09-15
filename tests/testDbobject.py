@@ -1,4 +1,6 @@
 import os
+import sqlite3
+
 import unittest, numpy
 import lsst.utils.tests as utilsTests
 from lsst.sims.catalogs.generation.db import DBObject, ObservationMetaData
@@ -7,18 +9,41 @@ import lsst.sims.catalogs.generation.utils.testUtils as tu
 # This test should be expanded to cover more of the framework
 # I have filed CATSIM-90 for this.
 
-class mySillyDB(DBObject):
-    objid = 'sillystars'
-    tableid = 'stars'
-    idColKey = 'sillyId'
+def createNonsenseDB():
+    if os.path.exists('NonsenseDB.db'):
+        os.unlink('NonsenseDB.db')
+    
+    conn = sqlite3.connect('NonsenseDB.db')
+    c = conn.cursor()
+    try:
+        c.execute('''CREATE TABLE test (id int, ra real, dec real, mag real)''')
+        conn.commit()
+    except:
+        raise RuntimeError("Error creating database.")
+    
+    inFile = open('testData/CatalogsGenerationTestData.txt','r')
+    for line in inFile:
+        values = line.split()
+        cmd = '''INSERT INTO test VALUES (%s, %s, %s, %s)''' % (values[0],values[1],values[2],values[3])
+        c.execute(cmd)
+    
+    conn.commit()
+    conn.close()
+    inFile.close()
+    
+class myNonsenseDB(DBObject):
+    objid = 'Nonsense'
+    tableid = 'test'
+    idColKey = 'NonsenseId'
     #Make this implausibly large?  
     appendint = 1023
-    dbAddress = 'sqlite:///testDatabase.db'
-    raColName = 'sillyRa'
-    decColName = 'sillyDecl'
-    columns = [('sillyId', 'id', int),
-               ('sillyRaJ2000', 'ra*%f'%(numpy.pi/180.)),
-               ('sillyDecJ2000', 'decl*%f'%(numpy.pi/180.))]
+    dbAddress = 'sqlite:///NonsenseDB.db'
+    raColName = 'ra'
+    decColName = 'dec'
+    columns = [('NonsenseId', 'id', int),
+               ('NonsenseRaJ2000', 'ra*%f'%(numpy.pi/180.)),
+               ('NonsenseDecJ2000', 'dec*%f'%(numpy.pi/180.)),
+               ('NonsenseMag','mag',float)]
 
 
 class DBObjectTestCase(unittest.TestCase):
@@ -29,6 +54,7 @@ class DBObjectTestCase(unittest.TestCase):
         os.unlink('testDatabase.db')
     tu.makeStarTestDB(size=100000, seedVal=1)
     tu.makeGalTestDB(size=100000, seedVal=1)
+    createNonsenseDB()
     obsMd = ObservationMetaData(circ_bounds=dict(ra=210., dec=-60, radius=1.75),
                                      mjd=52000., bandpassName='r')
     
@@ -70,7 +96,7 @@ class DBObjectTestCase(unittest.TestCase):
 
     def testClassVariables(self):
         mystars = DBObject.from_objid('teststars')
-        mysillystars = DBObject.from_objid('sillystars')
+        myNonsense = DBObject.from_objid('Nonsense')
         mygalaxies = DBObject.from_objid('testgals')
         
         self.assertEqual(mystars.raColName,'ra')
@@ -90,13 +116,13 @@ class DBObjectTestCase(unittest.TestCase):
         self.assertTrue(hasattr(mygalaxies,'spatialModel'))
         self.assertEqual(mygalaxies.spatialModel,'SERSIC2D')
         
-        self.assertEqual(mysillystars.raColName,'sillyRa')
-        self.assertEqual(mysillystars.decColName,'sillyDecl')
-        self.assertEqual(mysillystars.idColKey,'sillyId')
+        self.assertEqual(myNonsense.raColName,'ra')
+        self.assertEqual(myNonsense.decColName,'dec')
+        self.assertEqual(myNonsense.idColKey,'NonsenseId')
         
         self.assertTrue('teststars' in DBObject.registry)
         self.assertTrue('testgals' in DBObject.registry)
-        self.assertTrue('sillystars' in DBObject.registry)
+        self.assertTrue('Nonsense' in DBObject.registry)
        
         colsShouldBe = [('id',None,int),('raJ2000','ra*%f'%(numpy.pi/180.)),
                         ('decJ2000','decl*%f'%(numpy.pi/180.)),
@@ -107,11 +133,12 @@ class DBObjectTestCase(unittest.TestCase):
         for (col,coltest) in zip(mystars.columns,colsShouldBe):
             self.assertEqual(col,coltest)
         
-        colsShouldBe = [('sillyId', 'id', int),
-               ('sillyRaJ2000', 'ra*%f'%(numpy.pi/180.)),
-               ('sillyDecJ2000', 'decl*%f'%(numpy.pi/180.))]
+        colsShouldBe = [('NonsenseId', 'id', int),
+               ('NonsenseRaJ2000', 'ra*%f'%(numpy.pi/180.)),
+               ('NonsenseDecJ2000', 'dec*%f'%(numpy.pi/180.)),
+               ('NonsenseMag','mag',float)]
         
-        for (col,coltest) in zip(mysillystars.columns,colsShouldBe):
+        for (col,coltest) in zip(myNonsense.columns,colsShouldBe):
             self.assertEqual(col,coltest)
                 
         colsShouldBe = [('id', None, int),
