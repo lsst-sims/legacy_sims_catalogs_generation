@@ -101,7 +101,7 @@ class DBObjectTestCase(unittest.TestCase):
                 self.assertTrue(numpy.degrees(star[1])<90.0+tol)
                 self.assertTrue(numpy.degrees(star[1])>45.0-tol)
     
-    def testNonsenseConstraints(self):
+    def testNonsenseCircularConstraints(self):
         myNonsense = DBObject.from_objid('Nonsense')
         
         radius = 20.0
@@ -117,31 +117,19 @@ class DBObjectTestCase(unittest.TestCase):
         
         circObsMd = ObservationMetaData(circ_bounds=dict(ra=raCenter, dec=decCenter, radius=radius),
                                      mjd=52000., bandpassName='r')
-        
-        boxObsMd = ObservationMetaData(box_bounds=dict(ra_min=raMin, ra_max=raMax, 
-                                       dec_min=decMin, dex_max=decMax), mjd=52000.,bandpassName='r')
-        
+       
         circQuery = myNonsense.query_columns(obs_metadata=circObsMd, chunk_size=100)
         
         raCenter = numpy.radians(raCenter)
         decCenter = numpy.radians(decCenter)
         radius = numpy.radians(radius)
-        
-        raMin = numpy.radians(raMin)
-        raMax = numpy.radians(raMax)
-        decMin = numpy.radians(decMin)
-        decMax = numpy.radians(decMax)
 
-        ii=0
-        
         goodPoints = []
 
         for chunk in circQuery:
             for row in chunk:
-                ii+=1
                 distance = haversine(raCenter,decCenter,row[1],row[2])
           
-                
                 self.assertTrue(distance<radius)
                 
                 dex = numpy.where(self.baselineData['id'] == row[0])[0][0]
@@ -158,7 +146,50 @@ class DBObjectTestCase(unittest.TestCase):
             
             self.assertTrue(distance>radius)
         
-         
+    def testNonsenseBoxConstraints(self):
+        myNonsense = DBObject.from_objid('Nonsense')
+    
+        raMin = 50.0
+        raMax = 150.0
+        decMax = 30.0
+        decMin = -20.0
+        
+        columns = ['NonsenseId','NonsenseRaJ2000','NonsenseDecJ2000','NonsenseMag']
+     
+        boxObsMd = ObservationMetaData(box_bounds=dict(ra_min=raMin, ra_max=raMax, 
+                                       dec_min=decMin, dec_max=decMax), mjd=52000.,bandpassName='r')
+        
+        boxQuery = myNonsense.query_columns(obs_metadata=boxObsMd, chunk_size=100)
+       
+        raMin = numpy.radians(raMin)
+        raMax = numpy.radians(raMax)
+        decMin = numpy.radians(decMin)
+        decMax = numpy.radians(decMax)
+
+        goodPoints = []
+
+        for chunk in boxQuery:
+            for row in chunk:
+                
+                self.assertTrue(row[1]<raMax)
+                self.assertTrue(row[1]>raMin)
+                self.assertTrue(row[2]<decMax)
+                self.assertTrue(row[2]>decMin)
+          
+                dex = numpy.where(self.baselineData['id'] == row[0])[0][0]
+                
+                goodPoints.append(row[0])
+                
+                self.assertAlmostEqual(numpy.radians(self.baselineData['ra'][dex]),row[1],3)
+                self.assertAlmostEqual(numpy.radians(self.baselineData['dec'][dex]),row[2],3)
+                self.assertAlmostEqual(self.baselineData['mag'][dex],row[3],3)
+                
+
+        for entry in [xx for xx in self.baselineData if xx[0] not in goodPoints]:
+            switch = (entry[1] > raMax or entry[1] < raMin or entry[2] >decMax or entry[2] < decMin)
+            
+            self.assertTrue(switch)
+       
         
     def testChunking(self):
         mystars = DBObject.from_objid('teststars')
