@@ -32,7 +32,7 @@ class DBObjectTestCase(unittest.TestCase):
         result = mystars.query_columns(obs_metadata=self.obsMd)
         tu.writeResult(result, "/dev/null")
 
-    def testQuery(self):
+    def testQueryConstrains(self):
         mystars = DBObject.from_objid('teststars')
         mycolumns = ['id','raJ2000','decJ2000','umag','gmag','rmag','imag','zmag','ymag']
         
@@ -45,7 +45,16 @@ class DBObjectTestCase(unittest.TestCase):
             for star in chunk:
                 self.assertTrue(numpy.degrees(star[1])<90.0+tol)
                 self.assertTrue(numpy.degrees(star[1])>45.0-tol)
+
+    def testChunking(self):
+        mystars = DBObject.from_objid('teststars')
+        mycolumns = ['id','raJ2000','decJ2000','umag','gmag']
+        myquery = mystars.query_columns(colnames = mycolumns, chunk_size = 1000)
         
+        for chunk in myquery:
+            self.assertEqual(chunk.size,1000)
+        
+            
 def suite():
     """Returns a suite containing all the test cases in this module."""
     utilsTests.init()
