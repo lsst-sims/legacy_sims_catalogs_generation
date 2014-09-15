@@ -131,26 +131,18 @@ class DBObjectTestCase(unittest.TestCase):
         raMax = numpy.radians(raMax)
         decMin = numpy.radians(decMin)
         decMax = numpy.radians(decMax)
-        
-        tol=1.0e-3
+
         ii=0
         
         goodPoints = []
-        
-        
-        rrmin=1500.0
-        rrmax=-1.0
+
         for chunk in circQuery:
             for row in chunk:
                 ii+=1
                 distance = haversine(raCenter,decCenter,row[1],row[2])
+          
                 
-                if distance<rrmin:
-                    rrmin=distance
-                if distance>rrmax:
-                    rrmax=distance
-                
-                self.assertTrue(distance<radius+tol)
+                self.assertTrue(distance<radius)
                 
                 dex = numpy.where(self.baselineData['id'] == row[0])[0][0]
                 
@@ -160,21 +152,12 @@ class DBObjectTestCase(unittest.TestCase):
                 self.assertAlmostEqual(numpy.radians(self.baselineData['dec'][dex]),row[2],3)
                 self.assertAlmostEqual(self.baselineData['mag'][dex],row[3],3)
                 
-        
-        worstOffense=-1.0
-        #badDexes = numpy.where(range(len(baselineData)) not in goodPoints)
+
         for entry in [xx for xx in self.baselineData if xx[0] not in goodPoints]:
             distance = haversine(raCenter,decCenter,numpy.radians(entry[1]),numpy.radians(entry[2]))
-            offense=0.0
-            if distance<radius:
-                offense=radius-distance
             
-            if offense>worstOffense:
-                worstOffense=offense
+            self.assertTrue(distance>radius)
         
-        print 'worstOffense ',worstOffense
-        print 'rrmin ',rrmin
-        print 'rrmax ',rrmax
          
         
     def testChunking(self):
