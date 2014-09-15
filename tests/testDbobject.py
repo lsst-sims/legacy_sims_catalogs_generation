@@ -37,7 +37,6 @@ class myNonsenseDB(DBObject):
     tableid = 'test'
     idColKey = 'NonsenseId'
     #Make this implausibly large?  
-    appendint = 1023
     dbAddress = 'sqlite:///NonsenseDB.db'
     raColName = 'ra'
     decColName = 'dec'
@@ -292,6 +291,10 @@ class DBObjectTestCase(unittest.TestCase):
         self.assertEqual(myNonsense.raColName,'ra')
         self.assertEqual(myNonsense.decColName,'dec')
         self.assertEqual(myNonsense.idColKey,'NonsenseId')
+        self.assertEqual(myNonsense.dbAddress,'sqlite:///NonsenseDB.db')
+        self.assertFalse(hasattr(myNonsense,'appendint'))
+        self.assertEqual(myNonsense.tableid,'test')
+        self.assertFalse(hasattr(myNonsense,'spatialModel'))
         
         self.assertTrue('teststars' in DBObject.registry)
         self.assertTrue('testgals' in DBObject.registry)
