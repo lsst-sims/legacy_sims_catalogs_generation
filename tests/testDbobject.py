@@ -65,6 +65,8 @@ class DBObjectTestCase(unittest.TestCase):
         
         for chunk in myquery:
             self.assertEqual(chunk.size,1000)
+            for row in chunk:
+                self.assertTrue(len(row),5)
 
     def testClassVariables(self):
         mystars = DBObject.from_objid('teststars')
