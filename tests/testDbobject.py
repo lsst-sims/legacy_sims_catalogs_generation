@@ -7,6 +7,20 @@ import lsst.sims.catalogs.generation.utils.testUtils as tu
 # This test should be expanded to cover more of the framework
 # I have filed CATSIM-90 for this.
 
+class mySillyDB(DBObject):
+    objid = 'sillystars'
+    tableid = 'stars'
+    idColKey = 'sillyId'
+    #Make this implausibly large?  
+    appendint = 1023
+    dbAddress = 'sqlite:///testDatabase.db'
+    raColName = 'sillyRa'
+    decColName = 'sillyDecl'
+    columns = [('sillyId', 'id', int),
+               ('sillyRaJ2000', 'ra*%f'%(numpy.pi/180.)),
+               ('sillyDecJ2000', 'decl*%f'%(numpy.pi/180.))]
+
+
 class DBObjectTestCase(unittest.TestCase):
   
     #Delete the test database if it exists and start fresh.
@@ -51,7 +65,73 @@ class DBObjectTestCase(unittest.TestCase):
         
         for chunk in myquery:
             self.assertEqual(chunk.size,1000)
+
+    def testClassVariables(self):
+        mystars = DBObject.from_objid('teststars')
+        mysillystars = DBObject.from_objid('sillystars')
+        mygalaxies = DBObject.from_objid('testgals')
         
+        self.assertEqual(mystars.raColName,'ra')
+        self.assertEqual(mystars.decColName,'decl')
+        self.assertEqual(mystars.idColKey,'id')
+        self.assertEqual(mystars.dbAddress,'sqlite:///testDatabase.db')
+        self.assertEqual(mystars.appendint, 1023)
+        self.assertEqual(mystars.tableid,'stars')
+        self.assertFalse(hasattr(mystars,'spatialModel'))
+        
+        self.assertEqual(mygalaxies.raColName,'ra')
+        self.assertEqual(mygalaxies.decColName,'decl')
+        self.assertEqual(mygalaxies.idColKey,'id')
+        self.assertEqual(mygalaxies.dbAddress,'sqlite:///testDatabase.db')
+        self.assertEqual(mygalaxies.appendint, 1022)
+        self.assertEqual(mygalaxies.tableid,'galaxies')
+        self.assertTrue(hasattr(mygalaxies,'spatialModel'))
+        self.assertEqual(mygalaxies.spatialModel,'SERSIC2D')
+        
+        self.assertEqual(mysillystars.raColName,'sillyRa')
+        self.assertEqual(mysillystars.decColName,'sillyDecl')
+        self.assertEqual(mysillystars.idColKey,'sillyId')
+        
+        self.assertTrue('teststars' in DBObject.registry)
+        self.assertTrue('testgals' in DBObject.registry)
+        self.assertTrue('sillystars' in DBObject.registry)
+       
+        colsShouldBe = [('id',None,int),('raJ2000','ra*%f'%(numpy.pi/180.)),
+                        ('decJ2000','decl*%f'%(numpy.pi/180.)),
+                        ('umag',None),('gmag',None),('rmag',None),('imag',None),
+                        ('zmag',None),('ymag',None),
+                        ('magNorm','mag_norm',float)]
+                       
+        for (col,coltest) in zip(mystars.columns,colsShouldBe):
+            self.assertEqual(col,coltest)
+        
+        colsShouldBe = [('sillyId', 'id', int),
+               ('sillyRaJ2000', 'ra*%f'%(numpy.pi/180.)),
+               ('sillyDecJ2000', 'decl*%f'%(numpy.pi/180.))]
+        
+        for (col,coltest) in zip(mysillystars.columns,colsShouldBe):
+            self.assertEqual(col,coltest)
+                
+        colsShouldBe = [('id', None, int),
+               ('raJ2000', 'ra*%f'%(numpy.pi/180.)),
+               ('decJ2000', 'decl*%f'%(numpy.pi/180.)),
+               ('umag', None),
+               ('gmag', None),
+               ('rmag', None),
+               ('imag', None),
+               ('zmag', None),
+               ('ymag', None),
+               ('magNormAgn', 'mag_norm_agn', None),
+               ('magNormDisk', 'mag_norm_disk', None),
+               ('magNormBulge', 'mag_norm_bulge', None),
+               ('redshift', None),
+               ('a_disk', None),
+               ('b_disk', None),
+               ('a_bulge', None),
+               ('b_bulge', None),]
+            
+        for (col,coltest) in zip(mygalaxies.columns,colsShouldBe):
+            self.assertEqual(col,coltest)
             
 def suite():
     """Returns a suite containing all the test cases in this module."""
