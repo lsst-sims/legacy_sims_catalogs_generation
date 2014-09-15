@@ -167,10 +167,9 @@ class DBObjectTestCase(unittest.TestCase):
         decMax = numpy.radians(decMax)
 
         goodPoints = []
-
+        
         for chunk in boxQuery:
             for row in chunk:
-                
                 self.assertTrue(row[1]<raMax)
                 self.assertTrue(row[1]>raMin)
                 self.assertTrue(row[2]<decMax)
@@ -183,10 +182,53 @@ class DBObjectTestCase(unittest.TestCase):
                 self.assertAlmostEqual(numpy.radians(self.baselineData['ra'][dex]),row[1],3)
                 self.assertAlmostEqual(numpy.radians(self.baselineData['dec'][dex]),row[2],3)
                 self.assertAlmostEqual(self.baselineData['mag'][dex],row[3],3)
-                
-
+      
         for entry in [xx for xx in self.baselineData if xx[0] not in goodPoints]:
             switch = (entry[1] > raMax or entry[1] < raMin or entry[2] >decMax or entry[2] < decMin)
+            
+            self.assertTrue(switch)
+
+    def testNonsenseArbitraryConstraints(self):
+        myNonsense = DBObject.from_objid('Nonsense')
+    
+        raMin = 50.0
+        raMax = 150.0
+        decMax = 30.0
+        decMin = -20.0
+        
+        columns = ['NonsenseId','NonsenseRaJ2000','NonsenseDecJ2000','NonsenseMag']
+     
+        boxObsMd = ObservationMetaData(box_bounds=dict(ra_min=raMin, ra_max=raMax, 
+                                       dec_min=decMin, dec_max=decMax), mjd=52000.,bandpassName='r')
+        
+        boxQuery = myNonsense.query_columns(obs_metadata=boxObsMd, chunk_size=100, constraint = 'mag > 11.0')
+       
+        raMin = numpy.radians(raMin)
+        raMax = numpy.radians(raMax)
+        decMin = numpy.radians(decMin)
+        decMax = numpy.radians(decMax)
+
+        goodPoints = []
+
+        for chunk in boxQuery:
+            for row in chunk:
+              
+                self.assertTrue(row[1]<raMax)
+                self.assertTrue(row[1]>raMin)
+                self.assertTrue(row[2]<decMax)
+                self.assertTrue(row[2]>decMin)
+                self.assertTrue(row[3]>11.0)
+          
+                dex = numpy.where(self.baselineData['id'] == row[0])[0][0]
+                
+                goodPoints.append(row[0])
+                
+                self.assertAlmostEqual(numpy.radians(self.baselineData['ra'][dex]),row[1],3)
+                self.assertAlmostEqual(numpy.radians(self.baselineData['dec'][dex]),row[2],3)
+                self.assertAlmostEqual(self.baselineData['mag'][dex],row[3],3)
+        
+        for entry in [xx for xx in self.baselineData if xx[0] not in goodPoints]:
+            switch = (entry[1] > raMax or entry[1] < raMin or entry[2] >decMax or entry[2] < decMin or entry[3]<11.0)
             
             self.assertTrue(switch)
        
