@@ -70,7 +70,7 @@ class DBObjectTestCase(unittest.TestCase):
         result = mystars.query_columns(obs_metadata=self.obsMd)
         tu.writeResult(result, "/dev/null")
 
-    def testQueryConstrains(self):
+    def testRealQueryConstraints(self):
         mystars = DBObject.from_objid('teststars')
         mycolumns = ['id','raJ2000','decJ2000','umag','gmag','rmag','imag','zmag','ymag']
         
