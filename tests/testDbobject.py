@@ -1,5 +1,5 @@
 import os
-import unittest
+import unittest, numpy
 import lsst.utils.tests as utilsTests
 from lsst.sims.catalogs.generation.db import DBObject, ObservationMetaData
 import lsst.sims.catalogs.generation.utils.testUtils as tu
@@ -32,6 +32,29 @@ class DBObjectTestCase(unittest.TestCase):
         result = mystars.query_columns(obs_metadata=self.obsMd)
         tu.writeResult(result, "/dev/null")
 
+    def testQuery(self):
+        mystars = DBObject.from_objid('teststars')
+        mycolumns = ['id','raJ2000','decJ2000','umag','gmag','rmag','imag','zmag','ymag']
+        
+        #because ra and dec are stored in degrees in the data base
+        myquery = mystars.query_columns(colnames = mycolumns, 
+                                        constraint = 'ra < 90. and ra > 45.')
+        
+        worstOffense=-1.0
+        for row in myquery:
+            for star in row:
+                offense=0.0
+                dd=numpy.degrees(star[1])
+                if dd<45.0:
+                    offense = 45.0-dd
+                elif dd>90.0:
+                    offense = dd-90.0
+                
+                if offense>worstOffense:
+                    worstOffense=offense
+        
+        print 'worstOffense ',worstOffense
+        
 def suite():
     """Returns a suite containing all the test cases in this module."""
     utilsTests.init()
