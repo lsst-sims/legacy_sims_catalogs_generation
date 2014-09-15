@@ -12,6 +12,8 @@ from sqlalchemy import (create_engine, ThreadLocalMetaData, MetaData,
                         Table, Column, BigInteger, event)
 from sqlalchemy import exc as sa_exc
 
+from lsst.sims.catUtils.observationMetadataUtils import haversine
+
 #The documentation at http://docs.sqlalchemy.org/en/rel_0_7/core/types.html#sqlalchemy.types.Numeric
 #suggests using the cdecimal module.  Since it is not standard, import decimal.
 #TODO: test for cdecimal and use it if it exists.
@@ -24,6 +26,9 @@ def valueOfPi():
     """
     return numpy.pi
 
+def haversineDeg(lon1, lat1, lon2, lat2):
+    return haversine(numpy.radians(lon1),numpy.radians(lat1),numpy.radians(lon2),numpy.radians(lat2))
+
 def declareTrigFunctions(conn,connection_rec,connection_proxy):
     """
     A database event listener
@@ -33,6 +38,8 @@ def declareTrigFunctions(conn,connection_rec,connection_proxy):
     
     see:    http://docs.sqlalchemy.org/en/latest/core/events.html
     """
+    #conn.create_function("HAVERSINE",4,haversineDeg)
+    
     conn.create_function("COS",1,numpy.cos)
     conn.create_function("SIN",1,numpy.sin)
     conn.create_function("ASIN",1,numpy.arcsin)
@@ -373,8 +380,8 @@ class DBObject(object):
     @staticmethod
     def circle_bound_constraint(RA, DEC, radius,
                                 RAname, DECname):
-        RAmax = RA + radius / math.cos(math.radians(DEC))
-        RAmin = RA - radius / math.cos(math.radians(DEC))
+        RAmax = RA + 360.0 * numpy.arcsin(numpy.sin(0.5*numpy.radians(radius)) / numpy.cos(numpy.radians(DEC)))/numpy.pi
+        RAmin = RA - 360.0 * numpy.arcsin(numpy.sin(0.5*numpy.radians(radius)) / numpy.cos(numpy.radians(DEC)))/numpy.pi
         DECmax = DEC + radius
         DECmin = DEC - radius
         
@@ -387,6 +394,8 @@ class DBObject(object):
         bound = bound + ("and 2 * ASIN(SQRT( POWER(SIN(0.5*(%s - %s) * PI() / 180.0),2)" % (DECname,DEC))
         bound = bound +("+ COS(%s * PI() / 180.0) * COS(%s * PI() / 180.0) * POWER(SIN(0.5 * (%s - %s) * PI() / 180.0),2)))"
              % (DECname, DEC, RAname, RA))
+        
+        #bound = bound + ("and HAVERSINE(%s, %s, %s, %s)" % (RAname,DECname,RA,DEC))
         bound = bound + (" < %s " % (radius*numpy.pi/180.0))
         
         
