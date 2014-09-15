@@ -4,6 +4,7 @@ import sqlite3
 import unittest, numpy
 import lsst.utils.tests as utilsTests
 from lsst.sims.catalogs.generation.db import DBObject, ObservationMetaData
+from lsst.sims.catUtils.observationMetadataUtils import haversine
 import lsst.sims.catalogs.generation.utils.testUtils as tu
 
 # This test should be expanded to cover more of the framework
@@ -103,16 +104,51 @@ class DBObjectTestCase(unittest.TestCase):
     def testNonsenseConstraints(self):
         myNonsense = DBObject.from_objid('Nonsense')
         
-        circObsMd = ObservationMetaData(circ_bounds=dict(ra=210., dec=-60, radius=20.0),
+        radius = 20.0
+        raCenter = 210.0
+        decCenter = -60.0
+        
+        raMin = 50.0
+        raMax = 150.0
+        decMax = 30.0
+        decMin = -20.0
+        
+        columns = ['NonsenseId','NonsenseRaJ2000','NonsenseDecJ2000','NonsenseMag']
+        
+        circObsMd = ObservationMetaData(circ_bounds=dict(ra=raCenter, dec=decCenter, radius=radius),
                                      mjd=52000., bandpassName='r')
         
-        boxObsMd = ObservationMetaData(box_bounds=dict(ra_min=50.0, ra_max=150.0, 
-                                       dec_min=-20.0, dex_max=30.0), mjd=52000.,bandpassName='r')
+        boxObsMd = ObservationMetaData(box_bounds=dict(ra_min=raMin, ra_max=raMax, 
+                                       dec_min=decMin, dex_max=decMax), mjd=52000.,bandpassName='r')
         
-        #circQuery = myNonsense.query_columns(obs_metadata=circObsMd)
+        circQuery = myNonsense.query_columns(obs_metadata=circObsMd, chunk_size=100)
+        
+        raCenter = numpy.radians(raCenter)
+        decCenter = numpy.radians(decCenter)
+        radius = numpy.radians(radius)
+        
+        raMin = numpy.radians(raMin)
+        raMax = numpy.radians(raMax)
+        decMin = numpy.radians(decMin)
+        decMax = numpy.radians(decMax)
+        
+        tol=1.0e-3
+        ii=0
+        
+        for chunk in circQuery:
+            for row in chunk:
+                ii+=1
+                distance = haversine(raCenter,decCenter,row[1],row[2])
+                self.assertTrue(distance<radius+tol)
+                
+                dex = numpy.where(self.baselineData['id'] == row[0])[0][0]
+            
+                self.assertAlmostEqual(numpy.radians(self.baselineData['ra'][dex]),row[1],3)
+                self.assertAlmostEqual(numpy.radians(self.baselineData['dec'][dex]),row[2],3)
+                self.assertAlmostEqual(self.baselineData['mag'][dex],row[3],3)
         
         
-        
+        print 'ii ',ii 
         
     def testChunking(self):
         mystars = DBObject.from_objid('teststars')
