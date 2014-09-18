@@ -11,6 +11,11 @@ import lsst.sims.catalogs.generation.utils.testUtils as tu
 # I have filed CATSIM-90 for this.
 
 def createNonsenseDB():
+    """
+    Create a database from generic data store in testData/CatalogsGenerationTestData.txt
+    This will be used to make sure that circ_bounds and box_bounds yield the points
+    they are supposed to.
+    """
     if os.path.exists('NonsenseDB.db'):
         os.unlink('NonsenseDB.db')
     
@@ -59,6 +64,12 @@ class DBObjectTestCase(unittest.TestCase):
                                      mjd=52000., bandpassName='r')
     
     inFile = open('testData/CatalogsGenerationTestData.txt','r')
+    
+    """
+    baselineData will store another copy of the data that should be stored in
+    NonsenseDB.db.  This will give us something to test database queries against
+    when we ask for all of the objects within a certain box_bounds or circ_bounds.
+    """
     baselineData=None
     for line in inFile:
         values=line.split()
@@ -89,7 +100,7 @@ class DBObjectTestCase(unittest.TestCase):
         mystars = DBObject.from_objid('teststars')
         mycolumns = ['id','raJ2000','decJ2000','umag','gmag','rmag','imag','zmag','ymag']
         
-        #because ra and dec are stored in degrees in the data base
+        #recall that ra and dec are stored in degrees in the data base
         myquery = mystars.query_columns(colnames = mycolumns, 
                                         constraint = 'ra < 90. and ra > 45.')
         
@@ -100,16 +111,16 @@ class DBObjectTestCase(unittest.TestCase):
                 self.assertTrue(numpy.degrees(star[1])>45.0-tol)
     
     def testNonsenseCircularConstraints(self):
+        """
+        Test that a query performed on a circ_bounds gets all of the objects (and only all
+        of the objects) within that circle
+        """
+        
         myNonsense = DBObject.from_objid('Nonsense')
         
         radius = 20.0
         raCenter = 210.0
         decCenter = -60.0
-        
-        raMin = 50.0
-        raMax = 150.0
-        decMax = 30.0
-        decMin = -20.0
         
         mycolumns = ['NonsenseId','NonsenseRaJ2000','NonsenseDecJ2000','NonsenseMag']
         
@@ -132,6 +143,7 @@ class DBObjectTestCase(unittest.TestCase):
                 
                 dex = numpy.where(self.baselineData['id'] == row[0])[0][0]
                 
+                #store a list of which objects fell within our circ_bounds
                 goodPoints.append(row[0])
                 
                 self.assertAlmostEqual(numpy.radians(self.baselineData['ra'][dex]),row[1],3)
@@ -140,21 +152,25 @@ class DBObjectTestCase(unittest.TestCase):
                 
 
         for entry in [xx for xx in self.baselineData if xx[0] not in goodPoints]:
+            #make sure that all of the points not returned by the query were, in fact, outside of
+            #the circ_bounds
             distance = haversine(raCenter,decCenter,numpy.radians(entry[1]),numpy.radians(entry[2]))
-            
             self.assertTrue(distance>radius)
     
    
-    def testNonsenseSelectColumns(self):
+    def testNonsenseSelectOnlySomeColumns(self):
+        """
+        Test a query performed only a subset of the available columns
+        """
         myNonsense = DBObject.from_objid('Nonsense')
      
         mycolumns = ['NonsenseId','NonsenseRaJ2000','NonsenseMag']
        
-        circQuery = myNonsense.query_columns(colnames=mycolumns, constraint = 'ra < 45.', chunk_size=100)
+        query = myNonsense.query_columns(colnames=mycolumns, constraint = 'ra < 45.', chunk_size=100)
 
         goodPoints = []
 
-        for chunk in circQuery:
+        for chunk in query:
             for row in chunk:
                 self.assertTrue(row[1]<45.0)
                 
@@ -170,6 +186,11 @@ class DBObjectTestCase(unittest.TestCase):
             self.assertTrue(entry[1]>45.0)
 
     def testNonsenseBoxConstraints(self):
+        """
+        Test that a query performed on a box_bounds gets all of the points (and only all of the
+        points) inside that box_bounds.
+        """
+        
         myNonsense = DBObject.from_objid('Nonsense')
     
         raMin = 50.0
@@ -200,6 +221,7 @@ class DBObjectTestCase(unittest.TestCase):
           
                 dex = numpy.where(self.baselineData['id'] == row[0])[0][0]
                 
+                #keep a list of which points were returned by teh query
                 goodPoints.append(row[0])
                 
                 self.assertAlmostEqual(numpy.radians(self.baselineData['ra'][dex]),row[1],3)
@@ -207,11 +229,17 @@ class DBObjectTestCase(unittest.TestCase):
                 self.assertAlmostEqual(self.baselineData['mag'][dex],row[3],3)
       
         for entry in [xx for xx in self.baselineData if xx[0] not in goodPoints]:
-            switch = (entry[1] > raMax or entry[1] < raMin or entry[2] >decMax or entry[2] < decMin)
+            #make sure that the points not returned by the query are, in fact, outside of the
+            #box_bounds
             
+            switch = (entry[1] > raMax or entry[1] < raMin or entry[2] >decMax or entry[2] < decMin)
             self.assertTrue(switch)
 
     def testNonsenseArbitraryConstraints(self):
+        """
+        Test a query with a user-specified constraint on the magnitude column
+        """
+    
         myNonsense = DBObject.from_objid('Nonsense')
     
         raMin = 50.0
@@ -245,6 +273,7 @@ class DBObjectTestCase(unittest.TestCase):
           
                 dex = numpy.where(self.baselineData['id'] == row[0])[0][0]
                 
+                #keep a list of the points returned by the query
                 goodPoints.append(row[0])
                 
                 self.assertAlmostEqual(numpy.radians(self.baselineData['ra'][dex]),row[1],3)
@@ -252,11 +281,17 @@ class DBObjectTestCase(unittest.TestCase):
                 self.assertAlmostEqual(self.baselineData['mag'][dex],row[3],3)
         
         for entry in [xx for xx in self.baselineData if xx[0] not in goodPoints]:
+            #make sure that the points not returned by the query did, in fact, violate one of the
+            #constraints of the query (either the box_bounds or the magnitude cut off)
             switch = (entry[1] > raMax or entry[1] < raMin or entry[2] >decMax or entry[2] < decMin or entry[3]<11.0)
             
             self.assertTrue(switch)
         
     def testChunking(self):
+        """
+        Test that a query with a specified chunk_size does, in fact, return chunks of that size
+        """
+        
         mystars = DBObject.from_objid('teststars')
         mycolumns = ['id','raJ2000','decJ2000','umag','gmag']
         myquery = mystars.query_columns(colnames = mycolumns, chunk_size = 1000)
@@ -267,6 +302,11 @@ class DBObjectTestCase(unittest.TestCase):
                 self.assertTrue(len(row),5)
     
     def testClassVariables(self):
+        """
+        Make sure that the daughter classes of DBObject properly overwrite the member
+        variables of DBObject
+        """
+        
         mystars = DBObject.from_objid('teststars')
         myNonsense = DBObject.from_objid('Nonsense')
         mygalaxies = DBObject.from_objid('testgals')
@@ -278,6 +318,7 @@ class DBObjectTestCase(unittest.TestCase):
         self.assertEqual(mystars.appendint, 1023)
         self.assertEqual(mystars.tableid,'stars')
         self.assertFalse(hasattr(mystars,'spatialModel'))
+        self.assertEqual(mystars.objid,'teststars')
         
         self.assertEqual(mygalaxies.raColName,'ra')
         self.assertEqual(mygalaxies.decColName,'decl')
@@ -287,6 +328,7 @@ class DBObjectTestCase(unittest.TestCase):
         self.assertEqual(mygalaxies.tableid,'galaxies')
         self.assertTrue(hasattr(mygalaxies,'spatialModel'))
         self.assertEqual(mygalaxies.spatialModel,'SERSIC2D')
+        self.assertEqual(mygalaxies.objid,'testgals')
         
         self.assertEqual(myNonsense.raColName,'ra')
         self.assertEqual(myNonsense.decColName,'dec')
@@ -295,6 +337,7 @@ class DBObjectTestCase(unittest.TestCase):
         self.assertFalse(hasattr(myNonsense,'appendint'))
         self.assertEqual(myNonsense.tableid,'test')
         self.assertFalse(hasattr(myNonsense,'spatialModel'))
+        self.assertEqual(myNonsense.objid,'Nonsense')
         
         self.assertTrue('teststars' in DBObject.registry)
         self.assertTrue('testgals' in DBObject.registry)
