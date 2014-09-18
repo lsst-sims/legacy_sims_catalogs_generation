@@ -1,3 +1,7 @@
+import numpy
+from .Site import Site
+from .observationMetadataUtils import haversine
+
 class ObservationMetaData(object):
     """Observation Metadata
     
@@ -15,32 +19,78 @@ class ObservationMetaData(object):
           measured in degrees
         * mjd : float (optional)
           The MJD of the observation
+        * epoch : float (optional)
+          The epoch of the coordinate system
         * bandpassName : float (optional)
           The canonical name of the bandpass for this observation..
-        * metadata : dict (optional)
-          a dictionary containing arbitrary metadata
+        * phoSimMetadata : dict (optional)
+          a dictionary containing metadata used by PhoSim
         * m5: float (optional) or dict (optional)
           the m5 value for either all bands (if a float), or for each band
           in the dict.  This is accessed by the rest of the code through the
           m5(filterName) method.
+        * unrefracted[RA,Dec] float (optional)
+          The coordinates of the pointing (in degrees)
+        * rotSkyPos float (optional)
+          The orientation of the telescope (see PhoSim documentation) in degrees.
+          This is used by the Astrometry mixins in sims_coordUtils
 
     **Examples**::
-
-        >>> data = ObservationMetaData(dict(('ra_min', 0), ('ra_max', 10), ('dec_min', 10), ('dec_max', 20)))
+        >>> box_bounds = dict(ra_min=0.0, ra_max=10.0, dec_min=10.0, dec_max=20.0)
+        >>> data = ObservationMetaData(box_bounds=box_bounds)
 
     """
             
-    def __init__(self, circ_bounds=None, box_bounds=None, mjd=None, bandpassName=None, 
-                 m5 = None, metadata=None):
-                 
+    def __init__(self, circ_bounds=None, box_bounds=None, 
+                 mjd=None, unrefractedRA=None, unrefractedDec=None, rotSkyPos=0.0,
+                 bandpassName='r', phoSimMetadata=None, site=None, m5=None):
+
         if circ_bounds is not None and box_bounds is not None:
             raise ValueError("Passing both circ_bounds and box_bounds")
+            
         self.circ_bounds = circ_bounds
         self.box_bounds = box_bounds
         self.mjd = mjd
         self.bandpass = bandpassName
-        self.metadata = metadata
-        
+        self.unrefractedRA = unrefractedRA
+        self.unrefractedDec = unrefractedDec
+        self.rotSkyPos = rotSkyPos
+       
+        if box_bounds is not None:
+            #if unrefracted[RA,Dec] is outside of box, set them to the center of the box
+            if self.unrefractedRA is None or \
+               self.unrefractedDec is None or \
+               self.unrefractedRA > box_bounds['ra_max'] or \
+               self.unrefractedRA < box_bounds['ra_min'] or \
+               self.unrefractedDec < box_bounds['dec_min'] or \
+               self.unrefractedDec > box_bounds['dec_max']:
+                   
+                self.unrefractedRA = 0.5*(box_bounds['ra_max']+box_bounds['ra_min'])
+                self.unrefractedDec = 0.5*(box_bounds['dec_max']+box_bounds['dec_min'])    
+                
+        if circ_bounds is not None:
+            #if unfrefracted[RA,Dec] is outside fo the circle, default to the center
+            #of the circle (recall that the bounds are all set in degrees)
+            
+            
+            if self.unrefractedRA is None or self.unrefractedDec is None:
+                self.unrefractedRA = circ_bounds['ra']
+                self.unrefractedDec = circ_bounds['dec']
+            else:
+                distance = haversine(numpy.radians(self.unrefractedRA),
+                                     numpy.radians(self.unrefractedDec),
+                                     numpy.radians(circ_bounds['ra']),
+                                     numpy.radians(circ_bounds['dec']))
+                
+                if distance>numpy.radians(circ_bounds['radius']):
+                    self.unrefractedRA = circ_bounds['ra']
+                    self.unrefractedDec = circ_bounds['dec']
+         
+        if site is not None:
+            self.site=site
+        else:
+            self.site=Site()
+
         if m5 is None:
             self.m5value = {}
         elif isinstance(m5, dict) or isinstance(m5, float):
@@ -48,6 +98,39 @@ class ObservationMetaData(object):
         else:
             raise ValueError("You passed neither a dict nor a float as m5 to ObservationMetaData")
 
+        if site is not None:
+            self.site=site
+        else:
+            self.site=Site()
+        
+        if phoSimMetadata is not None:
+            self.assignPhoSimMetaData(phoSimMetadata)    
+        else:
+            self.phoSimMetadata = None
+        
+    def assignPhoSimMetaData(self, metaData):
+        """
+        Assign the dict metaData to be the associated metadata dict of this object
+        """
+        
+        self.phoSimMetadata = metaData
+        
+        #overwrite member variables with values from the phoSimMetadata
+        if self.phoSimMetadata is not None and 'Opsim_expmjd' in self.phoSimMetadata:
+            self.mjd = self.phoSimMetadata['Opsim_expmjd'][0]
+        
+        if self.phoSimMetadata is not None and 'Unrefracted_RA' in self.phoSimMetadata:
+            self.unrefractedRA = self.phoSimMetadata['Unrefracted_RA'][0]
+
+        if self.phoSimMetadata is not None and 'Opsim_rotskypos' in self.phoSimMetadata:
+            self.rotSkyPos = self.phoSimMetadata['Opsim_rotskypos'][0]
+        
+        if self.phoSimMetadata is not None and 'Unrefracted_Dec' in self.phoSimMetadata:
+            self.unrefractedDec = self.phoSimMetadata['Unrefracted_Dec'][0]
+        
+        if self.phoSimMetadata is not None and 'Opsim_filter' in self.phoSimMetadata:
+            self.bandpass = self.phoSimMetadata['Opsim_filter'][0]
+               
     def m5(self,filterName):
        
        if self.m5value is None:
@@ -60,3 +143,4 @@ class ObservationMetaData(object):
            return self.m5value
        else:
            raise ValueError("Somehow, m5 is not set in ObservationMetaData")
+
