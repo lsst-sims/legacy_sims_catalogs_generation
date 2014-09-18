@@ -537,4 +537,4 @@ class fileDBObject(DBObject):
         the appropriate fileDBObject class.
         """
         cls = cls.registry.get(objid, DBObject)
-        return cls(None, *args, **kwargs)
+        return cls(*args, **kwargs)

@@ -3,7 +3,7 @@ import sqlite3
 
 import unittest, numpy
 import lsst.utils.tests as utilsTests
-from lsst.sims.catalogs.generation.db import DBObject, ObservationMetaData
+from lsst.sims.catalogs.generation.db import DBObject, fileDBObject,ObservationMetaData
 from lsst.sims.catUtils.observationMetadataUtils import haversine
 import lsst.sims.catalogs.generation.utils.testUtils as tu
 
@@ -40,8 +40,7 @@ def createNonsenseDB():
 class myNonsenseDB(DBObject):
     objid = 'Nonsense'
     tableid = 'test'
-    idColKey = 'NonsenseId'
-    #Make this implausibly large?  
+    idColKey = 'NonsenseId' 
     dbAddress = 'sqlite:///NonsenseDB.db'
     raColName = 'ra'
     decColName = 'dec'
@@ -49,6 +48,19 @@ class myNonsenseDB(DBObject):
                ('NonsenseRaJ2000', 'ra*%f'%(numpy.pi/180.)),
                ('NonsenseDecJ2000', 'dec*%f'%(numpy.pi/180.)),
                ('NonsenseMag','mag',float)]
+
+class myNonsenseFileDB(fileDBObject):
+    objid = 'fileNonsense'
+    tableid = 'test'
+    idColKey = 'NonsenseId'
+    raColName = 'ra'
+    decColName = 'dec'
+    columns = [('NonsenseId', 'id', int),
+               ('NonsenseRaJ2000', 'ra*%f'%(numpy.pi/180.)),
+               ('NonsenseDecJ2000', 'dec*%f'%(numpy.pi/180.)),
+               ('NonsenseMag','mag',float)]
+
+
 
 
 class DBObjectTestCase(unittest.TestCase):
@@ -380,12 +392,236 @@ class DBObjectTestCase(unittest.TestCase):
             
         for (col,coltest) in zip(mygalaxies.columns,colsShouldBe):
             self.assertEqual(col,coltest)
+
+class fileDBObjectTestCase(unittest.TestCase):
+    """
+    This class will re-implement the tests from DBObjectTestCase,
+    except that it will use a Nonsense DBObject loaded with fileDBObject
+    to make sure that fileDBObject properly loads the file into a
+    database.
+    """
+    
+    myNonsense = fileDBObject.from_objid('fileNonsense','testData/CatalogsGenerationTestData.txt',
+                   dtype = numpy.dtype([('id',int),('ra',float),('dec',float),('mag',float)]),
+                   skipLines = 0)
+                   #
+                   #note that skipLines defaults to 1 so, if you do not include this, you will
+                   #lose the first line of your input file (which maybe you want to do if that
+                   #is a header)
+    
+    inFile = open('testData/CatalogsGenerationTestData.txt','r')
+    
+    """
+    baselineData will store another copy of the data that should be stored in
+    NonsenseDB.db.  This will give us something to test database queries against
+    when we ask for all of the objects within a certain box_bounds or circ_bounds.
+    """
+    baselineData=None
+    for line in inFile:
+        values=line.split()
+            
+        if baselineData is None:
+            baselineData = numpy.array([(int(values[0]),float(values[1]),
+                                           float(values[2]),float(values[3]))], \
+                                       dtype=[('id',int),('ra',float),('dec',float),('mag',float)])
+        else:
+            baselineData = numpy.append(baselineData,numpy.array([(int(values[0]),float(values[1]),
+                                                                 float(values[2]),float(values[3]))],
+                                                          dtype=baselineData.dtype))  
+    inFile.close()
+   
+    def testDBaddress(self):
+        self.assertEqual(self.myNonsense.dbAddress,'sqlite:///:memory:')
+   
+    def testNonsenseCircularConstraints(self):
+        """
+        Test that a query performed on a circ_bounds gets all of the objects (and only all
+        of the objects) within that circle
+        """
+        
+        radius = 20.0
+        raCenter = 210.0
+        decCenter = -60.0
+        
+        mycolumns = ['NonsenseId','NonsenseRaJ2000','NonsenseDecJ2000','NonsenseMag']
+        
+        circObsMd = ObservationMetaData(circ_bounds=dict(ra=raCenter, dec=decCenter, radius=radius),
+                                     mjd=52000., bandpassName='r')
+       
+        circQuery = self.myNonsense.query_columns(colnames = mycolumns, obs_metadata=circObsMd, chunk_size=100)
+        
+        raCenter = numpy.radians(raCenter)
+        decCenter = numpy.radians(decCenter)
+        radius = numpy.radians(radius)
+
+        goodPoints = []
+
+        for chunk in circQuery:
+            for row in chunk:
+                distance = haversine(raCenter,decCenter,row[1],row[2])
+          
+                self.assertTrue(distance<radius)
+                
+                dex = numpy.where(self.baselineData['id'] == row[0])[0][0]
+                
+                #store a list of which objects fell within our circ_bounds
+                goodPoints.append(row[0])
+                
+                self.assertAlmostEqual(numpy.radians(self.baselineData['ra'][dex]),row[1],3)
+                self.assertAlmostEqual(numpy.radians(self.baselineData['dec'][dex]),row[2],3)
+                self.assertAlmostEqual(self.baselineData['mag'][dex],row[3],3)
+                
+
+        for entry in [xx for xx in self.baselineData if xx[0] not in goodPoints]:
+            #make sure that all of the points not returned by the query were, in fact, outside of
+            #the circ_bounds
+            distance = haversine(raCenter,decCenter,numpy.radians(entry[1]),numpy.radians(entry[2]))
+            self.assertTrue(distance>radius)
+    
+   
+    def testNonsenseSelectOnlySomeColumns(self):
+        """
+        Test a query performed only a subset of the available columns
+        """
+        
+        mycolumns = ['NonsenseId','NonsenseRaJ2000','NonsenseMag']
+       
+        query = self.myNonsense.query_columns(colnames=mycolumns, constraint = 'ra < 45.', chunk_size=100)
+
+        goodPoints = []
+
+        for chunk in query:
+            for row in chunk:
+                self.assertTrue(row[1]<45.0)
+                
+                dex = numpy.where(self.baselineData['id'] == row[0])[0][0]
+                
+                goodPoints.append(row[0])
+                
+                self.assertAlmostEqual(numpy.radians(self.baselineData['ra'][dex]),row[1],3)
+                self.assertAlmostEqual(self.baselineData['mag'][dex],row[2],3)
+                
+        for entry in [xx for xx in self.baselineData if xx[0] not in goodPoints]:
+            self.assertTrue(entry[1]>45.0)
+
+    def testNonsenseBoxConstraints(self):
+        """
+        Test that a query performed on a box_bounds gets all of the points (and only all of the
+        points) inside that box_bounds.
+        """
+        
+        raMin = 50.0
+        raMax = 150.0
+        decMax = 30.0
+        decMin = -20.0
+        
+        mycolumns = ['NonsenseId','NonsenseRaJ2000','NonsenseDecJ2000','NonsenseMag']
+     
+        boxObsMd = ObservationMetaData(box_bounds=dict(ra_min=raMin, ra_max=raMax, 
+                                       dec_min=decMin, dec_max=decMax), mjd=52000.,bandpassName='r')
+        
+        boxQuery = self.myNonsense.query_columns(obs_metadata=boxObsMd, chunk_size=100, colnames=mycolumns)
+       
+        raMin = numpy.radians(raMin)
+        raMax = numpy.radians(raMax)
+        decMin = numpy.radians(decMin)
+        decMax = numpy.radians(decMax)
+
+        goodPoints = []
+        
+        for chunk in boxQuery:
+            for row in chunk:
+                self.assertTrue(row[1]<raMax)
+                self.assertTrue(row[1]>raMin)
+                self.assertTrue(row[2]<decMax)
+                self.assertTrue(row[2]>decMin)
+          
+                dex = numpy.where(self.baselineData['id'] == row[0])[0][0]
+                
+                #keep a list of which points were returned by teh query
+                goodPoints.append(row[0])
+                
+                self.assertAlmostEqual(numpy.radians(self.baselineData['ra'][dex]),row[1],3)
+                self.assertAlmostEqual(numpy.radians(self.baselineData['dec'][dex]),row[2],3)
+                self.assertAlmostEqual(self.baselineData['mag'][dex],row[3],3)
+      
+        for entry in [xx for xx in self.baselineData if xx[0] not in goodPoints]:
+            #make sure that the points not returned by the query are, in fact, outside of the
+            #box_bounds
+            
+            switch = (entry[1] > raMax or entry[1] < raMin or entry[2] >decMax or entry[2] < decMin)
+            self.assertTrue(switch)
+
+    def testNonsenseArbitraryConstraints(self):
+        """
+        Test a query with a user-specified constraint on the magnitude column
+        """
+    
+        raMin = 50.0
+        raMax = 150.0
+        decMax = 30.0
+        decMin = -20.0
+        
+        mycolumns = ['NonsenseId','NonsenseRaJ2000','NonsenseDecJ2000','NonsenseMag']
+     
+        boxObsMd = ObservationMetaData(box_bounds=dict(ra_min=raMin, ra_max=raMax, 
+                                       dec_min=decMin, dec_max=decMax), mjd=52000.,bandpassName='r')
+        
+        boxQuery = self.myNonsense.query_columns(colnames = mycolumns,
+                      obs_metadata=boxObsMd, chunk_size=100, constraint = 'mag > 11.0')
+       
+        raMin = numpy.radians(raMin)
+        raMax = numpy.radians(raMax)
+        decMin = numpy.radians(decMin)
+        decMax = numpy.radians(decMax)
+
+        goodPoints = []
+
+        for chunk in boxQuery:
+            for row in chunk:
+              
+                self.assertTrue(row[1]<raMax)
+                self.assertTrue(row[1]>raMin)
+                self.assertTrue(row[2]<decMax)
+                self.assertTrue(row[2]>decMin)
+                self.assertTrue(row[3]>11.0)
+          
+                dex = numpy.where(self.baselineData['id'] == row[0])[0][0]
+                
+                #keep a list of the points returned by the query
+                goodPoints.append(row[0])
+                
+                self.assertAlmostEqual(numpy.radians(self.baselineData['ra'][dex]),row[1],3)
+                self.assertAlmostEqual(numpy.radians(self.baselineData['dec'][dex]),row[2],3)
+                self.assertAlmostEqual(self.baselineData['mag'][dex],row[3],3)
+        
+        for entry in [xx for xx in self.baselineData if xx[0] not in goodPoints]:
+            #make sure that the points not returned by the query did, in fact, violate one of the
+            #constraints of the query (either the box_bounds or the magnitude cut off)
+            switch = (entry[1] > raMax or entry[1] < raMin or entry[2] >decMax or entry[2] < decMin or entry[3]<11.0)
+            
+            self.assertTrue(switch)
+        
+    def testChunking(self):
+        """
+        Test that a query with a specified chunk_size does, in fact, return chunks of that size
+        """
+        
+        mystars = DBObject.from_objid('teststars')
+        mycolumns = ['id','raJ2000','decJ2000','umag','gmag']
+        myquery = mystars.query_columns(colnames = mycolumns, chunk_size = 1000)
+        
+        for chunk in myquery:
+            self.assertEqual(chunk.size,1000)
+            for row in chunk:
+                self.assertTrue(len(row),5)
             
 def suite():
     """Returns a suite containing all the test cases in this module."""
     utilsTests.init()
     suites = []
     suites += unittest.makeSuite(DBObjectTestCase)
+    suites += unittest.makeSuite(fileDBObjectTestCase)
     suites += unittest.makeSuite(utilsTests.MemoryTestCase)
 
     return unittest.TestSuite(suites)
