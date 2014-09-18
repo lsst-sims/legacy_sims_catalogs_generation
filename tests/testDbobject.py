@@ -409,6 +409,9 @@ class fileDBObjectTestCase(unittest.TestCase):
                    #lose the first line of your input file (which maybe you want to do if that
                    #is a header)
     
+    myNonsenseHeader = fileDBObject.from_objid('fileNonsense','testData/CatalogsGenerationTestDataHeader.txt')
+    #this time, make fileDBObject learn the dtype from a header
+    
     inFile = open('testData/CatalogsGenerationTestData.txt','r')
     
     """
@@ -478,6 +481,21 @@ class fileDBObjectTestCase(unittest.TestCase):
             distance = haversine(raCenter,decCenter,numpy.radians(entry[1]),numpy.radians(entry[2]))
             self.assertTrue(distance>radius)
     
+        #make sure that the DBObject which used a header gets the same result
+        headerQuery = self.myNonsenseHeader.query_columns(colnames = mycolumns,obs_metadata=circObsMd, chunk_size=100)
+        goodPointsHeader = []
+        for chunk in headerQuery:
+            for row in chunk:
+                distance = haversine(raCenter,decCenter,row[1],row[2])
+                dex = numpy.where(self.baselineData['id'] == row[0])[0][0]
+                goodPointsHeader.append(row[0])
+                self.assertAlmostEqual(numpy.radians(self.baselineData['ra'][dex]),row[1],3)
+                self.assertAlmostEqual(numpy.radians(self.baselineData['dec'][dex]),row[2],3)
+                self.assertAlmostEqual(self.baselineData['mag'][dex],row[3],3)
+        
+        self.assertEqual(len(goodPoints),len(goodPointsHeader))
+        for xx in goodPoints:
+            self.assertTrue(xx in goodPointsHeader)
    
     def testNonsenseSelectOnlySomeColumns(self):
         """
@@ -503,7 +521,20 @@ class fileDBObjectTestCase(unittest.TestCase):
                 
         for entry in [xx for xx in self.baselineData if xx[0] not in goodPoints]:
             self.assertTrue(entry[1]>45.0)
-
+        
+        headerQuery = self.myNonsenseHeader.query_columns(colnames=mycolumns, constraint = 'ra < 45.', chunk_size=100)
+        goodPointsHeader = []
+        for chunk in headerQuery:
+            for row in chunk:
+                dex = numpy.where(self.baselineData['id'] == row[0])[0][0]
+                goodPointsHeader.append(row[0])
+                self.assertAlmostEqual(numpy.radians(self.baselineData['ra'][dex]),row[1],3)
+                self.assertAlmostEqual(self.baselineData['mag'][dex],row[2],3)
+        
+        self.assertEqual(len(goodPoints),len(goodPointsHeader))
+        for xx in goodPoints:
+            self.assertTrue(xx in goodPointsHeader)        
+        
     def testNonsenseBoxConstraints(self):
         """
         Test that a query performed on a box_bounds gets all of the points (and only all of the
@@ -551,7 +582,21 @@ class fileDBObjectTestCase(unittest.TestCase):
             
             switch = (entry[1] > raMax or entry[1] < raMin or entry[2] >decMax or entry[2] < decMin)
             self.assertTrue(switch)
-
+        
+        headerQuery = self.myNonsenseHeader.query_columns(obs_metadata=boxObsMd, chunk_size=100, colnames=mycolumns)
+        goodPointsHeader = []
+        for chunk in headerQuery:
+            for row in chunk:
+                dex = numpy.where(self.baselineData['id'] == row[0])[0][0]
+                goodPointsHeader.append(row[0])
+                self.assertAlmostEqual(numpy.radians(self.baselineData['ra'][dex]),row[1],3)
+                self.assertAlmostEqual(numpy.radians(self.baselineData['dec'][dex]),row[2],3)
+                self.assertAlmostEqual(self.baselineData['mag'][dex],row[3],3)
+        
+        self.assertEqual(len(goodPoints),len(goodPointsHeader))
+        for xx in goodPoints:
+            self.assertTrue(xx in goodPointsHeader)
+        
     def testNonsenseArbitraryConstraints(self):
         """
         Test a query with a user-specified constraint on the magnitude column
@@ -601,21 +646,35 @@ class fileDBObjectTestCase(unittest.TestCase):
             switch = (entry[1] > raMax or entry[1] < raMin or entry[2] >decMax or entry[2] < decMin or entry[3]<11.0)
             
             self.assertTrue(switch)
+    
+        headerQuery = self.myNonsenseHeader.query_columns(colnames = mycolumns,
+                 obs_metadata=boxObsMd, chunk_size=100, constraint='mag > 11.0')
+        goodPointsHeader = []
+        for chunk in headerQuery:
+            for row in chunk:
+                dex = numpy.where(self.baselineData['id'] == row[0])[0][0]
+                goodPointsHeader.append(row[0])
+                self.assertAlmostEqual(numpy.radians(self.baselineData['ra'][dex]),row[1],3)
+                self.assertAlmostEqual(numpy.radians(self.baselineData['dec'][dex]),row[2],3)
+                self.assertAlmostEqual(self.baselineData['mag'][dex],row[3],3)
+        
+        self.assertEqual(len(goodPoints),len(goodPointsHeader))
+        for xx in goodPoints:
+            self.assertTrue(xx in goodPointsHeader)
         
     def testChunking(self):
         """
         Test that a query with a specified chunk_size does, in fact, return chunks of that size
         """
         
-        mystars = DBObject.from_objid('teststars')
-        mycolumns = ['id','raJ2000','decJ2000','umag','gmag']
-        myquery = mystars.query_columns(colnames = mycolumns, chunk_size = 1000)
+        mycolumns = ['NonsenseId','NonsenseRaJ2000','NonsenseDecJ2000','NonsenseMag']
+        myquery = self.myNonsense.query_columns(colnames = mycolumns, chunk_size = 100)
         
         for chunk in myquery:
-            self.assertEqual(chunk.size,1000)
+            self.assertEqual(chunk.size,100)
             for row in chunk:
-                self.assertTrue(len(row),5)
-            
+                self.assertTrue(len(row),4)
+    
 def suite():
     """Returns a suite containing all the test cases in this module."""
     utilsTests.init()
