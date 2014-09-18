@@ -1,5 +1,5 @@
 from .Site import Site
-from .observationMetadataUtils import *
+from .observationMetadataUtils import haversine
 
 class ObservationMetaData(object):
     """Observation Metadata
@@ -115,19 +115,19 @@ class ObservationMetaData(object):
         self.phoSimMetadata = metaData
         
         #overwrite member variables with values from the phoSimMetadata
-        if 'Opsim_expmjd' in self.phoSimMetadata:
+        if phosimMetadata is not None and 'Opsim_expmjd' in self.phoSimMetadata:
             self.mjd = self.phoSimMetadata['Opsim_expmjd'][0]
         
-        if 'Unrefracted_RA' in self.phoSimMetadata:
+        if phoSimMetadata is not None and 'Unrefracted_RA' in self.phoSimMetadata:
             self.unrefractedRA = self.phoSimMetadata['Unrefracted_RA'][0]
 
-        if 'Opsim_rotskypos' in self.phoSimMetadata:
+        if phoSimMetadata is not None and 'Opsim_rotskypos' in self.phoSimMetadata:
             self.rotSkyPos = self.phoSimMetadata['Opsim_rotskypos'][0]
         
-        if 'Unrefracted_Dec' in self.phoSimMetadata:
+        if phoSimMetadata is not None and 'Unrefracted_Dec' in self.phoSimMetadata:
             self.unrefractedDec = self.phoSimMetadata['Unrefracted_Dec'][0]
         
-        if 'Opsim_filter' in self.phoSimMetadata:
+        if phoSimMetadata is not None and 'Opsim_filter' in self.phoSimMetadata:
             self.bandpass = self.phoSimMetadata['Opsim_filter'][0]
                
     def m5(self,filterName):
