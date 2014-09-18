@@ -35,8 +35,8 @@ class ObservationMetaData(object):
           This is used by the Astrometry mixins in sims_coordUtils
 
     **Examples**::
-
-        >>> data = ObservationMetaData(dict(('ra_min', 0), ('ra_max', 10), ('dec_min', 10), ('dec_max', 20)))
+        >>> box_bounds = dict(ra_min=0.0, ra_max=10.0, dec_min=10.0, dec_max=20.0)
+        >>> data = ObservationMetaData(box_bounds=box_bounds)
 
     """
             
