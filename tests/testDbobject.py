@@ -27,7 +27,8 @@ def createNonsenseDB():
     except:
         raise RuntimeError("Error creating database.")
     
-    inFile = open('testData/CatalogsGenerationTestData.txt','r')
+    filepath = os.path.join(os.getenv('SIMS_CATALOGS_GENERATION_DIR'), 'tests/testData/CatalogsGenerationTestData.txt')
+    inFile = open(filepath,'r')
     for line in inFile:
         values = line.split()
         cmd = '''INSERT INTO test VALUES (%s, %s, %s, %s)''' % (values[0],values[1],values[2],values[3])
@@ -74,8 +75,9 @@ class DBObjectTestCase(unittest.TestCase):
     createNonsenseDB()
     obsMd = ObservationMetaData(circ_bounds=dict(ra=210., dec=-60, radius=1.75),
                                      mjd=52000., bandpassName='r')
-    
-    inFile = open('testData/CatalogsGenerationTestData.txt','r')
+
+    filepath = os.path.join(os.getenv('SIMS_CATALOGS_GENERATION_DIR'), 'tests/testData/CatalogsGenerationTestData.txt')
+    inFile = open(filepath,'r')
     
     """
     baselineData will store another copy of the data that should be stored in
@@ -400,8 +402,13 @@ class fileDBObjectTestCase(unittest.TestCase):
     to make sure that fileDBObject properly loads the file into a
     database.
     """
+
+    testDataFile = os.path.join(
+        os.getenv('SIMS_CATALOGS_GENERATION_DIR'), 'tests/testData/CatalogsGenerationTestData.txt')
+    testHeaderFile = os.path.join(
+        os.getenv('SIMS_CATALOGS_GENERATION_DIR'), 'tests/testData/CatalogsGenerationTestDataHeader.txt')
     
-    myNonsense = fileDBObject.from_objid('fileNonsense','testData/CatalogsGenerationTestData.txt',
+    myNonsense = fileDBObject.from_objid('fileNonsense',testDataFile,
                    dtype = numpy.dtype([('id',int),('ra',float),('dec',float),('mag',float)]),
                    skipLines = 0)
                    #
@@ -409,10 +416,10 @@ class fileDBObjectTestCase(unittest.TestCase):
                    #lose the first line of your input file (which maybe you want to do if that
                    #is a header)
     
-    myNonsenseHeader = fileDBObject.from_objid('fileNonsense','testData/CatalogsGenerationTestDataHeader.txt')
+    myNonsenseHeader = fileDBObject.from_objid('fileNonsense',testHeaderFile)
     #this time, make fileDBObject learn the dtype from a header
-    
-    inFile = open('testData/CatalogsGenerationTestData.txt','r')
+
+    inFile = open(testDataFile,'r')
     
     """
     baselineData will store another copy of the data that should be stored in
