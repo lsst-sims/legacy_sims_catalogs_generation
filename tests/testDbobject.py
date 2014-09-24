@@ -83,27 +83,17 @@ class DBObjectTestCase(unittest.TestCase):
                                      mjd=52000., bandpassName='r')
 
     filepath = os.path.join(os.getenv('SIMS_CATALOGS_GENERATION_DIR'), 'tests/testData/CatalogsGenerationTestData.txt')
-    inFile = open(filepath,'r')
-    
+
     """
     baselineData will store another copy of the data that should be stored in
     testDbobjectNonsenseDB.db.  This will give us something to test database queries 
     against when we ask for all of the objects within a certain box_bounds or circ_bounds.
     """
-    baselineData=None
-    for line in inFile:
-        values=line.split()
-            
-        if baselineData is None:
-            baselineData = numpy.array([(int(values[0]),float(values[1]),
-                                           float(values[2]),float(values[3]))], \
-                                       dtype=[('id',int),('ra',float),('dec',float),('mag',float)])
-        else:
-            baselineData = numpy.append(baselineData,numpy.array([(int(values[0]),float(values[1]),
-                                                                 float(values[2]),float(values[3]))],
-                                                          dtype=baselineData.dtype))  
-    inFile.close()
-    
+
+    dtype=[('id',int),('ra',float),('dec',float),('mag',float)]
+    baselineData=numpy.loadtxt(filepath, dtype=dtype)
+
+
     def testObsMD(self):
         self.assertEqual(self.obsMd.bandpass, 'r')
         self.assertAlmostEqual(self.obsMd.mjd, 52000., 6)
@@ -427,26 +417,13 @@ class fileDBObjectTestCase(unittest.TestCase):
     myNonsenseHeader = fileDBObject.from_objid('fileNonsense',testHeaderFile)
     #this time, make fileDBObject learn the dtype from a header
 
-    inFile = open(testDataFile,'r')
-    
     """
     baselineData will store another copy of the data that should be stored in
     testDbobjectNonsenseDB.db.  This will give us something to test database queries 
     against when we ask for all of the objects within a certain box_bounds or circ_bounds.
     """
-    baselineData=None
-    for line in inFile:
-        values=line.split()
-            
-        if baselineData is None:
-            baselineData = numpy.array([(int(values[0]),float(values[1]),
-                                           float(values[2]),float(values[3]))], \
-                                       dtype=[('id',int),('ra',float),('dec',float),('mag',float)])
-        else:
-            baselineData = numpy.append(baselineData,numpy.array([(int(values[0]),float(values[1]),
-                                                                 float(values[2]),float(values[3]))],
-                                                          dtype=baselineData.dtype))  
-    inFile.close()
+    dtype=[('id',int),('ra',float),('dec',float),('mag',float)]
+    baselineData=numpy.loadtxt(testDataFile, dtype=dtype)
    
     def testDBaddress(self):
         self.assertEqual(self.myNonsense.dbAddress,'sqlite:///:memory:')
