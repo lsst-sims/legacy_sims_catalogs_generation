@@ -4,7 +4,7 @@ import sqlite3
 import unittest, numpy
 import lsst.utils.tests as utilsTests
 from lsst.sims.catalogs.generation.db import DBObject, fileDBObject,ObservationMetaData
-from lsst.sims.catUtils.observationMetadataUtils import haversine
+from lsst.sims.catalogs.generation.db.observationMetadataUtils import haversine
 import lsst.sims.catalogs.generation.utils.testUtils as tu
 
 # This test should be expanded to cover more of the framework
