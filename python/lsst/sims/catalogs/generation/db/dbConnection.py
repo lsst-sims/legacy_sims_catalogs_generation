@@ -74,6 +74,27 @@ class DBObject(object):
     #: endpoints.
     dbAddress = "mssql+pymssql://LSST-2:L$$TUser@fatboy.npl.washington.edu:1433/LSST"
 
+    def __init__(self, address=None):
+
+        if address is not None:
+            self.dbAddress = address
+
+        self._connect_to_engine()
+
+    def _connect_to_engine(self):
+        """create and connect to a database engine"""
+        self.engine = create_engine(self.dbAddress, echo=self.verbose)
+
+        if self.engine.dialect.name == 'sqlite':
+            event.listen(self.engine,'checkout',declareTrigFunctions)
+
+        self.session = scoped_session(sessionmaker(autoflush=True,
+                                                   bind=self.engine))
+        self.metadata = MetaData(bind=self.engine)
+
+    def getDbAddress(self):
+        return self.dbAddress
+
 class CatalogDBObjectMeta(type):
     """Meta class for registering new objects.
 
@@ -136,7 +157,6 @@ class CatalogDBObjectMeta(type):
         outstr += "+++++++++++++++++++++++++++++++++++++++++++++"
         return outstr
 
-
 class CatalogDBObject(DBObject):
     """Database Object base class
 
@@ -196,12 +216,9 @@ class CatalogDBObject(DBObject):
             warnings.warn("objectTypeId has not "
                           "been set.  Input files for phosim are not "
                           "possible.")
-        if address is None:
-            address = self.getDbAddress()
 
-        self.dbAddress = address
+        super(CatalogDBObject, self).__init__(address)
 
-        self._connect_to_engine()
         self._get_table()
 
         #Need to do this after the table is instantiated so that
@@ -229,9 +246,6 @@ class CatalogDBObject(DBObject):
         except ImportError:
             raise ImportError("sims_catalogs_measures not set up.  Cannot get InstanceCatalog from the object.")
 
-    def getDbAddress(self):
-        return self.dbAddress
-
     def getIdColKey(self):
         return self.idColKey
 
@@ -241,17 +255,6 @@ class CatalogDBObject(DBObject):
     def _get_table(self):
         self.table = Table(self.tableid, self.metadata,
                            autoload=True)
-
-    def _connect_to_engine(self):
-        """create and connect to a database engine"""
-        self.engine = create_engine(self.dbAddress, echo=self.verbose)
-        
-        if self.engine.dialect.name == 'sqlite':
-            event.listen(self.engine,'checkout',declareTrigFunctions)
-   
-        self.session = scoped_session(sessionmaker(autoflush=True, 
-                                                   bind=self.engine))
-        self.metadata = MetaData(bind=self.engine)
 
     def _make_column_map(self):
         self.columnMap = OrderedDict([(el[0], el[1] if el[1] else el[0])
