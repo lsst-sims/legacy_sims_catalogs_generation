@@ -68,8 +68,13 @@ class ChunkIterator(object):
         else:
             raise StopIteration
 
+class DBObject(object):
 
-class DBObjectMeta(type):
+    #: This is the default address.  Simply change this in the class definition for other
+    #: endpoints.
+    dbAddress = "mssql+pymssql://LSST-2:L$$TUser@fatboy.npl.washington.edu:1433/LSST"
+
+class CatalogDBObjectMeta(type):
     """Meta class for registering new objects.
 
     When any new type of object class is created, this registers it
@@ -85,7 +90,7 @@ class DBObjectMeta(type):
                           "Proceed with caution")
         if 'objid' not in dct:
             dct['objid'] = name
-        return super(DBObjectMeta, cls).__new__(cls, name, bases, dct)
+        return super(CatalogDBObjectMeta, cls).__new__(cls, name, bases, dct)
 
     def __init__(cls, name, bases, dct):
         # check if 'registry' is specified.
@@ -117,7 +122,7 @@ class DBObjectMeta(type):
                               'want globally unique id values')
             else:
                 cls.objectTypeIdList.append(cls.objectTypeId)
-        return super(DBObjectMeta, cls).__init__(name, bases, dct)
+        return super(CatalogDBObjectMeta, cls).__init__(name, bases, dct)
 
     def __str__(cls):
         dbObjects = cls.registry.keys()
@@ -132,11 +137,11 @@ class DBObjectMeta(type):
         return outstr
 
 
-class DBObject(object):
+class CatalogDBObject(DBObject):
     """Database Object base class
 
     """
-    __metaclass__ = DBObjectMeta
+    __metaclass__ = CatalogDBObjectMeta
     
     epoch = 2000.0
     skipRegistration = False
@@ -154,9 +159,6 @@ class DBObject(object):
     doRunTest = False
     testObservationMetaData = None
 
-    #: This is the default address.  Simply change this in the class definition for other
-    #: endpoints.
-    dbAddress = "mssql+pymssql://LSST-2:L$$TUser@fatboy.npl.washington.edu:1433/LSST"
     #: Mapping of DDL types to python types.  Strings are assumed to be 256 characters
     #: this can be overridden by modifying the dbTypeMap or by making a custom columns
     #: list.
@@ -172,11 +174,11 @@ class DBObject(object):
     @classmethod
     def from_objid(cls, objid, *args, **kwargs):
         """Given a string objid, return an instance of
-        the appropriate DBObject class.
+        the appropriate CatalogDBObject class.
         """
         if objid not in cls.registry:
             raise RuntimeError('Attempting to construct an object that does not exist')
-        cls = cls.registry.get(objid, DBObject)
+        cls = cls.registry.get(objid, CatalogDBObject)
         return cls(*args, **kwargs)
 
     def __init__(self, address=None, verbose=False):
@@ -187,7 +189,7 @@ class DBObject(object):
         if self.idColKey is None:
             self.idColKey = self.getIdColKey()
         if (self.objid is None) or (self.tableid is None) or (self.idColKey is None):
-            raise ValueError("DBObject must be subclassed, and "
+            raise ValueError("CatalogDBObject must be subclassed, and "
                              "define objid, tableid and idColKey.")
 
         if (self.objectTypeId is None) and self.verbose:
@@ -489,7 +491,7 @@ class DBObject(object):
             query = query.filter(constraint)
         return ChunkIterator(self, query, chunk_size)
 
-class fileDBObject(DBObject):
+class fileDBObject(CatalogDBObject):
     ''' Class to read a file into a database and then query it'''
     #Column names to index.  Specify compound indexes using tuples of column names
     indexCols = []
@@ -508,7 +510,7 @@ class fileDBObject(DBObject):
         """
         self.verbose = verbose
         if(self.objid is None) or (self.idColKey is None):
-            raise ValueError("DBObject must be subclassed, and "
+            raise ValueError("CatalogDBObject must be subclassed, and "
                              "define objid and tableid and idColKey.")
 
         if (self.objectTypeId is None) and self.verbose:
@@ -536,5 +538,5 @@ class fileDBObject(DBObject):
         """Given a string objid, return an instance of
         the appropriate fileDBObject class.
         """
-        cls = cls.registry.get(objid, DBObject)
+        cls = cls.registry.get(objid, CatalogDBObject)
         return cls(*args, **kwargs)

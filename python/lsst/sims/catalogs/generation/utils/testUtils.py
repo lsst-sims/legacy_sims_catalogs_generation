@@ -3,7 +3,7 @@ from numpy.random import random, seed
 from sqlite3 import dbapi2 as sqlite
 import numpy, json
 
-from lsst.sims.catalogs.generation.db import DBObject, ObservationMetaData
+from lsst.sims.catalogs.generation.db import CatalogDBObject, ObservationMetaData
 
 def getOneChunk(results):
     try:
@@ -34,7 +34,7 @@ def sampleSphere(size, ramin = 0., dra = 2.*numpy.pi):
     return ra, dec
 
 
-class myTestGals(DBObject):
+class myTestGals(CatalogDBObject):
     objid = 'testgals'
     tableid = 'galaxies'
     idColKey = 'id'
@@ -127,7 +127,7 @@ def makeGalTestDB(filename='testDatabase.db', size=1000, seedVal=None, **kwargs)
     conn.commit()
     conn.close()
 
-class myTestStars(DBObject):
+class myTestStars(CatalogDBObject):
     objid = 'teststars'
     tableid = 'stars'
     idColKey = 'id'
