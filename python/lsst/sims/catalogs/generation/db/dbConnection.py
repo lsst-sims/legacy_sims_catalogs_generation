@@ -74,7 +74,9 @@ class DBObject(object):
     #: endpoints.
     dbAddress = "mssql+pymssql://LSST-2:L$$TUser@fatboy.npl.washington.edu:1433/LSST"
 
-    def __init__(self, address=None):
+    def __init__(self, address=None, verbose=False):
+
+        self.verbose=verbose
 
         if address is not None:
             self.dbAddress = address
@@ -202,8 +204,7 @@ class CatalogDBObject(DBObject):
         return cls(*args, **kwargs)
 
     def __init__(self, address=None, verbose=False):
-        self.verbose = verbose
-        if not self.verbose:
+        if not verbose:
             with warnings.catch_warnings():
                 warnings.simplefilter("ignore", category=sa_exc.SAWarning)
         if self.idColKey is None:
@@ -212,12 +213,13 @@ class CatalogDBObject(DBObject):
             raise ValueError("CatalogDBObject must be subclassed, and "
                              "define objid, tableid and idColKey.")
 
-        if (self.objectTypeId is None) and self.verbose:
+        if (self.objectTypeId is None) and verbose:
             warnings.warn("objectTypeId has not "
                           "been set.  Input files for phosim are not "
                           "possible.")
 
-        super(CatalogDBObject, self).__init__(address)
+        #call DBObject's constructor (this will actually connect to the engine)
+        super(CatalogDBObject, self).__init__(address,verbose = verbose)
 
         self._get_table()
 
