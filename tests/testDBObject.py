@@ -55,6 +55,9 @@ class DBObjectTestCase(unittest.TestCase):
     dbAddress = 'sqlite:///testDBObjectDB.db'
 
     def testTableNames(self):
+        """
+        Test the method that returns the names of tables in a database
+        """
         dbobj = DBObject(self.dbAddress)
         names = dbobj.get_table_names()
         self.assertEqual(len(names),2)
@@ -62,6 +65,9 @@ class DBObjectTestCase(unittest.TestCase):
         self.assertTrue('intTable' in names)
 
     def testColumnNames(self):
+        """
+        Test the method that returns the names of columns in a table
+        """
         dbobj = DBObject(self.dbAddress)
         names = dbobj.get_column_names('doubleTable')
         self.assertEqual(len(names),3)
@@ -90,6 +96,9 @@ class DBObjectTestCase(unittest.TestCase):
         self.assertTrue('thrice' in names['intTable'])
 
     def testSingleTableQuery(self):
+        """
+        Test a query on a single table (using chunk iterator)
+        """
         dbobj = DBObject(self.dbAddress)
         query = 'SELECT id, sqrt FROM doubleTable'
         results = dbobj.get_chunk_iterator(query)
@@ -108,7 +117,32 @@ class DBObjectTestCase(unittest.TestCase):
 
         self.assertEqual(i,201)
 
+    def testDtype(self):
+        """
+        Test that passing dtype to a query works
+
+        (also test q query on a single table using .execute() directly
+        """
+        dbobj = DBObject(self.dbAddress)
+        query = 'SELECT id, log FROM doubleTable'
+        dtype = [('id',int),('log',float)]
+        results = dbobj.execute(query, dtype = dtype)
+
+        self.assertEqual(results.dtype,dtype)
+        for xx in results:
+            self.assertAlmostEqual(numpy.log(xx[0]),xx[1],6)
+
+        self.assertEqual(len(results),200)
+
+        results = dbobj.get_chunk_iterator(query, chunk_size=10, dtype=dtype)
+        results.next()
+        for chunk in results:
+            self.assertEqual(chunk.dtype,dtype)
+
     def testJoin(self):
+        """
+        Test a join
+        """
         dbobj = DBObject(self.dbAddress)
         query = 'SELECT doubleTable.id, intTable.id, doubleTable.log, intTable.thrice '
         query += 'FROM doubleTable, intTable WHERE doubleTable.id = intTable.id'
@@ -125,14 +159,31 @@ class DBObjectTestCase(unittest.TestCase):
             if i<90:
                 self.assertEqual(len(chunk),10)
             for row in chunk:
+                self.assertEqual(2*(i+1),row[0])
                 self.assertEqual(row[0],row[1])
                 self.assertAlmostEqual(numpy.log(row[0]),row[2],6)
                 self.assertEqual(3*row[0],row[3])
                 self.assertEqual(dtype,row.dtype)
                 i += 1
         self.assertEqual(i,99)
+        #make sure that we found all the matches whe should have
+
+        results = dbobj.execute(query)
+        self.assertEqual(dtype,results.dtype)
+        i = 0
+        for row in results:
+            self.assertEqual(2*(i+1),row[0])
+            self.assertEqual(row[0],row[1])
+            self.assertAlmostEqual(numpy.log(row[0]),row[2],6)
+            self.assertEqual(3*row[0],row[3])
+            i += 1
+        self.assertEqual(i,99)
+        #make sure we found all the matches we should have
 
     def testMinMax(self):
+        """
+        Test queries on SQL functions by using the MIN and MAX functions
+        """
         dbobj = DBObject(self.dbAddress)
         query = 'SELECT MAX(thrice), MIN(thrice) FROM intTable'
         results = dbobj.execute(query)
