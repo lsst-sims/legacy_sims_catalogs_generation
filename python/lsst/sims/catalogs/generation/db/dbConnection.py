@@ -85,10 +85,7 @@ class DBObject(object):
         if address is not None:
             self.dbAddress = address
 
-        try:
-            self._connect_to_engine()
-        except:
-            raise RuntimeError("Could not connect to engine.")
+        self._connect_to_engine()
 
     def _connect_to_engine(self):
         """create and connect to a database engine"""
@@ -106,7 +103,7 @@ class DBObject(object):
 
     def get_table_names(self):
         """Return a list of the names of the tables in the database"""
-        return [str(xx) for xx in reflection.Inspector.from_engine(engine)]
+        return [str(xx) for xx in reflection.Inspector.from_engine(self.engine).get_table_names()]
 
     def get_column_names(self, tableName=None):
         """
@@ -119,11 +116,11 @@ class DBObject(object):
             if tableName not in tableNameList:
                 return []
             else:
-                return [str(xx) for xx in reflection.Inspector.from_engine(engine).get_columns(tableName)]
+                return [str(xx) for xx in reflection.Inspector.from_engine(self.engine).get_columns(tableName)]
         else:
             columnDict = {}
             for name in tableNameList:
-                columnList = [str(xx) for xx in reflection.Inspector.from_engine(engine).get_columns(name)]
+                columnList = [str(xx) for xx in reflection.Inspector.from_engine(self.engine).get_columns(name)]
                 columnDict[name] = columnList
             return columnDict
 
@@ -153,12 +150,12 @@ class DBObject(object):
                 dataString += str(xx) + ' '
             dataString += '\n'
 
-            names = ['col'+i for i in len(results[0])]
+            names = ['col'+str(i) for i in range(len(results[0]))]
             dataArr = numpy.genfromtxt(StringIO(dataString), dtype=None, names=names)
             self.dtype = dataArr.dtype
 
         retresults = numpy.rec.fromrecords(results,dtype = self.dtype)
-        return _final_pass(retresults)
+        return self._final_pass(retresults)
 
     def execute(self, query, chunk_size = None, dtype = None):
         """
