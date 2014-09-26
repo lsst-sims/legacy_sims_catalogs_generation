@@ -101,7 +101,21 @@ class DBObjectTestCase(unittest.TestCase):
                 i += 1
 
         self.assertEqual(i,201)
-        
+
+    def testJoin(self):
+        dbobj = DBObject(self.dbAddress)
+        query = 'SELECT doubleTable.id, intTable.id, doubleTable.log, intTable.thrice '
+        query += 'FROM doubleTable, intTable WHERE doubleTable.id = intTable.id'
+        results = dbobj.execute(query)
+        i = 0
+        for chunk in results:
+            for row in chunk:
+                self.assertEqual(row[0],row[1])
+                self.assertAlmostEqual(numpy.log(row[0]),row[2],6)
+                self.assertEqual(3*row[0],row[3])
+                i += 1
+        self.assertEqual(i,99)
+
 def suite():
     """Returns a suite containing all the test cases in this module."""
     utilsTests.init()
