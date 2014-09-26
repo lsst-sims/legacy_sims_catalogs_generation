@@ -76,6 +76,20 @@ class DBObject(object):
     #: endpoints.
     dbAddress = "mssql+pymssql://LSST-2:L$$TUser@fatboy.npl.washington.edu:1433/LSST"
 
+    #: Mapping of DDL types to python types.  Strings are assumed to be 256 characters
+    #: this can be overridden by modifying the dbTypeMap or by making a custom columns
+    #: list.
+    #: numpy doesn't know how to convert decimal.Decimal types, so I changed this to float
+    #: TODO this doesn't seem to make a difference but make sure.
+    dbTypeMap = {'BIGINT':(int,), 'BOOLEAN':(bool,), 'FLOAT':(float,), 'INTEGER':(int,),
+                 'NUMERIC':(float,), 'SMALLINT':(int,), 'TINYINT':(int,), 'VARCHAR':(str, 256),
+                 'TEXT':(str, 256), 'CLOB':(str, 256), 'NVARCHAR':(str, 256),
+                 'NCLOB':(unicode, 256), 'NTEXT':(unicode, 256), 'CHAR':(str, 1), 'INT':(int,),
+                 'REAL':(float,), 'DOUBLE':(float,), 'STRING':(str, 256), 'DOUBLE_PRECISION':(float,),
+                 'DECIMAL':(float,)}
+
+
+
     def __init__(self, address=None, verbose=False):
         self.verbose=verbose
 
@@ -270,18 +284,6 @@ class CatalogDBObject(DBObject):
     #Provide information if this object should be tested in the unit test
     doRunTest = False
     testObservationMetaData = None
-
-    #: Mapping of DDL types to python types.  Strings are assumed to be 256 characters
-    #: this can be overridden by modifying the dbTypeMap or by making a custom columns
-    #: list.
-    #: numpy doesn't know how to convert decimal.Decimal types, so I changed this to float
-    #: TODO this doesn't seem to make a difference but make sure.
-    dbTypeMap = {'BIGINT':(int,), 'BOOLEAN':(bool,), 'FLOAT':(float,), 'INTEGER':(int,),
-                 'NUMERIC':(float,), 'SMALLINT':(int,), 'TINYINT':(int,), 'VARCHAR':(str, 256),
-                 'TEXT':(str, 256), 'CLOB':(str, 256), 'NVARCHAR':(str, 256),
-                 'NCLOB':(unicode, 256), 'NTEXT':(unicode, 256), 'CHAR':(str, 1), 'INT':(int,),
-                 'REAL':(float,), 'DOUBLE':(float,), 'STRING':(str, 256), 'DOUBLE_PRECISION':(float,),
-                 'DECIMAL':(float,)}
 
     @classmethod
     def from_objid(cls, objid, *args, **kwargs):
