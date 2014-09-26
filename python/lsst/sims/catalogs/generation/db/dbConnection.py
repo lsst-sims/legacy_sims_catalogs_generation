@@ -161,10 +161,12 @@ class DBObject(object):
             """
             dataString = ''
             for xx in results[0]:
-                dataString += str(xx) + ' '
+                if dataString is not '':
+                    dataString+=','
+                dataString += str(xx)
             dataString += '\n'
             names = [str(ww) for ww in results[0].keys()]
-            dataArr = numpy.genfromtxt(StringIO(dataString), dtype=None, names=names)
+            dataArr = numpy.genfromtxt(StringIO(dataString), dtype=None, names=names, delimiter=',')
             self.dtype = dataArr.dtype
 
         retresults = numpy.rec.fromrecords(results,dtype = self.dtype)
