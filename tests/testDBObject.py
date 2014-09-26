@@ -92,12 +92,18 @@ class DBObjectTestCase(unittest.TestCase):
     def testSingleTableQuery(self):
         dbobj = DBObject(self.dbAddress)
         query = 'SELECT id, sqrt FROM doubleTable'
-        results = dbobj.execute(query)
+        results = dbobj.get_chunk_iterator(query)
+
+        dtype = [
+                ('col0',int),
+                ('col1',float)]
+
         i = 1
         for chunk in results:
             for row in chunk:
                 self.assertEqual(row[0],i)
                 self.assertAlmostEqual(row[1],numpy.sqrt(i))
+                self.assertEqual(dtype,row.dtype)
                 i += 1
 
         self.assertEqual(i,201)
@@ -106,7 +112,14 @@ class DBObjectTestCase(unittest.TestCase):
         dbobj = DBObject(self.dbAddress)
         query = 'SELECT doubleTable.id, intTable.id, doubleTable.log, intTable.thrice '
         query += 'FROM doubleTable, intTable WHERE doubleTable.id = intTable.id'
-        results = dbobj.execute(query, chunk_size=10)
+        results = dbobj.get_chunk_iterator(query, chunk_size=10)
+
+        dtype = [
+            ('col0',int),
+            ('col1',int),
+            ('col2',float),
+            ('col3',int)]
+
         i = 0
         for chunk in results:
             if i<90:
@@ -115,8 +128,19 @@ class DBObjectTestCase(unittest.TestCase):
                 self.assertEqual(row[0],row[1])
                 self.assertAlmostEqual(numpy.log(row[0]),row[2],6)
                 self.assertEqual(3*row[0],row[3])
+                self.assertEqual(dtype,row.dtype)
                 i += 1
         self.assertEqual(i,99)
+
+    def testMinMax(self):
+        dbobj = DBObject(self.dbAddress)
+        query = 'SELECT MAX(thrice), MIN(thrice) FROM intTable'
+        results = dbobj.execute(query)
+        self.assertEqual(results[0][0],594)
+        self.assertEqual(results[0][1],0)
+
+        dtype = [('col0',int),('col1',int)]
+        self.assertEqual(results.dtype,dtype)
 
 def suite():
     """Returns a suite containing all the test cases in this module."""

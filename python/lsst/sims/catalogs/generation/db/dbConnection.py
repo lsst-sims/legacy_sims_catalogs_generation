@@ -157,7 +157,18 @@ class DBObject(object):
         retresults = numpy.rec.fromrecords(results,dtype = self.dtype)
         return self._final_pass(retresults)
 
-    def execute(self, query, chunk_size = None, dtype = None):
+    def execute(self, query, dtype = None):
+        """
+        Executes an arbitrary query.  Returns a recarray of the results.
+
+        dtype will be the dtype of the output recarray.  If it is None, then
+        the code will guess the datatype and assign generic names to the columns
+        """
+        self.dtype = dtype
+        retresults = self._postprocess_results(self.session.execute(query).fetchall())
+        return self._final_pass(retresults)
+
+    def get_chunk_iterator(self, query, chunk_size = None, dtype = None):
         """
         Take an arbitrary, user-specified query and return a ChunkIterator that
         executes that query
