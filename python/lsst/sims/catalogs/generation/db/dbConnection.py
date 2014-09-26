@@ -116,11 +116,11 @@ class DBObject(object):
             if tableName not in tableNameList:
                 return []
             else:
-                return [str(xx) for xx in reflection.Inspector.from_engine(self.engine).get_columns(tableName)]
+                return [str(xx['name']) for xx in reflection.Inspector.from_engine(self.engine).get_columns(tableName)]
         else:
             columnDict = {}
             for name in tableNameList:
-                columnList = [str(xx) for xx in reflection.Inspector.from_engine(self.engine).get_columns(name)]
+                columnList = [str(xx['name']) for xx in reflection.Inspector.from_engine(self.engine).get_columns(name)]
                 columnDict[name] = columnList
             return columnDict
 

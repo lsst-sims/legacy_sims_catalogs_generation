@@ -61,6 +61,34 @@ class DBObjectTestCase(unittest.TestCase):
         self.assertTrue('doubleTable' in names)
         self.assertTrue('intTable' in names)
 
+    def testColumnNames(self):
+        dbobj = DBObject(self.dbAddress)
+        names = dbobj.get_column_names('doubleTable')
+        self.assertEqual(len(names),3)
+        self.assertTrue('id' in names)
+        self.assertTrue('sqrt' in names)
+        self.assertTrue('log' in names)
+
+        names = dbobj.get_column_names('intTable')
+        self.assertEqual(len(names),3)
+        self.assertTrue('id' in names)
+        self.assertTrue('twice' in names)
+        self.assertTrue('thrice' in names)
+
+        names = dbobj.get_column_names()
+        keys = ['doubleTable','intTable']
+        for kk in names:
+            self.assertTrue(kk in keys)
+
+        self.assertEqual(len(names['doubleTable']),3)
+        self.assertEqual(len(names['intTable']),3)
+        self.assertTrue('id' in names['doubleTable'])
+        self.assertTrue('sqrt' in names['doubleTable'])
+        self.assertTrue('log' in names['doubleTable'])
+        self.assertTrue('id' in names['intTable'])
+        self.assertTrue('twice' in names['intTable'])
+        self.assertTrue('thrice' in names['intTable'])
+
     def testSingleTableQuery(self):
         dbobj = DBObject(self.dbAddress)
         query = 'SELECT id, sqrt FROM doubleTable'
