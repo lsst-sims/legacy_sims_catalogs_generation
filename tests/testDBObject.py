@@ -106,9 +106,11 @@ class DBObjectTestCase(unittest.TestCase):
         dbobj = DBObject(self.dbAddress)
         query = 'SELECT doubleTable.id, intTable.id, doubleTable.log, intTable.thrice '
         query += 'FROM doubleTable, intTable WHERE doubleTable.id = intTable.id'
-        results = dbobj.execute(query)
+        results = dbobj.execute(query, chunk_size=10)
         i = 0
         for chunk in results:
+            if i<90:
+                self.assertEqual(len(chunk),10)
             for row in chunk:
                 self.assertEqual(row[0],row[1])
                 self.assertAlmostEqual(numpy.log(row[0]),row[2],6)
