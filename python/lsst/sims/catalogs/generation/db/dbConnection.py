@@ -3,11 +3,13 @@ import math
 import numpy
 import os
 import inspect
+from StringIO import StringIO
 from collections import OrderedDict
 
 from .utils import loadData
 from sqlalchemy.orm import scoped_session, sessionmaker, mapper
 from sqlalchemy.sql import expression
+from sqlalchemy.engine import reflection
 from sqlalchemy import (create_engine, ThreadLocalMetaData, MetaData,
                         Table, Column, BigInteger, event)
 from sqlalchemy import exc as sa_exc
@@ -50,7 +52,7 @@ class ChunkIterator(object):
         self.dbobj = dbobj
         self.exec_query = dbobj.session.execute(query)
         self.chunk_size = chunk_size
-        
+
     def __iter__(self):
         return self
 
@@ -75,13 +77,18 @@ class DBObject(object):
     dbAddress = "mssql+pymssql://LSST-2:L$$TUser@fatboy.npl.washington.edu:1433/LSST"
 
     def __init__(self, address=None, verbose=False):
-
         self.verbose=verbose
+
+        self.dtype = None 
+        #this is a cache for the query, so that any one query does not have to guess dtype multiple times
 
         if address is not None:
             self.dbAddress = address
 
-        self._connect_to_engine()
+        try:
+            self._connect_to_engine()
+        except:
+            raise RuntimeError("Could not connect to engine.")
 
     def _connect_to_engine(self):
         """create and connect to a database engine"""
@@ -96,6 +103,76 @@ class DBObject(object):
 
     def getDbAddress(self):
         return self.dbAddress
+
+    def get_table_names(self):
+        """Return a list of the names of the tables in the database"""
+        return [str(xx) for xx in reflection.Inspector.from_engine(engine)]
+
+    def get_column_names(self, tableName=None):
+        """
+        Return a list of the names of the columns in the specified table.
+        If no table is specified, return a dict of lists.  The dict will be keyed
+        to the table names.  The lists will be of the column names in that table
+        """
+        tableNameList = self.get_table_names()
+        if tableName is not None:
+            if tableName not in tableNameList:
+                return []
+            else:
+                return [str(xx) for xx in reflection.Inspector.from_engine(engine).get_columns(tableName)]
+        else:
+            columnDict = {}
+            for name in tableNameList:
+                columnList = [str(xx) for xx in reflection.Inspector.from_engine(engine).get_columns(name)]
+                columnDict[name] = columnList
+            return columnDict
+
+    def _final_pass(self, results):
+        """ Make final modifications to a set of data before returning it to the user
+
+        **Parameters**
+
+            * results : a structured array constructed from the result set from a query
+
+        **Returns**
+
+            * results : a potentially modified structured array.  The default is to do nothing.
+
+        """
+        return results
+
+    def _postprocess_results(self, results):
+
+        if self.dtype is None:
+            """
+            Determine the dtype from the data.
+            Store it in a global variable so we do not have to repeat on every chunk.
+            """
+            dataString = ''
+            for xx in results[0]:
+                dataString += str(xx) + ' '
+            dataString += '\n'
+
+            names = ['col'+i for i in len(results[0])]
+            dataArr = numpy.genfromtxt(StringIO(dataString), dtype=None, names=names)
+            self.dtype = dataArr.dtype
+
+        retresults = numpy.rec.fromrecords(results,dtype = self.dtype)
+        return _final_pass(retresults)
+
+    def execute(self, query, chunk_size = None, dtype = None):
+        """
+        Take an arbitrary, user-specified query and return a ChunkIterator that
+        executes that query
+
+        dtype will tell the ChunkIterator what datatype to expect for this query.
+        This information gets passed to _postprocess_results.
+
+        If 'None', then _postprocess_results will just guess the datatype
+        and return generic names for the columns.
+        """
+        self.dtype = dtype
+        return ChunkIterator(self, query, chunk_size)
 
 class CatalogDBObjectMeta(type):
     """Meta class for registering new objects.
@@ -409,21 +486,6 @@ class CatalogDBObject(DBObject):
         
         return bound
 
-
-    def _final_pass(self, results):
-        """ Make final modifications to a set of data before returning it to the user
-        
-        **Parameters**
-        
-            * results : a structured array constructed from the result set from a query
-
-        **Returns**
-        
-            * results : a potentially modified structured array.  The default is to do nothing.
-        
-        """
-        return results
-
     def _postprocess_results(self, results):
         """Post-process the query results to put them
         in a structured array.
@@ -436,7 +498,6 @@ class CatalogDBObject(DBObject):
 
             * _final_pass(retresults) : the result of calling the _final_pass method on a
               structured array constructed from the query data.
-
         """
         if len(results) > 0:
             cols = [str(k) for k in results[0].keys()]
