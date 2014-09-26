@@ -104,8 +104,8 @@ class DBObjectTestCase(unittest.TestCase):
         results = dbobj.get_chunk_iterator(query)
 
         dtype = [
-                ('col0',int),
-                ('col1',float)]
+                ('id',int),
+                ('sqrt',float)]
 
         i = 1
         for chunk in results:
@@ -149,10 +149,10 @@ class DBObjectTestCase(unittest.TestCase):
         results = dbobj.get_chunk_iterator(query, chunk_size=10)
 
         dtype = [
-            ('col0',int),
-            ('col1',int),
-            ('col2',float),
-            ('col3',int)]
+            ('id',int),
+            ('id_1',int),
+            ('log',float),
+            ('thrice',int)]
 
         i = 0
         for chunk in results:
@@ -190,7 +190,7 @@ class DBObjectTestCase(unittest.TestCase):
         self.assertEqual(results[0][0],594)
         self.assertEqual(results[0][1],0)
 
-        dtype = [('col0',int),('col1',int)]
+        dtype = [('MAXthrice',int),('MINthrice',int)]
         self.assertEqual(results.dtype,dtype)
 
 def suite():

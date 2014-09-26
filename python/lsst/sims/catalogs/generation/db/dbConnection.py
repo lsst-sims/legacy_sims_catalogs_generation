@@ -93,7 +93,6 @@ class DBObject(object):
     def __init__(self, address=None, verbose=False):
         self.verbose=verbose
 
-        self.names = None
         self.dtype = None 
         #this is a cache for the query, so that any one query does not have to guess dtype multiple times
 
@@ -164,17 +163,14 @@ class DBObject(object):
             for xx in results[0]:
                 dataString += str(xx) + ' '
             dataString += '\n'
-
-            if self.names is None:
-                self.names = ['col'+str(i) for i in range(len(results[0]))]
-
-            dataArr = numpy.genfromtxt(StringIO(dataString), dtype=None, names=self.names)
+            names = [str(ww) for ww in results[0].keys()]
+            dataArr = numpy.genfromtxt(StringIO(dataString), dtype=None, names=names)
             self.dtype = dataArr.dtype
 
         retresults = numpy.rec.fromrecords(results,dtype = self.dtype)
         return self._final_pass(retresults)
 
-    def execute(self, query, dtype = None, names = None):
+    def execute(self, query, dtype = None):
         """
         Executes an arbitrary query.  Returns a recarray of the results.
 
@@ -182,11 +178,10 @@ class DBObject(object):
         the code will guess the datatype and assign generic names to the columns
         """
         self.dtype = dtype
-        self.names = names
         retresults = self._postprocess_results(self.session.execute(query).fetchall())
         return self._final_pass(retresults)
 
-    def get_chunk_iterator(self, query, chunk_size = None, dtype = None, names = None):
+    def get_chunk_iterator(self, query, chunk_size = None, dtype = None):
         """
         Take an arbitrary, user-specified query and return a ChunkIterator that
         executes that query
@@ -198,7 +193,6 @@ class DBObject(object):
         and return generic names for the columns.
         """
         self.dtype = dtype
-        self.names = names
         return ChunkIterator(self, query, chunk_size)
 
 class CatalogDBObjectMeta(type):
