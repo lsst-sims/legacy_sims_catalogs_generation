@@ -7,9 +7,8 @@ from lsst.sims.catalogs.generation.db import DBObject
 
 def createDB():
     """
-    Create a database from generic data store in testData/CatalogsGenerationTestData.txt
-    This will be used to make sure that circ_bounds and box_bounds yield the points
-    they are supposed to.
+    Create a database with two tables of meaningless data to make sure that JOIN queries
+    can be executed using DBObject
     """
     if os.path.exists('testDBObjectDB.db'):
         os.unlink('testDBObjectDB.db')

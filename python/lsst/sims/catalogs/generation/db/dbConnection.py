@@ -48,10 +48,16 @@ def declareTrigFunctions(conn,connection_rec,connection_proxy):
 
 class ChunkIterator(object):
     """Iterator for query chunks"""
-    def __init__(self, dbobj, query, chunk_size):
+    def __init__(self, dbobj, query, chunk_size, arbitrarySQL = False):
         self.dbobj = dbobj
         self.exec_query = dbobj.session.execute(query)
         self.chunk_size = chunk_size
+
+        #arbitrarySQL exists in case a CatalogDBObject calls
+        #get_arbitrary_chunk_iterator; in that case, we need to
+        #be able to tell this object to call _postprocess_arbitrary_results,
+        #rather than _postprocess_results
+        self.arbitrarySQL = arbitrarySQL
 
     def __iter__(self):
         return self
@@ -61,12 +67,18 @@ class ChunkIterator(object):
             chunk = self.exec_query.fetchall()
             if len(chunk) == 0:
                 raise StopIteration
-            return self.dbobj._postprocess_results(chunk)
+            if self.arbitrarySQL:
+                return self.dbobj._postprocess_arbitrary_results(chunk)
+            else:
+                return self.dbobj._postprocess_results(chunk)
         elif self.chunk_size is not None:
             chunk = self.exec_query.fetchmany(self.chunk_size)
             if len(chunk) == 0:
                 raise StopIteration
-            return self.dbobj._postprocess_results(chunk)
+            if self.arbitrarySQL:
+                return self.dbobj._postprocess_arbitrary_results(chunk)
+            else:
+                return self.dbobj._postprocess_results(chunk)
         else:
             raise StopIteration
 
@@ -75,19 +87,6 @@ class DBObject(object):
     #: This is the default address.  Simply change this in the class definition for other
     #: endpoints.
     dbAddress = "mssql+pymssql://LSST-2:L$$TUser@fatboy.npl.washington.edu:1433/LSST"
-
-    #: Mapping of DDL types to python types.  Strings are assumed to be 256 characters
-    #: this can be overridden by modifying the dbTypeMap or by making a custom columns
-    #: list.
-    #: numpy doesn't know how to convert decimal.Decimal types, so I changed this to float
-    #: TODO this doesn't seem to make a difference but make sure.
-    dbTypeMap = {'BIGINT':(int,), 'BOOLEAN':(bool,), 'FLOAT':(float,), 'INTEGER':(int,),
-                 'NUMERIC':(float,), 'SMALLINT':(int,), 'TINYINT':(int,), 'VARCHAR':(str, 256),
-                 'TEXT':(str, 256), 'CLOB':(str, 256), 'NVARCHAR':(str, 256),
-                 'NCLOB':(unicode, 256), 'NTEXT':(unicode, 256), 'CHAR':(str, 1), 'INT':(int,),
-                 'REAL':(float,), 'DOUBLE':(float,), 'STRING':(str, 256), 'DOUBLE_PRECISION':(float,),
-                 'DECIMAL':(float,)}
-
 
 
     def __init__(self, address=None, verbose=False):
@@ -153,6 +152,13 @@ class DBObject(object):
         return results
 
     def _postprocess_results(self, results):
+        """
+        This wrapper exists so that a ChunkIterator built from a DBObject
+        can have the same API as a ChunkIterator built from a CatalogDBObject
+        """
+        return self._postprocess_arbitrary_results(results)
+
+    def _postprocess_arbitrary_results(self, results):
 
         if self.dtype is None:
             """
@@ -172,14 +178,29 @@ class DBObject(object):
 
     def execute(self, query, dtype = None):
         """
+        This wrapper exists so that CatalogDBObjects can refer to execute_arbitrary
+        and DBObjects can refer to execute
+        """
+        return self.execute_arbitrary(query, dtype=dtype)
+
+    def execute_arbitrary(self, query, dtype = None):
+        """
         Executes an arbitrary query.  Returns a recarray of the results.
 
         dtype will be the dtype of the output recarray.  If it is None, then
         the code will guess the datatype and assign generic names to the columns
         """
         self.dtype = dtype
-        retresults = self._postprocess_results(self.session.execute(query).fetchall())
-        return self._final_pass(retresults)
+        retresults = self._postprocess_arbitrary_results(self.session.execute(query).fetchall())
+        return retresults
+
+    def get_arbitrary_chunk_iterator(self, query, chunk_size = None, dtype =None):
+        """
+        This wrapper exists so that CatalogDBObjects can refer to
+        get_arbitrary_chunk_iterator and DBObjects can refer to
+        get_chunk_iterator
+        """
+        return self.get_chunk_iterator(query, chunk_size = chunk_size, dtype = dtype)
 
     def get_chunk_iterator(self, query, chunk_size = None, dtype = None):
         """
@@ -193,7 +214,7 @@ class DBObject(object):
         and return generic names for the columns.
         """
         self.dtype = dtype
-        return ChunkIterator(self, query, chunk_size)
+        return ChunkIterator(self, query, chunk_size, arbitrarySQL = True)
 
 class CatalogDBObjectMeta(type):
     """Meta class for registering new objects.
@@ -278,6 +299,18 @@ class CatalogDBObject(DBObject):
     #Provide information if this object should be tested in the unit test
     doRunTest = False
     testObservationMetaData = None
+
+    #: Mapping of DDL types to python types.  Strings are assumed to be 256 characters
+    #: this can be overridden by modifying the dbTypeMap or by making a custom columns
+    #: list.
+    #: numpy doesn't know how to convert decimal.Decimal types, so I changed this to float
+    #: TODO this doesn't seem to make a difference but make sure.
+    dbTypeMap = {'BIGINT':(int,), 'BOOLEAN':(bool,), 'FLOAT':(float,), 'INTEGER':(int,),
+                 'NUMERIC':(float,), 'SMALLINT':(int,), 'TINYINT':(int,), 'VARCHAR':(str, 256),
+                 'TEXT':(str, 256), 'CLOB':(str, 256), 'NVARCHAR':(str, 256),
+                 'NCLOB':(unicode, 256), 'NTEXT':(unicode, 256), 'CHAR':(str, 1), 'INT':(int,),
+                 'REAL':(float,), 'DOUBLE':(float,), 'STRING':(str, 256), 'DOUBLE_PRECISION':(float,),
+                 'DECIMAL':(float,)}
 
     @classmethod
     def from_objid(cls, objid, *args, **kwargs):

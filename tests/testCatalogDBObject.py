@@ -26,7 +26,13 @@ def createNonsenseDB():
         c.execute('''CREATE TABLE test (id int, ra real, dec real, mag real)''')
         conn.commit()
     except:
-        raise RuntimeError("Error creating database.")
+        raise RuntimeError("Error creating database table test.")
+
+    try:
+        c.execute('''CREATE TABLE test2 (id int, mag real)''')
+        conn.commit()
+    except:
+        raise RuntimeError("Error creating database table test2.")
     
     filepath = os.path.join(os.getenv('SIMS_CATALOGS_GENERATION_DIR'), 'tests/testData/CatalogsGenerationTestData.txt')
     inFile = open(filepath,'r')
@@ -34,6 +40,9 @@ def createNonsenseDB():
         values = line.split()
         cmd = '''INSERT INTO test VALUES (%s, %s, %s, %s)''' % (values[0],values[1],values[2],values[3])
         c.execute(cmd)
+        if int(values[0])%2 == 0:
+            cmd = '''INSERT INTO test2 VALUES (%s, %s)''' % (values[0],str(2.0*float(values[3])))
+            c.execute(cmd)
     
     conn.commit()
     conn.close()
@@ -295,7 +304,35 @@ class CatalogDBObjectTestCase(unittest.TestCase):
             switch = (entry[1] > raMax or entry[1] < raMin or entry[2] >decMax or entry[2] < decMin or entry[3]<11.0)
             
             self.assertTrue(switch)
-        
+
+    def testArbitraryQuery(self):
+        """
+        Test method to directly execute an arbitrary SQL query (inherited from DBObject class)
+        """
+        myNonsense = CatalogDBObject.from_objid('Nonsense')
+        query = 'SELECT test.id, test.mag, test2.id, test2.mag FROM test, test2 WHERE test.id=test2.id'
+        results = myNonsense.execute_arbitrary(query)
+        self.assertEqual(len(results),1250)
+        for row in results:
+            self.assertEqual(row[0],row[2])
+            self.assertAlmostEqual(row[1],0.5*row[3],6)
+    
+    def testArbitraryChunkIterator(self):
+        """
+        Test method to create a ChunkIterator from an arbitrary SQL query (inherited from DBObject class)
+        """
+        myNonsense = CatalogDBObject.from_objid('Nonsense')
+        query = 'SELECT test.id, test.mag, test2.id, test2.mag FROM test, test2 WHERE test.id=test2.id'
+        dtype = numpy.dtype([('id1',int),('mag1',float),('id2',int),('mag2',float)])
+        results = myNonsense.get_chunk_iterator(query,chunk_size=100,dtype=dtype)
+        i = 0
+        for chunk in results:
+            for row in chunk:
+                self.assertEqual(row[0],row[2])
+                self.assertAlmostEqual(row[1],0.5*row[3],6)
+                i += 1
+        self.assertEqual(i,1250)
+
     def testChunking(self):
         """
         Test that a query with a specified chunk_size does, in fact, return chunks of that size
