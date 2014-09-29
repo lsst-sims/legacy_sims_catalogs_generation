@@ -164,12 +164,10 @@ class DBObject(object):
                 if dataString is not '':
                     dataString+=','
                 dataString += str(xx)
-            dataString += '\n'
             names = [str(ww) for ww in results[0].keys()]
             dataArr = numpy.genfromtxt(StringIO(dataString), dtype=None, names=names, delimiter=',')
             self.dtype = dataArr.dtype
-
-        retresults = numpy.rec.fromrecords(results,dtype = self.dtype)
+        retresults = numpy.rec.fromrecords([tuple(xx) for xx in results],dtype = self.dtype)
         return self._final_pass(retresults)
 
     def execute(self, query, dtype = None):
