@@ -1,4 +1,5 @@
 import os
+import numpy
 import unittest
 import lsst.utils.tests as utilsTests
 from collections import OrderedDict
@@ -115,20 +116,25 @@ class ObservationMetaDataTest(unittest.TestCase):
         self.assertAlmostEqual(testObsMD.rotSkyPos,1.1,10)
         self.assertEqual(testObsMD.bandpass,'g')
     
-    def testBothBounds(self):
+    def testBoundExceptions(self):
         """
-        Make sure ObservationMetaData throws an error when you try to set both
-        circ_bounds and box_bounds
+        Make sure ObservationMetaData throws an error when you incorrectly set Bounds
         """
-        
-        circ_bounds = dict(ra = 25., dec= 50., radius = 5.)
-        box_bounds = dict(ra_min = 10., ra_max = 20., 
-                          dec_min =-10., dec_max = 10.)
-        
-        #make sure ObservationMetaData raises an exception when you try to
-        #set both box bounds and circular bounds
-        self.assertRaises(ValueError,ObservationMetaData,box_bounds=box_bounds,circ_bounds=circ_bounds)
-       
+
+        self.assertRaises(RuntimeError,ObservationMetaData,boundType='hex',
+                          boundLength=1.0,unrefractedRA=0.0,unrefractedDec=0.0)
+        self.assertRaises(RuntimeError,ObservationMetaData,boundType='box',unrefractedRA=0.0,unrefractedDec=0.0)
+        self.assertRaises(RuntimeError,ObservationMetaData,boundType='box',unrefractedRA=0.0,boundLength=1.0)
+        self.assertRaises(RuntimeError,ObservationMetaData,boundType='box',unrefractedDec=0.0,boundLength=1.0)
+
+        boxBounds = numpy.array([1.0,2.0])
+        self.assertRaises(RuntimeError,ObservationMetaData,boundType='box',unrefractedRA=0.0,boundLength=boxBounds)
+        self.assertRaises(RuntimeError,ObservationMetaData,boundType='box',unrefractedDec=0.0,boundLength=boxBounds)
+
+        circObs = ObservationMetaData(boundType='circle',unrefractedRA=0.0, unrefractedDec=0.0, boundLength=1.0)
+        squareObs = ObservationMetaData(boundType = 'box',unrefractedRA=0.0, unrefractedDec=0.0, boundLength=1.0)
+        boxObs = ObservationMetaData(boundType = 'box', unrefractedRA=0.0, unrefractedDec=0.0, boundLength=boxBounds)
+
     def testBounds(self):
         """
         Test if ObservationMetaData correctly assigns the unrefracted[RA,Dec]
@@ -139,65 +145,26 @@ class ObservationMetaDataTest(unittest.TestCase):
         box_bounds = dict(ra_min = 10., ra_max = 20., 
                           dec_min =-10., dec_max = 10.)
         
+        circRA = 25.0
+        circDec = 50.0
+        radius = 5.0
         
-        testObsMD = ObservationMetaData(circ_bounds=circ_bounds)
+        boxRA = 15.0
+        boxDec = 0.0
+        boxLength = numpy.array([5.0,10.0])
+        
+        testObsMD = ObservationMetaData(boundType='circle',
+                     unrefractedRA = circRA, unrefractedDec=circDec, boundLength = radius)
         self.assertAlmostEqual(testObsMD.unrefractedRA,25.0,10)
         self.assertAlmostEqual(testObsMD.unrefractedDec,50.0,10)
         
-        testObsMD = ObservationMetaData(box_bounds=box_bounds)
+        testObsMD = ObservationMetaData(boundType = 'box',
+                                        unrefractedRA = boxRA, unrefractedDec = boxDec, boundLength=boxLength)
+        self.assertAlmostEqual(testObsMD.unrefractedRA,15.0,10)
+        self.assertAlmostEqual(testObsMD.unrefractedDec,0.0,10)
         self.assertAlmostEqual(testObsMD.unrefractedRA,15.0,10)
         self.assertAlmostEqual(testObsMD.unrefractedDec,0.0,10)
         
-        
-        testObsMD = ObservationMetaData(circ_bounds=circ_bounds,
-                    unrefractedRA=35.,unrefractedDec=50.)
-        
-        self.assertAlmostEqual(testObsMD.unrefractedRA,25.0,10)
-        self.assertAlmostEqual(testObsMD.unrefractedDec,50.0,10)
-
-        testObsMD = ObservationMetaData(circ_bounds=circ_bounds,
-                    unrefractedRA=25.0,unrefractedDec=56.0)
-        
-        self.assertAlmostEqual(testObsMD.unrefractedRA,25.0,10)
-        self.assertAlmostEqual(testObsMD.unrefractedDec,50.0,10)
-        
-        testObsMD = ObservationMetaData(circ_bounds=circ_bounds,
-                    unrefractedRA=21.0,unrefractedDec=51.0)
-        
-        self.assertAlmostEqual(testObsMD.unrefractedRA,21.0,10)
-        self.assertAlmostEqual(testObsMD.unrefractedDec,51.0,10)
-        
-        testObsMD = ObservationMetaData(box_bounds=box_bounds,
-                     unrefractedRA=9.0,unrefractedDec=1.0)
-        
-        self.assertAlmostEqual(testObsMD.unrefractedRA,15.0,10)
-        self.assertAlmostEqual(testObsMD.unrefractedDec,0.0,10)
-        
-        testObsMD = ObservationMetaData(box_bounds=box_bounds,
-                     unrefractedRA=21.0,unrefractedDec=1.0)
-        
-        self.assertAlmostEqual(testObsMD.unrefractedRA,15.0,10)
-        self.assertAlmostEqual(testObsMD.unrefractedDec,0.0,10)
-        
-        testObsMD = ObservationMetaData(box_bounds=box_bounds,
-                     unrefractedRA=15.0,unrefractedDec=-11.0)
-        
-        self.assertAlmostEqual(testObsMD.unrefractedRA,15.0,10)
-        self.assertAlmostEqual(testObsMD.unrefractedDec,0.0,10)
-        
-        testObsMD = ObservationMetaData(box_bounds=box_bounds,
-                     unrefractedRA=15.0,unrefractedDec=11.0)
-        
-        self.assertAlmostEqual(testObsMD.unrefractedRA,15.0,10)
-        self.assertAlmostEqual(testObsMD.unrefractedDec,0.0,10)
-        
-        testObsMD = ObservationMetaData(box_bounds=box_bounds,
-                     unrefractedRA=12.0,unrefractedDec=-8.0)
-        
-        self.assertAlmostEqual(testObsMD.unrefractedRA,12.0,10)
-        self.assertAlmostEqual(testObsMD.unrefractedDec,-8.0,10)
-        
-
 def suite():
     """Returns a suite containing all the test cases in this module."""
     utilsTests.init()

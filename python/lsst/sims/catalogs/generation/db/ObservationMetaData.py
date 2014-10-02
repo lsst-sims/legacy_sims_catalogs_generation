@@ -1,6 +1,7 @@
 import numpy
 from .Site import Site
 from .observationMetadataUtils import haversine
+from .fieldOfView import FieldOfView
 
 class ObservationMetaData(object):
     """Observation Metadata
@@ -11,12 +12,16 @@ class ObservationMetaData(object):
 
     **Parameters**
 
-        * circ_bounds : dict (optional)
-          a dictionary with the keys 'ra', 'dec', and 'radius' measured, in
-          degrees
-        * box_bounds : dict (optional)
-          a dictionary with the keys 'ra_min', 'ra_max', 'dec_min', 'dec_max',
-          measured in degrees
+        * boundType characterizes the shape of the field of view.  Current options
+          are 'square', 'box, and 'circle'
+        * boundLength is the characteristic length scale of the field of view.
+          If boundType is 'square', this will be half the length of each side of
+          the square.
+          If boundType is 'box', boundLength must be a numpy array.  The first argument is
+          half the width of the RA side fo the box.  The second argument is half the
+          Dec side of the box.
+          If boundType is 'circle,' this will be the radius of the circle.
+          The bound will be centered on the point (unrefractedRA, unrefractedDec)
         * mjd : float (optional)
           The MJD of the observation
         * epoch : float (optional)
@@ -36,56 +41,33 @@ class ObservationMetaData(object):
           This is used by the Astrometry mixins in sims_coordUtils
 
     **Examples**::
-        >>> box_bounds = dict(ra_min=0.0, ra_max=10.0, dec_min=10.0, dec_max=20.0)
-        >>> data = ObservationMetaData(box_bounds=box_bounds)
+        >>> if you want box_bounds = dict(ra_min=0.0, ra_max=10.0, dec_min=10.0, dec_max=20.0)
+        >>> data = ObservationMetaData(boundType='square', unrefractedRA=5.0, unrefractedDec=15.0,
+                    boundLength=5.0)
 
     """
             
-    def __init__(self, circ_bounds=None, box_bounds=None, 
+    def __init__(self, boundType=None, boundLength=None,
                  mjd=None, unrefractedRA=None, unrefractedDec=None, rotSkyPos=0.0,
                  bandpassName='r', phoSimMetadata=None, site=None, m5=None):
-
-        if circ_bounds is not None and box_bounds is not None:
-            raise ValueError("Passing both circ_bounds and box_bounds")
             
-        self.circ_bounds = circ_bounds
-        self.box_bounds = box_bounds
+        self.bounds = None
         self.mjd = mjd
         self.bandpass = bandpassName
         self.unrefractedRA = unrefractedRA
         self.unrefractedDec = unrefractedDec
         self.rotSkyPos = rotSkyPos
-       
-        if box_bounds is not None:
-            #if unrefracted[RA,Dec] is outside of box, set them to the center of the box
-            if self.unrefractedRA is None or \
-               self.unrefractedDec is None or \
-               self.unrefractedRA > box_bounds['ra_max'] or \
-               self.unrefractedRA < box_bounds['ra_min'] or \
-               self.unrefractedDec < box_bounds['dec_min'] or \
-               self.unrefractedDec > box_bounds['dec_max']:
-                   
-                self.unrefractedRA = 0.5*(box_bounds['ra_max']+box_bounds['ra_min'])
-                self.unrefractedDec = 0.5*(box_bounds['dec_max']+box_bounds['dec_min'])    
-                
-        if circ_bounds is not None:
-            #if unfrefracted[RA,Dec] is outside fo the circle, default to the center
-            #of the circle (recall that the bounds are all set in degrees)
-            
-            
+
+        if boundType is not None:
             if self.unrefractedRA is None or self.unrefractedDec is None:
-                self.unrefractedRA = circ_bounds['ra']
-                self.unrefractedDec = circ_bounds['dec']
-            else:
-                distance = haversine(numpy.radians(self.unrefractedRA),
-                                     numpy.radians(self.unrefractedDec),
-                                     numpy.radians(circ_bounds['ra']),
-                                     numpy.radians(circ_bounds['dec']))
-                
-                if distance>numpy.radians(circ_bounds['radius']):
-                    self.unrefractedRA = circ_bounds['ra']
-                    self.unrefractedDec = circ_bounds['dec']
-         
+                raise RuntimeError("Cannot build an obs_metadata bound without unrefractedRA,Dec")
+
+            if boundLength is None:
+                raise RuntimeError("Cannot build an obs_metadata bound without a boundLength")
+
+            self.bounds = FieldOfView.getFieldOfView(boundType,self.unrefractedRA,
+                                   self.unrefractedDec,boundLength)
+
         if site is not None:
             self.site=site
         else:

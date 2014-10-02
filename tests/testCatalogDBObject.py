@@ -14,7 +14,7 @@ from lsst.sims.catalogs.generation.utils.testUtils import myTestStars, myTestGal
 def createNonsenseDB():
     """
     Create a database from generic data store in testData/CatalogsGenerationTestData.txt
-    This will be used to make sure that circ_bounds and box_bounds yield the points
+    This will be used to make sure that circle and box spatial bounds yield the points
     they are supposed to.
     """
     if os.path.exists('testCatalogDBObjectNonsenseDB.db'):
@@ -97,15 +97,15 @@ class CatalogDBObjectTestCase(unittest.TestCase):
             os.unlink('testCatalogDBObjectDatabase.db')
 
     def setUp(self):
-        self.obsMd = ObservationMetaData(circ_bounds=dict(ra=210., dec=-60, radius=1.75),
-                                     mjd=52000., bandpassName='r')
+        self.obsMd = ObservationMetaData(unrefractedRA=210.0, unrefractedDec=-60.0, boundLength=1.75,
+                                         boundType='circle', mjd=52000., bandpassName='r')
 
         self.filepath = os.path.join(os.getenv('SIMS_CATALOGS_GENERATION_DIR'), 'tests/testData/CatalogsGenerationTestData.txt')
 
         """
         baselineData will store another copy of the data that should be stored in
         testCatalogDBObjectNonsenseDB.db.  This will give us something to test database queries 
-        against when we ask for all of the objects within a certain box_bounds or circ_bounds.
+        against when we ask for all of the objects within a certain box or circle.
         """
 
         self.dtype=[('id',int),('ra',float),('dec',float),('mag',float)]
@@ -145,7 +145,7 @@ class CatalogDBObjectTestCase(unittest.TestCase):
     
     def testNonsenseCircularConstraints(self):
         """
-        Test that a query performed on a circ_bounds gets all of the objects (and only all
+        Test that a query performed on a circle bound gets all of the objects (and only all
         of the objects) within that circle
         """
         
@@ -154,11 +154,11 @@ class CatalogDBObjectTestCase(unittest.TestCase):
         radius = 20.0
         raCenter = 210.0
         decCenter = -60.0
-        
+
         mycolumns = ['NonsenseId','NonsenseRaJ2000','NonsenseDecJ2000','NonsenseMag']
         
-        circObsMd = ObservationMetaData(circ_bounds=dict(ra=raCenter, dec=decCenter, radius=radius),
-                                     mjd=52000., bandpassName='r')
+        circObsMd = ObservationMetaData(boundType='circle', unrefractedRA=raCenter,unrefractedDec=decCenter,
+                                        boundLength=radius, mjd=52000., bandpassName='r')
        
         circQuery = myNonsense.query_columns(colnames = mycolumns, obs_metadata=circObsMd, chunk_size=100)
         
@@ -176,7 +176,7 @@ class CatalogDBObjectTestCase(unittest.TestCase):
                 
                 dex = numpy.where(self.baselineData['id'] == row[0])[0][0]
                 
-                #store a list of which objects fell within our circ_bounds
+                #store a list of which objects fell within our circle bound
                 goodPoints.append(row[0])
                 
                 self.assertAlmostEqual(numpy.radians(self.baselineData['ra'][dex]),row[1],3)
@@ -186,7 +186,7 @@ class CatalogDBObjectTestCase(unittest.TestCase):
 
         for entry in [xx for xx in self.baselineData if xx[0] not in goodPoints]:
             #make sure that all of the points not returned by the query were, in fact, outside of
-            #the circ_bounds
+            #the circle bound
             distance = haversine(raCenter,decCenter,numpy.radians(entry[1]),numpy.radians(entry[2]))
             self.assertTrue(distance>radius)
     
@@ -220,8 +220,8 @@ class CatalogDBObjectTestCase(unittest.TestCase):
 
     def testNonsenseBoxConstraints(self):
         """
-        Test that a query performed on a box_bounds gets all of the points (and only all of the
-        points) inside that box_bounds.
+        Test that a query performed on a box bound gets all of the points (and only all of the
+        points) inside that box bound.
         """
         
         myNonsense = CatalogDBObject.from_objid('Nonsense')
@@ -231,10 +231,13 @@ class CatalogDBObjectTestCase(unittest.TestCase):
         decMax = 30.0
         decMin = -20.0
         
+        raCenter = 0.5*(raMin+raMax)
+        decCenter = 0.5*(decMin+decMax)
+
         mycolumns = ['NonsenseId','NonsenseRaJ2000','NonsenseDecJ2000','NonsenseMag']
      
-        boxObsMd = ObservationMetaData(box_bounds=dict(ra_min=raMin, ra_max=raMax, 
-                                       dec_min=decMin, dec_max=decMax), mjd=52000.,bandpassName='r')
+        boxObsMd = ObservationMetaData(boundType='box',unrefractedDec=decCenter, unrefractedRA=raCenter,
+                   boundLength=numpy.array([0.5*(raMax-raMin),0.5*(decMax-decMin)]),mjd=52000.,bandpassName='r')
         
         boxQuery = myNonsense.query_columns(obs_metadata=boxObsMd, chunk_size=100, colnames=mycolumns)
        
@@ -263,7 +266,7 @@ class CatalogDBObjectTestCase(unittest.TestCase):
       
         for entry in [xx for xx in self.baselineData if xx[0] not in goodPoints]:
             #make sure that the points not returned by the query are, in fact, outside of the
-            #box_bounds
+            #box bound
             
             switch = (entry[1] > raMax or entry[1] < raMin or entry[2] >decMax or entry[2] < decMin)
             self.assertTrue(switch)
@@ -279,11 +282,13 @@ class CatalogDBObjectTestCase(unittest.TestCase):
         raMax = 150.0
         decMax = 30.0
         decMin = -20.0
-        
+        raCenter=0.5*(raMin+raMax)
+        decCenter=0.5*(decMin+decMax)
+
         mycolumns = ['NonsenseId','NonsenseRaJ2000','NonsenseDecJ2000','NonsenseMag']
      
-        boxObsMd = ObservationMetaData(box_bounds=dict(ra_min=raMin, ra_max=raMax, 
-                                       dec_min=decMin, dec_max=decMax), mjd=52000.,bandpassName='r')
+        boxObsMd = ObservationMetaData(boundType='box',unrefractedRA=raCenter,unrefractedDec=decCenter,
+                    boundLength=numpy.array([0.5*(raMax-raMin),0.5*(decMax-decMin)]), mjd=52000.,bandpassName='r')
         
         boxQuery = myNonsense.query_columns(colnames = mycolumns,
                       obs_metadata=boxObsMd, chunk_size=100, constraint = 'mag > 11.0')
@@ -315,7 +320,7 @@ class CatalogDBObjectTestCase(unittest.TestCase):
         
         for entry in [xx for xx in self.baselineData if xx[0] not in goodPoints]:
             #make sure that the points not returned by the query did, in fact, violate one of the
-            #constraints of the query (either the box_bounds or the magnitude cut off)
+            #constraints of the query (either the box bound or the magnitude cut off)
             switch = (entry[1] > raMax or entry[1] < raMin or entry[2] >decMax or entry[2] < decMin or entry[3]<11.0)
             
             self.assertTrue(switch)
@@ -471,7 +476,7 @@ class fileDBObjectTestCase(unittest.TestCase):
     """
     baselineData will store another copy of the data that should be stored in
     testCatalogDBObjectNonsenseDB.db.  This will give us something to test database queries 
-    against when we ask for all of the objects within a certain box_bounds or circ_bounds.
+    against when we ask for all of the objects within a certain box or circle bound
     """
     dtype=[('id',int),('ra',float),('dec',float),('mag',float)]
     baselineData=numpy.loadtxt(testDataFile, dtype=dtype)
@@ -481,18 +486,18 @@ class fileDBObjectTestCase(unittest.TestCase):
    
     def testNonsenseCircularConstraints(self):
         """
-        Test that a query performed on a circ_bounds gets all of the objects (and only all
+        Test that a query performed on a circle bound gets all of the objects (and only all
         of the objects) within that circle
         """
         
         radius = 20.0
         raCenter = 210.0
         decCenter = -60.0
-        
+
         mycolumns = ['NonsenseId','NonsenseRaJ2000','NonsenseDecJ2000','NonsenseMag']
         
-        circObsMd = ObservationMetaData(circ_bounds=dict(ra=raCenter, dec=decCenter, radius=radius),
-                                     mjd=52000., bandpassName='r')
+        circObsMd = ObservationMetaData(boundType='circle',unrefractedRA=raCenter,unrefractedDec=decCenter,
+                                       boundLength=radius, mjd=52000., bandpassName='r')
        
         circQuery = self.myNonsense.query_columns(colnames = mycolumns, obs_metadata=circObsMd, chunk_size=100)
         
@@ -510,7 +515,7 @@ class fileDBObjectTestCase(unittest.TestCase):
                 
                 dex = numpy.where(self.baselineData['id'] == row[0])[0][0]
                 
-                #store a list of which objects fell within our circ_bounds
+                #store a list of which objects fell within our circle bound
                 goodPoints.append(row[0])
                 
                 self.assertAlmostEqual(numpy.radians(self.baselineData['ra'][dex]),row[1],3)
@@ -520,7 +525,7 @@ class fileDBObjectTestCase(unittest.TestCase):
 
         for entry in [xx for xx in self.baselineData if xx[0] not in goodPoints]:
             #make sure that all of the points not returned by the query were, in fact, outside of
-            #the circ_bounds
+            #the circle bound
             distance = haversine(raCenter,decCenter,numpy.radians(entry[1]),numpy.radians(entry[2]))
             self.assertTrue(distance>radius)
     
@@ -580,19 +585,21 @@ class fileDBObjectTestCase(unittest.TestCase):
         
     def testNonsenseBoxConstraints(self):
         """
-        Test that a query performed on a box_bounds gets all of the points (and only all of the
-        points) inside that box_bounds.
+        Test that a query performed on a box bound gets all of the points (and only all of the
+        points) inside that box bound.
         """
         
         raMin = 50.0
         raMax = 150.0
         decMax = 30.0
         decMin = -20.0
-        
+        raCenter=0.5*(raMin+raMax)
+        decCenter=0.5*(decMin+decMax)
+
         mycolumns = ['NonsenseId','NonsenseRaJ2000','NonsenseDecJ2000','NonsenseMag']
      
-        boxObsMd = ObservationMetaData(box_bounds=dict(ra_min=raMin, ra_max=raMax, 
-                                       dec_min=decMin, dec_max=decMax), mjd=52000.,bandpassName='r')
+        boxObsMd = ObservationMetaData(boundType='box',unrefractedRA=raCenter,unrefractedDec=decCenter,
+                   boundLength=numpy.array([0.5*(raMax-raMin),0.5*(decMax-decMin)]),mjd=52000.,bandpassName='r')
         
         boxQuery = self.myNonsense.query_columns(obs_metadata=boxObsMd, chunk_size=100, colnames=mycolumns)
        
@@ -621,7 +628,7 @@ class fileDBObjectTestCase(unittest.TestCase):
       
         for entry in [xx for xx in self.baselineData if xx[0] not in goodPoints]:
             #make sure that the points not returned by the query are, in fact, outside of the
-            #box_bounds
+            #box bound
             
             switch = (entry[1] > raMax or entry[1] < raMin or entry[2] >decMax or entry[2] < decMin)
             self.assertTrue(switch)
@@ -649,11 +656,13 @@ class fileDBObjectTestCase(unittest.TestCase):
         raMax = 150.0
         decMax = 30.0
         decMin = -20.0
-        
+        raCenter=0.5*(raMin+raMax)
+        decCenter=0.5*(decMin+decMax)
+
         mycolumns = ['NonsenseId','NonsenseRaJ2000','NonsenseDecJ2000','NonsenseMag']
      
-        boxObsMd = ObservationMetaData(box_bounds=dict(ra_min=raMin, ra_max=raMax, 
-                                       dec_min=decMin, dec_max=decMax), mjd=52000.,bandpassName='r')
+        boxObsMd = ObservationMetaData(boundType='box',unrefractedRA=raCenter,unrefractedDec=decCenter,
+                   boundLength=numpy.array([0.5*(raMax-raMin),0.5*(decMax-decMin)]),mjd=52000.,bandpassName='r')
         
         boxQuery = self.myNonsense.query_columns(colnames = mycolumns,
                       obs_metadata=boxObsMd, chunk_size=100, constraint = 'mag > 11.0')
@@ -685,7 +694,7 @@ class fileDBObjectTestCase(unittest.TestCase):
         
         for entry in [xx for xx in self.baselineData if xx[0] not in goodPoints]:
             #make sure that the points not returned by the query did, in fact, violate one of the
-            #constraints of the query (either the box_bounds or the magnitude cut off)
+            #constraints of the query (either the box bound or the magnitude cut off)
             switch = (entry[1] > raMax or entry[1] < raMin or entry[2] >decMax or entry[2] < decMin or entry[3]<11.0)
             
             self.assertTrue(switch)

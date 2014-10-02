@@ -436,13 +436,14 @@ class CatalogDBObject(DBObject):
 
         return query
 
-    def filter(self, query, circ_bounds=None, box_bounds=None):
+    def filter(self, query, bounds):
         """Filter the query by the associated metadata"""
-        on_clause = self.to_SQL(circ_bounds, box_bounds)
-        if on_clause:
+        if bounds is not None:
+            on_clause = bounds.to_SQL(self.raColName,self.decColName)
             query = query.filter(on_clause)
         return query
 
+    """
     def to_SQL(self, circ_bounds=None, box_bounds=None):
         if circ_bounds and box_bounds:
             raise ValueError("circ_bounds and box_bounds should not both be set")
@@ -461,6 +462,7 @@ class CatalogDBObject(DBObject):
                                                        cb['radius'],
                                                        self.raColName, self.decColName)
         return constraint
+    """
 
     @staticmethod
     def mjd_constraint(mjd_bounds, MJDname):
@@ -587,8 +589,7 @@ class CatalogDBObject(DBObject):
         query = self._get_column_query(colnames)
 
         if obs_metadata is not None:
-            query = self.filter(query, circ_bounds=obs_metadata.circ_bounds, 
-                    box_bounds=obs_metadata.box_bounds)
+            query = self.filter(query, obs_metadata.bounds)
 
         if constraint is not None:
             query = query.filter(constraint)
