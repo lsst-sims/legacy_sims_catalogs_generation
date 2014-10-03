@@ -443,27 +443,6 @@ class CatalogDBObject(DBObject):
             query = query.filter(on_clause)
         return query
 
-    """
-    def to_SQL(self, circ_bounds=None, box_bounds=None):
-        if circ_bounds and box_bounds:
-            raise ValueError("circ_bounds and box_bounds should not both be set")
-        constraint = ""
-        if box_bounds:
-            bb = box_bounds
-            constraint = self.box_bound_constraint(bb['ra_min'],
-                                                    bb['ra_max'],
-                                                    bb['dec_min'],
-                                                    bb['dec_max'],
-                                                    self.raColName,
-                                                    self.decColName)
-        if circ_bounds:
-            cb = circ_bounds
-            constraint = self.circle_bound_constraint(cb['ra'], cb['dec'],
-                                                       cb['radius'],
-                                                       self.raColName, self.decColName)
-        return constraint
-    """
-
     @staticmethod
     def mjd_constraint(mjd_bounds, MJDname):
         raise NotImplementedError("This is better done using a constraint at run time")
