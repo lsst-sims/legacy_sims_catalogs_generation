@@ -73,9 +73,7 @@ class ObservationMetaData(object):
         else:
             self.site=Site()
 
-        if m5 is None:
-            self.m5value = {}
-        elif isinstance(m5, dict) or isinstance(m5, float):
+        if m5 is None or isinstance(m5, dict) or isinstance(m5, float):
             self.m5value = m5
         else:
             raise ValueError("You passed neither a dict nor a float as m5 to ObservationMetaData")
