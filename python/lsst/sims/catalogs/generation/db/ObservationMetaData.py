@@ -1,7 +1,7 @@
 import numpy
 from .Site import Site
 from .observationMetadataUtils import haversine
-from .fieldOfView import FieldOfView
+from .spatialBounds import SpatialBounds
 
 class ObservationMetaData(object):
     """Observation Metadata
@@ -65,7 +65,7 @@ class ObservationMetaData(object):
             if boundLength is None:
                 raise RuntimeError("Cannot build an obs_metadata bound without a boundLength")
 
-            self.bounds = FieldOfView.getFieldOfView(boundType,self.unrefractedRA,
+            self.bounds = SpatialBounds.getSpatialBounds(boundType,self.unrefractedRA,
                                    self.unrefractedDec,boundLength)
 
         if site is not None:

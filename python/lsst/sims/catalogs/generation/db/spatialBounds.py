@@ -1,42 +1,62 @@
 """
-This file will define classes that control who ObservationMetaData describes
+This file defines classes that control who ObservationMetaData describes
 its field of view (i.e. is it a box in RA, Dec, is it a circle in RA, Dec....?)
-
-Hopefully it will be extensible so that we can add different shapes in the
-future
 """
+
+#Hopefully it will be extensible so that we can add different shapes in the
+#future
 
 import numpy
 
-class FieldOfViewMetaClass(type):
+class SpatialBoundsMetaClass(type):
     """
-    Meta class for fieldOfView.  The idea is to build a registry of all
+    Meta class for fieldOfView.  This class builds a registry of all
     valid fields of view so that fields can be instantiated from just a
     dictionary key.
-
-    Largely this is being copied from the DBObjectMeta class in
-    dbConnection.py
     """
 
+    #Largely this is being copied from the DBObjectMeta class in
+    #dbConnection.py
+
     def __init__(cls,name,bases,dct):
-        if not hasattr(cls,'foVregistry'):
-            cls.foVregistry={}
+        if not hasattr(cls,'SBregistry'):
+            cls.SBregistry={}
         else:
-            cls.foVregistry[cls.boundType] = cls
+            cls.SBregistry[cls.boundType] = cls
 
-        return super(FieldOfViewMetaClass, cls).__init__(name,bases,dct)
+        return super(SpatialBoundsMetaClass, cls).__init__(name,bases,dct)
 
-class FieldOfView(object):
-    __metaclass__ = FieldOfViewMetaClass
+class SpatialBounds(object):
+    """
+    Classes inheriting from this class define spatial bounds on the objects
+    contained within a catalog.  They also translate those bounds into
+    constraints on SQL queries made by the query_columns method in
+    CatalogDBobject (see dbConnnection.py)
+
+    Daughter classes of this class need the following:
+
+    self.boundType = a string by which the class is identified in the
+    registry of FieldOfView classes
+
+    __init__() that accepts (in this order) RA, Dec, and characteristic
+    length.  Init should then construct the parameters defining the bound
+    however is appropriate (e.g. setting self.RAmax and self.RAmin for a box)
+
+    to_SQL() = a method that accepts RAcolname and DECcolname (strings denoting
+    the names of the database columns containing RA and DEc) and which returns
+    a string that characterizes the bound as an SQL 'WHERE' statement.
+    """
+
+    __metaclass__ = SpatialBoundsMetaClass
 
     @classmethod
-    def getFieldOfView(self,name,*args,**kwargs):
-        if name in self.foVregistry:
-            return self.foVregistry[name](*args,**kwargs)
+    def getSpatialBounds(self,name,*args,**kwargs):
+        if name in self.SBregistry:
+            return self.SBregistry[name](*args,**kwargs)
         else:
-            raise RuntimeError("There is no FieldOfView class keyed to %s" % name)
+            raise RuntimeError("There is no SpatialBounds class keyed to %s" % name)
 
-class CircularFieldOfView(FieldOfView):
+class CircularBounds(SpatialBounds):
 
     boundType = 'circle'
 
@@ -74,7 +94,7 @@ class CircularFieldOfView(FieldOfView):
 
         return bound
 
-class BoxFieldOfView(FieldOfView):
+class BoxBounds(SpatialBounds):
 
     boundType = 'box'
 
@@ -99,7 +119,7 @@ class BoxFieldOfView(FieldOfView):
                 self.DECmin = self.DEC-length[1]
                 self.DECmax = self.DEC+length[1]
             except:
-                raise RuntimeError("BoxFieldOfView is unsure how to handle length %s " % str(length))
+                raise RuntimeError("BoxBounds is unsure how to handle length %s " % str(length))
 
         self.RAmin %= 360.0
         self.RAmax %= 360.0
