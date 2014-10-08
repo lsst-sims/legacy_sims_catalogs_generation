@@ -120,7 +120,7 @@ def makeGalTestDB(filename='testDatabase.db', size=1000, seedVal=None, **kwargs)
                      %f, %f, '%s')'''%\
                    (i, numpy.degrees(ra[i]), numpy.degrees(dec[i]), umag[i], gmag[i], rmag[i], imag[i],
                    zmag[i], ymag[i], mag_norm_agn[i], mag_norm_bulge[i], mag_norm_disk[i], redshift[i], 
-                   a_disk[i], b_disk[i], a_bulge[i], a_bulge[i], paramStr)
+                   a_disk[i], b_disk[i], a_bulge[i], b_bulge[i], paramStr)
         c.execute(qstr)
     c.execute('''CREATE INDEX gal_ra_idx ON galaxies (ra)''')
     c.execute('''CREATE INDEX gal_dec_idx ON galaxies (decl)''')
