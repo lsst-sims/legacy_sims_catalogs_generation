@@ -287,7 +287,7 @@ class DBObject(object):
             vals = [self.columnMap[k] for k in colnames]
         except KeyError:
             for col in colnames:
-                if col in columnMap:
+                if col in self.columnMap:
                     continue
                 else:
                     warnings.warn("%s not in columnMap"%(col))
