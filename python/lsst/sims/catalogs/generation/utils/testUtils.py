@@ -1,6 +1,5 @@
 import sqlite3
 from numpy.random import random, seed
-from sqlite3 import dbapi2 as sqlite
 import numpy, json
 
 from lsst.sims.catalogs.generation.db import CatalogDBObject, ObservationMetaData
