@@ -125,7 +125,7 @@ class DBObjectTestCase(unittest.TestCase):
         dbobj = DBObject(self.dbAddress)
         query = 'SELECT id, log FROM doubleTable'
         dtype = [('id',int),('log',float)]
-        results = dbobj.execute(query, dtype = dtype)
+        results = dbobj.execute_arbitrary(query, dtype = dtype)
 
         self.assertEqual(results.dtype,dtype)
         for xx in results:
@@ -167,7 +167,7 @@ class DBObjectTestCase(unittest.TestCase):
         self.assertEqual(i,99)
         #make sure that we found all the matches whe should have
 
-        results = dbobj.execute(query)
+        results = dbobj.execute_arbitrary(query)
         self.assertEqual(dtype,results.dtype)
         i = 0
         for row in results:
@@ -185,7 +185,7 @@ class DBObjectTestCase(unittest.TestCase):
         """
         dbobj = DBObject(self.dbAddress)
         query = 'SELECT MAX(thrice), MIN(thrice) FROM intTable'
-        results = dbobj.execute(query)
+        results = dbobj.execute_arbitrary(query)
         self.assertEqual(results[0][0],594)
         self.assertEqual(results[0][1],0)
 
