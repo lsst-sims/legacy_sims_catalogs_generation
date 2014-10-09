@@ -65,22 +65,20 @@ class ChunkIterator(object):
     def next(self):
         if self.chunk_size is None and not self.exec_query.closed:
             chunk = self.exec_query.fetchall()
-            if len(chunk) == 0:
-                raise StopIteration
-            if self.arbitrarySQL:
-                return self.dbobj._postprocess_arbitrary_results(chunk)
-            else:
-                return self.dbobj._postprocess_results(chunk)
+            return self._postprocess_results(chunk)
         elif self.chunk_size is not None:
             chunk = self.exec_query.fetchmany(self.chunk_size)
-            if len(chunk) == 0:
-                raise StopIteration
-            if self.arbitrarySQL:
-                return self.dbobj._postprocess_arbitrary_results(chunk)
-            else:
-                return self.dbobj._postprocess_results(chunk)
+            return self._postprocess_results(chunk)
         else:
             raise StopIteration
+
+    def _postprocess_results(self, chunk):
+        if len(chunk)==0:
+            raise StopIteration
+        if self.arbitrarySQL:
+            return self.dbobj._postprocess_arbitrary_results(chunk)
+        else:
+            return self.dbobj._postprocess_results(chunk)
 
 class DBObject(object):
 
