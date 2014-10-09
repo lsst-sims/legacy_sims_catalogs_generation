@@ -2,7 +2,7 @@ import sqlite3
 from numpy.random import random, seed
 import numpy, json
 
-from lsst.sims.catalogs.generation.db import CatalogDBObject, ObservationMetaData
+from lsst.sims.catalogs.generation.db import CatalogDBObject
 
 def getOneChunk(results):
     try:
