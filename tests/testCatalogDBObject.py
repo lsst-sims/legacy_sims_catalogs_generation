@@ -80,27 +80,42 @@ class testCatalogDBObjectTestGalaxies(myTestGals):
     dbAddress = 'sqlite:///testCatalogDBObjectDatabase.db'
 
 class CatalogDBObjectTestCase(unittest.TestCase):
-  
-    #Delete the test database if it exists and start fresh.
-    if os.path.exists('testCatalogDBObjectDatabase.db'):
-        print "deleting database"
-        os.unlink('testCatalogDBObjectDatabase.db')
-    tu.makeStarTestDB(filename='testCatalogDBObjectDatabase.db',size=100000, seedVal=1)
-    tu.makeGalTestDB(filename='testCatalogDBObjectDatabase.db',size=100000, seedVal=1)
-    createNonsenseDB()
-    obsMd = ObservationMetaData(circ_bounds=dict(ra=210., dec=-60, radius=1.75),
+
+    @classmethod
+    def setUpClass(cls):
+        #Delete the test database if it exists and start fresh.
+        if os.path.exists('testCatalogDBObjectDatabase.db'):
+            print "deleting database"
+            os.unlink('testCatalogDBObjectDatabase.db')
+        tu.makeStarTestDB(filename='testCatalogDBObjectDatabase.db',size=100000, seedVal=1)
+        tu.makeGalTestDB(filename='testCatalogDBObjectDatabase.db',size=100000, seedVal=1)
+        createNonsenseDB()
+
+    @classmethod
+    def tearDownClass(cls):
+        if os.path.exists('testCatalogDBObjectDatabase.db'):
+            os.unlink('testCatalogDBObjectDatabase.db')
+
+    def setUp(self):
+        self.obsMd = ObservationMetaData(circ_bounds=dict(ra=210., dec=-60, radius=1.75),
                                      mjd=52000., bandpassName='r')
 
-    filepath = os.path.join(os.getenv('SIMS_CATALOGS_GENERATION_DIR'), 'tests/testData/CatalogsGenerationTestData.txt')
+        self.filepath = os.path.join(os.getenv('SIMS_CATALOGS_GENERATION_DIR'), 'tests/testData/CatalogsGenerationTestData.txt')
 
-    """
-    baselineData will store another copy of the data that should be stored in
-    testCatalogDBObjectNonsenseDB.db.  This will give us something to test database queries 
-    against when we ask for all of the objects within a certain box_bounds or circ_bounds.
-    """
+        """
+        baselineData will store another copy of the data that should be stored in
+        testCatalogDBObjectNonsenseDB.db.  This will give us something to test database queries 
+        against when we ask for all of the objects within a certain box_bounds or circ_bounds.
+        """
 
-    dtype=[('id',int),('ra',float),('dec',float),('mag',float)]
-    baselineData=numpy.loadtxt(filepath, dtype=dtype)
+        self.dtype=[('id',int),('ra',float),('dec',float),('mag',float)]
+        self.baselineData=numpy.loadtxt(self.filepath, dtype=self.dtype)
+
+    def tearDown(self):
+        del self.obsMd
+        del self.filepath
+        del self.dtype
+        del self.baselineData
 
     def testObsMD(self):
         self.assertEqual(self.obsMd.bandpass, 'r')
