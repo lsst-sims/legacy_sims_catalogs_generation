@@ -84,11 +84,6 @@ class ChunkIterator(object):
 
 class DBObject(object):
 
-    #: This is the default address.  Simply change this in the class definition for other
-    #: endpoints.
-    dbAddress = "mssql+pymssql://LSST-2:L$$TUser@fatboy.npl.washington.edu:1433/LSST"
-
-
     def __init__(self, address=None, verbose=False):
         self.verbose=verbose
 
