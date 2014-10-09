@@ -43,7 +43,21 @@ def createDB():
 
         cmd = '''INSERT INTO doubleTable VALUES (%s, %s, %s)''' % (ll,nn,mm)
         c.execute(cmd)
+    conn.commit()
 
+    try:
+        c.execute('''CREATE TABLE junkTable (id int, sqrt float, log float)''')
+        conn.commit()
+    except:
+        raise RuntimeError("Error creating database (double).")
+    for ii in range(200):
+        ll=ii+1
+        nn = numpy.sqrt(float(ll))
+        mm = numpy.log(float(ll))
+
+        cmd = '''INSERT INTO junkTable VALUES (%s, %s, %s)''' % (ll,nn,mm)
+        c.execute(cmd)
+    
     conn.commit()
     conn.close()
 
@@ -64,9 +78,56 @@ class DBObjectTestCase(unittest.TestCase):
         """
         dbobj = DBObject(self.dbAddress)
         names = dbobj.get_table_names()
-        self.assertEqual(len(names),2)
+        self.assertEqual(len(names),3)
         self.assertTrue('doubleTable' in names)
         self.assertTrue('intTable' in names)
+
+    def testReadOnlyFilter(self):
+        """
+        Test that the filters we placed on queries made with execute_aribtrary()
+        work
+        """
+        dbobj = DBObject(self.dbAddress)
+        controlQuery = 'SELECT doubleTable.id, intTable.id, doubleTable.log, intTable.thrice '
+        controlQuery += 'FROM doubleTable, intTable WHERE doubleTable.id = intTable.id'
+        controlResults = dbobj.execute_arbitrary(controlQuery)
+
+        #make sure that execute_arbitrary only accepts strings
+        query = ['a','list']
+        self.assertRaises(RuntimeError,dbobj.execute_arbitrary,query)
+
+        #check that our filter catches different capitalization permutations of the
+        #verboten commands
+        query = 'DROP TABLE junkTable'
+        self.assertRaises(RuntimeError,dbobj.execute_arbitrary,query)
+        self.assertRaises(RuntimeError,dbobj.execute_arbitrary,query.lower())
+        query = 'DELETE FROM junkTable WHERE id=4'
+        self.assertRaises(RuntimeError,dbobj.execute_arbitrary,query)
+        self.assertRaises(RuntimeError,dbobj.execute_arbitrary,query.lower())
+        query = 'UPDATE junkTable SET sqrt=0.0, log=0.0 WHERE id=4'
+        self.assertRaises(RuntimeError,dbobj.execute_arbitrary,query)
+        self.assertRaises(RuntimeError,dbobj.execute_arbitrary,query.lower())
+        query = 'INSERT INTO junkTable VALUES (9999,1.0,1.0)'
+        self.assertRaises(RuntimeError,dbobj.execute_arbitrary,query)
+        self.assertRaises(RuntimeError,dbobj.execute_arbitrary,query.lower())
+
+        query = 'Drop Table junkTable'
+        self.assertRaises(RuntimeError,dbobj.execute_arbitrary,query)
+        query = 'Delete FROM junkTable WHERE id=4'
+        self.assertRaises(RuntimeError,dbobj.execute_arbitrary,query)
+        query = 'Update junkTable SET sqrt=0.0, log=0.0 WHERE id=4'
+        self.assertRaises(RuntimeError,dbobj.execute_arbitrary,query)
+        query = 'Insert INTO junkTable VALUES (9999,1.0,1.0)'
+        self.assertRaises(RuntimeError,dbobj.execute_arbitrary,query)
+
+        query = 'dRoP TaBlE junkTable'
+        self.assertRaises(RuntimeError,dbobj.execute_arbitrary,query)
+        query = 'dElEtE FROM junkTable WHERE id=4'
+        self.assertRaises(RuntimeError,dbobj.execute_arbitrary,query)
+        query = 'uPdAtE junkTable SET sqrt=0.0, log=0.0 WHERE id=4'
+        self.assertRaises(RuntimeError,dbobj.execute_arbitrary,query)
+        query = 'iNsErT INTO junkTable VALUES (9999,1.0,1.0)'
+        self.assertRaises(RuntimeError,dbobj.execute_arbitrary,query)
 
     def testColumnNames(self):
         """
@@ -86,7 +147,7 @@ class DBObjectTestCase(unittest.TestCase):
         self.assertTrue('thrice' in names)
 
         names = dbobj.get_column_names()
-        keys = ['doubleTable','intTable']
+        keys = ['doubleTable','intTable','junkTable']
         for kk in names:
             self.assertTrue(kk in keys)
 
@@ -125,7 +186,7 @@ class DBObjectTestCase(unittest.TestCase):
         """
         Test that passing dtype to a query works
 
-        (also test q query on a single table using .execute() directly
+        (also test q query on a single table using .execute_arbitrary() directly
         """
         dbobj = DBObject(self.dbAddress)
         query = 'SELECT id, log FROM doubleTable'
