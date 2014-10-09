@@ -126,7 +126,7 @@ class CatalogDBObjectTestCase(unittest.TestCase):
         mygals = CatalogDBObject.from_objid('testCatalogDBObjectTestgals')
         result = mystars.query_columns(obs_metadata=self.obsMd)
         tu.writeResult(result, "/dev/null")
-        result = mystars.query_columns(obs_metadata=self.obsMd)
+        result = mygals.query_columns(obs_metadata=self.obsMd)
         tu.writeResult(result, "/dev/null")
 
     def testRealQueryConstraints(self):
