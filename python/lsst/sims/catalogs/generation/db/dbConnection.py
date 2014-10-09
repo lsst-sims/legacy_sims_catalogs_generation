@@ -180,7 +180,7 @@ class DBObject(object):
         if not isinstance(query,str):
             raise RuntimeError("DBObject execute must be called with a string query")
 
-        unacceptableCommands = ["delete","drop table","insert","update"]
+        unacceptableCommands = ["delete","drop","insert","update"]
         for badCommand in unacceptableCommands:
             if query.lower().find(badCommand.lower())>=0:
                 raise RuntimeError("query made to DBObject execute contained %s " % badCommand)
