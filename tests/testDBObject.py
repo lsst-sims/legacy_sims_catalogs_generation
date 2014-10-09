@@ -50,8 +50,13 @@ def createDB():
 
 
 class DBObjectTestCase(unittest.TestCase):
-    createDB()
-    dbAddress = 'sqlite:///testDBObjectDB.db'
+
+    @classmethod
+    def setUpClass(cls):
+        createDB()
+
+    def setUp(self):
+       self.dbAddress = 'sqlite:///testDBObjectDB.db'
 
     def testTableNames(self):
         """
