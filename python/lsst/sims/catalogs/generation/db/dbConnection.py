@@ -190,6 +190,15 @@ class DBObject(object):
         dtype will be the dtype of the output recarray.  If it is None, then
         the code will guess the datatype and assign generic names to the columns
         """
+
+        if not isinstance(query,str):
+            raise RuntimeError("DBObject execute must be called with a string query")
+
+        unacceptableCommands = ["delete","drop table","insert","update"]
+        for badCommand in unacceptableCommands:
+            if query.lower().find(badCommand.lower())>=0:
+                raise RuntimeError("query made to DBObject execute contained %s " % badCommand)
+
         self.dtype = dtype
         retresults = self._postprocess_arbitrary_results(self.session.execute(query).fetchall())
         return retresults
