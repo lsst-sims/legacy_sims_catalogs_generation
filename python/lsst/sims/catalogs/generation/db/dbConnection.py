@@ -333,7 +333,7 @@ class CatalogDBObject(DBObject):
                           "possible.")
 
         #call DBObject's constructor (this will actually connect to the engine)
-        super(CatalogDBObject, self).__init__(address,verbose = verbose)
+        super(CatalogDBObject, self).__init__(address, verbose=verbose)
 
         self._get_table()
 
