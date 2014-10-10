@@ -3,11 +3,13 @@ import math
 import numpy
 import os
 import inspect
+from StringIO import StringIO
 from collections import OrderedDict
 
 from .utils import loadData
 from sqlalchemy.orm import scoped_session, sessionmaker, mapper
 from sqlalchemy.sql import expression
+from sqlalchemy.engine import reflection
 from sqlalchemy import (create_engine, ThreadLocalMetaData, MetaData,
                         Table, Column, BigInteger, event)
 from sqlalchemy import exc as sa_exc
@@ -46,30 +48,170 @@ def declareTrigFunctions(conn,connection_rec,connection_proxy):
 
 class ChunkIterator(object):
     """Iterator for query chunks"""
-    def __init__(self, dbobj, query, chunk_size):
+    def __init__(self, dbobj, query, chunk_size, arbitrarySQL = False):
         self.dbobj = dbobj
         self.exec_query = dbobj.session.execute(query)
         self.chunk_size = chunk_size
-        
+
+        #arbitrarySQL exists in case a CatalogDBObject calls
+        #get_arbitrary_chunk_iterator; in that case, we need to
+        #be able to tell this object to call _postprocess_arbitrary_results,
+        #rather than _postprocess_results
+        self.arbitrarySQL = arbitrarySQL
+
     def __iter__(self):
         return self
 
     def next(self):
         if self.chunk_size is None and not self.exec_query.closed:
             chunk = self.exec_query.fetchall()
-            if len(chunk) == 0:
-                raise StopIteration
-            return self.dbobj._postprocess_results(chunk)
+            return self._postprocess_results(chunk)
         elif self.chunk_size is not None:
             chunk = self.exec_query.fetchmany(self.chunk_size)
-            if len(chunk) == 0:
-                raise StopIteration
-            return self.dbobj._postprocess_results(chunk)
+            return self._postprocess_results(chunk)
         else:
             raise StopIteration
 
+    def _postprocess_results(self, chunk):
+        if len(chunk)==0:
+            raise StopIteration
+        if self.arbitrarySQL:
+            return self.dbobj._postprocess_arbitrary_results(chunk)
+        else:
+            return self.dbobj._postprocess_results(chunk)
 
-class DBObjectMeta(type):
+class DBObject(object):
+
+    def __init__(self, address=None, verbose=False):
+        self.verbose=verbose
+
+        self.dtype = None 
+        #this is a cache for the query, so that any one query does not have to guess dtype multiple times
+
+        if address is not None:
+            self.dbAddress = address
+
+        self._connect_to_engine()
+
+    def _connect_to_engine(self):
+        """create and connect to a database engine"""
+        self.engine = create_engine(self.dbAddress, echo=self.verbose)
+
+        if self.engine.dialect.name == 'sqlite':
+            event.listen(self.engine,'checkout',declareTrigFunctions)
+
+        self.session = scoped_session(sessionmaker(autoflush=True,
+                                                   bind=self.engine))
+        self.metadata = MetaData(bind=self.engine)
+
+    def getDbAddress(self):
+        return self.dbAddress
+
+    def get_table_names(self):
+        """Return a list of the names of the tables in the database"""
+        return [str(xx) for xx in reflection.Inspector.from_engine(self.engine).get_table_names()]
+
+    def get_column_names(self, tableName=None):
+        """
+        Return a list of the names of the columns in the specified table.
+        If no table is specified, return a dict of lists.  The dict will be keyed
+        to the table names.  The lists will be of the column names in that table
+        """
+        tableNameList = self.get_table_names()
+        if tableName is not None:
+            if tableName not in tableNameList:
+                return []
+            else:
+                return [str(xx['name']) for xx in reflection.Inspector.from_engine(self.engine).get_columns(tableName)]
+        else:
+            columnDict = {}
+            for name in tableNameList:
+                columnList = [str(xx['name']) for xx in reflection.Inspector.from_engine(self.engine).get_columns(name)]
+                columnDict[name] = columnList
+            return columnDict
+
+    def _final_pass(self, results):
+        """ Make final modifications to a set of data before returning it to the user
+
+        **Parameters**
+
+            * results : a structured array constructed from the result set from a query
+
+        **Returns**
+
+            * results : a potentially modified structured array.  The default is to do nothing.
+
+        """
+        return results
+
+    def _postprocess_results(self, results):
+        """
+        This wrapper exists so that a ChunkIterator built from a DBObject
+        can have the same API as a ChunkIterator built from a CatalogDBObject
+        """
+        return self._postprocess_arbitrary_results(results)
+
+    def _postprocess_arbitrary_results(self, results):
+
+        if self.dtype is None:
+            """
+            Determine the dtype from the data.
+            Store it in a global variable so we do not have to repeat on every chunk.
+            """
+            dataString = ''
+            for xx in results[0]:
+                if dataString is not '':
+                    dataString+=','
+                dataString += str(xx)
+            names = [str(ww) for ww in results[0].keys()]
+            dataArr = numpy.genfromtxt(StringIO(dataString), dtype=None, names=names, delimiter=',')
+            self.dtype = dataArr.dtype
+        retresults = numpy.rec.fromrecords([tuple(xx) for xx in results],dtype = self.dtype)
+        return self._final_pass(retresults)
+
+    def execute_arbitrary(self, query, dtype = None):
+        """
+        Executes an arbitrary query.  Returns a recarray of the results.
+
+        dtype will be the dtype of the output recarray.  If it is None, then
+        the code will guess the datatype and assign generic names to the columns
+        """
+
+        if not isinstance(query,str):
+            raise RuntimeError("DBObject execute must be called with a string query")
+
+        unacceptableCommands = ["delete","drop","insert","update"]
+        for badCommand in unacceptableCommands:
+            if query.lower().find(badCommand.lower())>=0:
+                raise RuntimeError("query made to DBObject execute contained %s " % badCommand)
+
+        self.dtype = dtype
+        retresults = self._postprocess_arbitrary_results(self.session.execute(query).fetchall())
+        return retresults
+
+    def get_arbitrary_chunk_iterator(self, query, chunk_size = None, dtype =None):
+        """
+        This wrapper exists so that CatalogDBObjects can refer to
+        get_arbitrary_chunk_iterator and DBObjects can refer to
+        get_chunk_iterator
+        """
+        return self.get_chunk_iterator(query, chunk_size = chunk_size, dtype = dtype)
+
+    def get_chunk_iterator(self, query, chunk_size = None, dtype = None):
+        """
+        Take an arbitrary, user-specified query and return a ChunkIterator that
+        executes that query
+
+        dtype will tell the ChunkIterator what datatype to expect for this query.
+        This information gets passed to _postprocess_results.
+
+        If 'None', then _postprocess_results will just guess the datatype
+        and return generic names for the columns.
+        """
+        self.dtype = dtype
+        return ChunkIterator(self, query, chunk_size, arbitrarySQL = True)
+
+class CatalogDBObjectMeta(type):
     """Meta class for registering new objects.
 
     When any new type of object class is created, this registers it
@@ -85,7 +227,7 @@ class DBObjectMeta(type):
                           "Proceed with caution")
         if 'objid' not in dct:
             dct['objid'] = name
-        return super(DBObjectMeta, cls).__new__(cls, name, bases, dct)
+        return super(CatalogDBObjectMeta, cls).__new__(cls, name, bases, dct)
 
     def __init__(cls, name, bases, dct):
         # check if 'registry' is specified.
@@ -117,7 +259,7 @@ class DBObjectMeta(type):
                               'want globally unique id values')
             else:
                 cls.objectTypeIdList.append(cls.objectTypeId)
-        return super(DBObjectMeta, cls).__init__(name, bases, dct)
+        return super(CatalogDBObjectMeta, cls).__init__(name, bases, dct)
 
     def __str__(cls):
         dbObjects = cls.registry.keys()
@@ -127,16 +269,15 @@ class DBObjectMeta(type):
             outstr += "%s\n"%(dbObject)
         outstr += "\n\n"
         outstr += "To query the possible column names do:\n"
-        outstr += "$> DBObject.from_objid([name]).show_mapped_columns()\n"
+        outstr += "$> CatalogDBObject.from_objid([name]).show_mapped_columns()\n"
         outstr += "+++++++++++++++++++++++++++++++++++++++++++++"
         return outstr
 
-
-class DBObject(object):
+class CatalogDBObject(DBObject):
     """Database Object base class
 
     """
-    __metaclass__ = DBObjectMeta
+    __metaclass__ = CatalogDBObjectMeta
     
     epoch = 2000.0
     skipRegistration = False
@@ -154,9 +295,6 @@ class DBObject(object):
     doRunTest = False
     testObservationMetaData = None
 
-    #: This is the default address.  Simply change this in the class definition for other
-    #: endpoints.
-    dbAddress = "mssql+pymssql://LSST-2:L$$TUser@fatboy.npl.washington.edu:1433/LSST"
     #: Mapping of DDL types to python types.  Strings are assumed to be 256 characters
     #: this can be overridden by modifying the dbTypeMap or by making a custom columns
     #: list.
@@ -172,34 +310,31 @@ class DBObject(object):
     @classmethod
     def from_objid(cls, objid, *args, **kwargs):
         """Given a string objid, return an instance of
-        the appropriate DBObject class.
+        the appropriate CatalogDBObject class.
         """
         if objid not in cls.registry:
             raise RuntimeError('Attempting to construct an object that does not exist')
-        cls = cls.registry.get(objid, DBObject)
+        cls = cls.registry.get(objid, CatalogDBObject)
         return cls(*args, **kwargs)
 
     def __init__(self, address=None, verbose=False):
-        self.verbose = verbose
-        if not self.verbose:
+        if not verbose:
             with warnings.catch_warnings():
                 warnings.simplefilter("ignore", category=sa_exc.SAWarning)
         if self.idColKey is None:
             self.idColKey = self.getIdColKey()
         if (self.objid is None) or (self.tableid is None) or (self.idColKey is None):
-            raise ValueError("DBObject must be subclassed, and "
+            raise ValueError("CatalogDBObject must be subclassed, and "
                              "define objid, tableid and idColKey.")
 
-        if (self.objectTypeId is None) and self.verbose:
+        if (self.objectTypeId is None) and verbose:
             warnings.warn("objectTypeId has not "
                           "been set.  Input files for phosim are not "
                           "possible.")
-        if address is None:
-            address = self.getDbAddress()
 
-        self.dbAddress = address
+        #call DBObject's constructor (this will actually connect to the engine)
+        super(CatalogDBObject, self).__init__(address, verbose=verbose)
 
-        self._connect_to_engine()
         self._get_table()
 
         #Need to do this after the table is instantiated so that
@@ -227,9 +362,6 @@ class DBObject(object):
         except ImportError:
             raise ImportError("sims_catalogs_measures not set up.  Cannot get InstanceCatalog from the object.")
 
-    def getDbAddress(self):
-        return self.dbAddress
-
     def getIdColKey(self):
         return self.idColKey
 
@@ -239,17 +371,6 @@ class DBObject(object):
     def _get_table(self):
         self.table = Table(self.tableid, self.metadata,
                            autoload=True)
-
-    def _connect_to_engine(self):
-        """create and connect to a database engine"""
-        self.engine = create_engine(self.dbAddress, echo=self.verbose)
-        
-        if self.engine.dialect.name == 'sqlite':
-            event.listen(self.engine,'checkout',declareTrigFunctions)
-   
-        self.session = scoped_session(sessionmaker(autoflush=True, 
-                                                   bind=self.engine))
-        self.metadata = MetaData(bind=self.engine)
 
     def _make_column_map(self):
         self.columnMap = OrderedDict([(el[0], el[1] if el[1] else el[0])
@@ -402,21 +523,6 @@ class DBObject(object):
         
         return bound
 
-
-    def _final_pass(self, results):
-        """ Make final modifications to a set of data before returning it to the user
-        
-        **Parameters**
-        
-            * results : a structured array constructed from the result set from a query
-
-        **Returns**
-        
-            * results : a potentially modified structured array.  The default is to do nothing.
-        
-        """
-        return results
-
     def _postprocess_results(self, results):
         """Post-process the query results to put them
         in a structured array.
@@ -429,7 +535,6 @@ class DBObject(object):
 
             * _final_pass(retresults) : the result of calling the _final_pass method on a
               structured array constructed from the query data.
-
         """
         if len(results) > 0:
             cols = [str(k) for k in results[0].keys()]
@@ -489,7 +594,7 @@ class DBObject(object):
             query = query.filter(constraint)
         return ChunkIterator(self, query, chunk_size)
 
-class fileDBObject(DBObject):
+class fileDBObject(CatalogDBObject):
     ''' Class to read a file into a database and then query it'''
     #Column names to index.  Specify compound indexes using tuples of column names
     indexCols = []
@@ -508,7 +613,7 @@ class fileDBObject(DBObject):
         """
         self.verbose = verbose
         if(self.objid is None) or (self.idColKey is None):
-            raise ValueError("DBObject must be subclassed, and "
+            raise ValueError("CatalogDBObject must be subclassed, and "
                              "define objid and tableid and idColKey.")
 
         if (self.objectTypeId is None) and self.verbose:
@@ -536,5 +641,5 @@ class fileDBObject(DBObject):
         """Given a string objid, return an instance of
         the appropriate fileDBObject class.
         """
-        cls = cls.registry.get(objid, DBObject)
+        cls = cls.registry.get(objid, CatalogDBObject)
         return cls(*args, **kwargs)
