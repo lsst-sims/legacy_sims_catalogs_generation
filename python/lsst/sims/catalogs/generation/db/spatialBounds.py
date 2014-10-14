@@ -6,7 +6,7 @@ its field of view (i.e. is it a box in RA, Dec, is it a circle in RA, Dec....?)
 #Hopefully it will be extensible so that we can add different shapes in the
 #future
 
-import numpy
+import numpy as np
 
 class SpatialBoundsMetaClass(type):
     """
@@ -18,7 +18,7 @@ class SpatialBoundsMetaClass(type):
     #Largely this is being copied from the DBObjectMeta class in
     #dbConnection.py
 
-    def __init__(cls,name,bases,dct):
+    def __init__(cls, name, bases, dct):
         if not hasattr(cls,'SBregistry'):
             cls.SBregistry={}
         else:
@@ -49,18 +49,48 @@ class SpatialBounds(object):
 
     __metaclass__ = SpatialBoundsMetaClass
 
+    def __init__(self, *args):
+        """
+        Accepts a center point and a characteristic length defining the extent of
+        the bounds
+
+        @param[in] ra is the center RA in degrees
+
+        @param[in] dec is the center Dec in degress
+
+        @param[in] length is either a single characteristic length (in degrees)
+        or a list of characteristic lengths defining the shape of the bound
+        """
+
+        raise NotImplementedError()
+
+    def to_SQL(self, *args):
+        """
+        Accepts the names of the columns referring to RA and Dec in the database.
+        Uses the stored RA, Dec, and length for this object to return an SQL
+        query that only selects the region of RA and Dec desired
+
+        @param[in] RAname a string; the name of the RA column in the database
+
+        @param[in] DECname a string; the name of the Dec column in the database
+
+        @returns a string; an SQL query that only selects the desired region in RA, Dec
+        """
+
+        raise NotImplementedError()
+
     @classmethod
-    def getSpatialBounds(self,name,*args,**kwargs):
+    def getSpatialBounds(self, name, *args, **kwargs):
         if name in self.SBregistry:
-            return self.SBregistry[name](*args,**kwargs)
+            return self.SBregistry[name](*args, **kwargs)
         else:
             raise RuntimeError("There is no SpatialBounds class keyed to %s" % name)
 
-class CircularBounds(SpatialBounds):
+class CircleBounds(SpatialBounds):
 
     boundType = 'circle'
 
-    def __init__(self,ra,dec,radius):
+    def __init__(self, ra, dec, radius):
         self.RA = ra
         self.DEC = dec
         self.radius = radius
@@ -69,9 +99,9 @@ class CircularBounds(SpatialBounds):
 
         if self.DEC != 90.0 and self.DEC != -90.0:
             RAmax = self.RA + \
-            360.0 * numpy.arcsin(numpy.sin(0.5*numpy.radians(self.radius)) / numpy.cos(numpy.radians(self.DEC)))/numpy.pi
+            360.0 * np.arcsin(np.sin(0.5*np.radians(self.radius)) / np.cos(np.radians(self.DEC)))/np.pi
             RAmin = self.RA - \
-            360.0 * numpy.arcsin(numpy.sin(0.5*numpy.radians(self.radius)) / numpy.cos(numpy.radians(self.DEC)))/numpy.pi
+            360.0 * np.arcsin(np.sin(0.5*np.radians(self.radius)) / np.cos(np.radians(self.DEC)))/np.pi
         else:
            #just in case, for some reason, we are looking at the poles
            RAmax = 360.0
@@ -88,9 +118,9 @@ class CircularBounds(SpatialBounds):
         #then use the Haversine function to constrain the angular distance form boresite to be within
         #the desired radius.  See http://en.wikipedia.org/wiki/Haversine_formula
         bound = bound + ("and 2 * ASIN(SQRT( POWER(SIN(0.5*(%s - %s) * PI() / 180.0),2)" % (DECname,self.DEC))
-        bound = bound +("+ COS(%s * PI() / 180.0) * COS(%s * PI() / 180.0) * POWER(SIN(0.5 * (%s - %s) * PI() / 180.0),2)))"
-             % (DECname, self.DEC, RAname, self.RA))
-        bound = bound + (" < %s " % (self.radius*numpy.pi/180.0))
+        bound = bound + ("+ COS(%s * PI() / 180.0) * COS(%s * PI() / 180.0) " % (DECname, self.DEC))
+        bound = bound + ("* POWER(SIN(0.5 * (%s - %s) * PI() / 180.0),2)))" % (RAname, self.RA))
+        bound = bound + (" < %s " % (self.radius*np.pi/180.0))
 
         return bound
 
@@ -98,26 +128,26 @@ class BoxBounds(SpatialBounds):
 
     boundType = 'box'
 
-    def __init__(self,ra,dec,length):
+    def __init__(self, ra, dec, length):
         self.RA = ra
         self.DEC = dec
 
-        if isinstance(length,float):
-            self.RAmin = self.RA-length
-            self.RAmax = self.RA+length
-            self.DECmin = self.DEC-length
-            self.DECmax = self.DEC+length
+        if isinstance(length, float):
+            self.RAmin = self.RA - length
+            self.RAmax = self.RA + length
+            self.DECmin = self.DEC - length
+            self.DECmax = self.DEC + length
         elif len(length)==1:
-            self.RAmin = self.RA-length[0]
-            self.RAmax = self.RA+length[0]
-            self.DECmin = self.DEC-length[0]
-            self.DECmax = self.DEC+length[0]
+            self.RAmin = self.RA - length[0]
+            self.RAmax = self.RA + length[0]
+            self.DECmin = self.DEC - length[0]
+            self.DECmax = self.DEC + length[0]
         else:
             try:
-                self.RAmin = self.RA-length[0]
-                self.RAmax = self.RA+length[0]
-                self.DECmin = self.DEC-length[1]
-                self.DECmax = self.DEC+length[1]
+                self.RAmin = self.RA - length[0]
+                self.RAmax = self.RA + length[0]
+                self.DECmin = self.DEC - length[1]
+                self.DECmax = self.DEC + length[1]
             except:
                 raise RuntimeError("BoxBounds is unsure how to handle length %s " % str(length))
 
