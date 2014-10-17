@@ -97,9 +97,9 @@ def getRotTelPos(azRad, decRad, latRad, rotSkyRad):
 
 def haversine(long1, lat1, long2, lat2):
     #From http://en.wikipedia.org/wiki/Haversine_formula
-    t1 = math.sin(lat2/2.-lat1/2.)**2
-    t2 = math.cos(lat1)*math.cos(lat2)*math.sin(long2/2. - long1/2.)**2
-    return 2*math.asin(math.sqrt(t1 + t2))
+    t1 = numpy.sin(lat2/2.-lat1/2.)**2
+    t2 = numpy.cos(lat1)*numpy.cos(lat2)*numpy.sin(long2/2. - long1/2.)**2
+    return 2*numpy.arcsin(numpy.sqrt(t1 + t2))
 
 def calcObsDefaults(raRad, decRad, altRad, azRad, rotTelRad, mjd, band, longRad, latRad):
     obsMd = {}
