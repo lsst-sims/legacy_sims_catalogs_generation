@@ -8,6 +8,8 @@ its field of view (i.e. is it a box in RA, Dec, is it a circle in RA, Dec....?)
 
 import numpy as np
 
+__all__ = ["SpatialBounds", "CircleBounds", "BoxBounds"]
+
 class SpatialBoundsMetaClass(type):
     """
     Meta class for fieldOfView.  This class builds a registry of all
