@@ -19,7 +19,7 @@ from sqlalchemy import exc as sa_exc
 #TODO: test for cdecimal and use it if it exists.
 import decimal
 
-__all__ = ["DBObject", "CatalogDBObject", "fileDBObject"]
+__all__ = ["ChunkIterator", "DBObject", "CatalogDBObject", "fileDBObject"]
 
 def valueOfPi():
     """
