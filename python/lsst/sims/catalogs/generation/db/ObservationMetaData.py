@@ -3,6 +3,8 @@ from .Site import Site
 from .observationMetadataUtils import haversine
 from .spatialBounds import SpatialBounds
 
+__all__ = ["ObservationMetaData"]
+
 class ObservationMetaData(object):
     """Observation Metadata
     
