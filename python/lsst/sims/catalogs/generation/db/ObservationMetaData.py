@@ -13,12 +13,12 @@ class ObservationMetaData(object):
     **Parameters**
 
         * boundType characterizes the shape of the field of view.  Current options
-          are 'square', 'box, and 'circle'
+          are 'box, and 'circle'
         * boundLength is the characteristic length scale of the field of view.
-          If boundType is 'square', this will be half the length of each side of
-          the square.
-          If boundType is 'box', boundLength must be a numpy array.  The first argument is
-          half the width of the RA side fo the box.  The second argument is half the
+          If boundType is 'box', boundLength can be a float(in which case boundLength is
+          half the length of the side of each box) or boundLength can be a numpy array
+          in which case the first argument is
+          half the width of the RA side of the box and the second argument is half the
           Dec side of the box.
           If boundType is 'circle,' this will be the radius of the circle.
           The bound will be centered on the point (unrefractedRA, unrefractedDec)
@@ -42,7 +42,7 @@ class ObservationMetaData(object):
 
     **Examples**::
         >>> if you want box_bounds = dict(ra_min=0.0, ra_max=10.0, dec_min=10.0, dec_max=20.0)
-        >>> data = ObservationMetaData(boundType='square', unrefractedRA=5.0, unrefractedDec=15.0,
+        >>> data = ObservationMetaData(boundType='box', unrefractedRA=5.0, unrefractedDec=15.0,
                     boundLength=5.0)
 
     """
