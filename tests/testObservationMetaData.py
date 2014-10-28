@@ -138,13 +138,9 @@ class ObservationMetaDataTest(unittest.TestCase):
     def testBounds(self):
         """
         Test if ObservationMetaData correctly assigns the unrefracted[RA,Dec]
-        when circ_bounds or box_bounds are specified
+        when circle and box bounds are specified
         """
-        
-        circ_bounds = dict(ra = 25., dec= 50., radius = 5.)
-        box_bounds = dict(ra_min = 10., ra_max = 20., 
-                          dec_min =-10., dec_max = 10.)
-        
+
         circRA = 25.0
         circDec = 50.0
         radius = 5.0
