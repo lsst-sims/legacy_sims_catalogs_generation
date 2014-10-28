@@ -77,6 +77,9 @@ class DBObjectTestCase(unittest.TestCase):
     def setUp(self):
        self.dbAddress = 'sqlite:///testDBObjectDB.db'
 
+    def tearDown(self):
+        del self.dbAddress
+
     def testTableNames(self):
         """
         Test the method that returns the names of tables in a database
