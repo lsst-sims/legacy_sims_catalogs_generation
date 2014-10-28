@@ -57,7 +57,7 @@ def createDB():
 
         cmd = '''INSERT INTO junkTable VALUES (%s, %s, %s)''' % (ll,nn,mm)
         c.execute(cmd)
-    
+
     conn.commit()
     conn.close()
 
