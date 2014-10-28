@@ -459,29 +459,38 @@ class fileDBObjectTestCase(unittest.TestCase):
     database.
     """
 
-    testDataFile = os.path.join(
-        os.getenv('SIMS_CATALOGS_GENERATION_DIR'), 'tests/testData/CatalogsGenerationTestData.txt')
-    testHeaderFile = os.path.join(
-        os.getenv('SIMS_CATALOGS_GENERATION_DIR'), 'tests/testData/CatalogsGenerationTestDataHeader.txt')
+    def setUp(self):
+        self.testDataFile = os.path.join(
+            os.getenv('SIMS_CATALOGS_GENERATION_DIR'), 'tests/testData/CatalogsGenerationTestData.txt')
+        self.testHeaderFile = os.path.join(
+            os.getenv('SIMS_CATALOGS_GENERATION_DIR'), 'tests/testData/CatalogsGenerationTestDataHeader.txt')
     
-    myNonsense = fileDBObject.from_objid('fileNonsense',testDataFile,
-                   dtype = numpy.dtype([('id',int),('ra',float),('dec',float),('mag',float)]),
-                   skipLines = 0)
-                   #
-                   #note that skipLines defaults to 1 so, if you do not include this, you will
-                   #lose the first line of your input file (which maybe you want to do if that
-                   #is a header)
+        self.myNonsense = fileDBObject.from_objid('fileNonsense',self.testDataFile,
+                       dtype = numpy.dtype([('id',int),('ra',float),('dec',float),('mag',float)]),
+                       skipLines = 0)
+                       #
+                       #note that skipLines defaults to 1 so, if you do not include this, you will
+                       #lose the first line of your input file (which maybe you want to do if that
+                       #is a header)
     
-    myNonsenseHeader = fileDBObject.from_objid('fileNonsense',testHeaderFile)
-    #this time, make fileDBObject learn the dtype from a header
+        self.myNonsenseHeader = fileDBObject.from_objid('fileNonsense',self.testHeaderFile)
+        #this time, make fileDBObject learn the dtype from a header
 
-    """
-    baselineData will store another copy of the data that should be stored in
-    testCatalogDBObjectNonsenseDB.db.  This will give us something to test database queries 
-    against when we ask for all of the objects within a certain box or circle bound
-    """
-    dtype=[('id',int),('ra',float),('dec',float),('mag',float)]
-    baselineData=numpy.loadtxt(testDataFile, dtype=dtype)
+        """
+        baselineData will store another copy of the data that should be stored in
+        testCatalogDBObjectNonsenseDB.db.  This will give us something to test database queries 
+        against when we ask for all of the objects within a certain box or circle bound
+        """
+        self.dtype=[('id',int),('ra',float),('dec',float),('mag',float)]
+        self.baselineData=numpy.loadtxt(self.testDataFile, dtype=self.dtype)
+
+    def tearDown(self):
+        del self.testDataFile
+        del self.testHeaderFile
+        del self.myNonsense
+        del self.myNonsenseHeader
+        del self.dtype
+        del self.baselineData
    
     def testDBaddress(self):
         self.assertEqual(self.myNonsense.dbAddress,'sqlite:///:memory:')
