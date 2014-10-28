@@ -95,6 +95,8 @@ class CatalogDBObjectTestCase(unittest.TestCase):
     def tearDownClass(cls):
         if os.path.exists('testCatalogDBObjectDatabase.db'):
             os.unlink('testCatalogDBObjectDatabase.db')
+        if os.path.exists('testCatalogDBObjectNonsenseDB.db'):
+            os.unlink('testCatalogDBObjectNonsenseDB.db')
 
     def setUp(self):
         self.obsMd = ObservationMetaData(unrefractedRA=210.0, unrefractedDec=-60.0, boundLength=1.75,
