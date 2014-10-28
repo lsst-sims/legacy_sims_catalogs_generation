@@ -69,6 +69,11 @@ class DBObjectTestCase(unittest.TestCase):
     def setUpClass(cls):
         createDB()
 
+    @classmethod
+    def tearDownClass(cls):
+        if os.path.exists('testDBObjectDB.db'):
+            os.unlink('testDBObjectDB.db')
+
     def setUp(self):
        self.dbAddress = 'sqlite:///testDBObjectDB.db'
 
