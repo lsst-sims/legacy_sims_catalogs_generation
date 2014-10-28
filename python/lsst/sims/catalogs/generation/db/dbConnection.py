@@ -443,67 +443,6 @@ class CatalogDBObject(DBObject):
             query = query.filter(on_clause)
         return query
 
-    @staticmethod
-    def mjd_constraint(mjd_bounds, MJDname):
-        raise NotImplementedError("This is better done using a constraint at run time")
-
-    @staticmethod
-    def box_bound_constraint(RAmin, RAmax, DECmin, DECmax,
-                             RAname, DECname):
-        #KSK:  I don't know exactly what we do here.  This is in code, but operating
-        #on a database is it less confusing to work in degrees or radians?
-        #(RAmin, RAmax, DECmin, DECmax) = map(math.radians,
-        #                                     (RAmin, RAmax, DECmin, DECmax))
-
-        #Special case where the whole region is selected
-        if RAmin < 0 and RAmax > 360.:
-            bound = "%s between %f and %f" % (DECname, DECmin, DECmax)
-            return bound
-
-        RAmin %= 360.
-        RAmax %= 360.
-        if RAmin > RAmax:
-            # XXX is this right?  It seems strange.
-            bound = ("%s not between %f and %f and %s between %f and %f"
-                     % (RAname, RAmax, RAmin, 
-                        DECname, DECmin, DECmax))
-        else:
-            bound = ("%s between %f and %f and %s between %f and %f"
-                     % (RAname, RAmin, RAmax, DECname, DECmin, DECmax))
-
-        return bound
-
-    @staticmethod
-    def circle_bound_constraint(RA, DEC, radius,
-                                RAname, DECname):
-        
-        if DEC != 90.0 and DEC != -90.0:
-            RAmax = RA + 360.0 * numpy.arcsin(numpy.sin(0.5*numpy.radians(radius)) / numpy.cos(numpy.radians(DEC)))/numpy.pi
-            RAmin = RA - 360.0 * numpy.arcsin(numpy.sin(0.5*numpy.radians(radius)) / numpy.cos(numpy.radians(DEC)))/numpy.pi
-        else:
-           #just in case, for some reason, we are looking at the poles
-           RAmax = 360.0
-           RAmin = 0.0
-       
-       
-        DECmax = DEC + radius
-        DECmin = DEC - radius
-        
-        #initially demand that all objects are within a box containing the circle 
-        #set from the DEC1=DEC2 and RA1=RA2 limits of the haversine function
-        bound = ("%s between %f and %f and %s between %f and %f "
-                     % (RAname, RAmin, RAmax, DECname, DECmin, DECmax))
-        
-        #then use the Haversine function to constrain the angular distance form boresite to be within
-        #the desired radius.  See http://en.wikipedia.org/wiki/Haversine_formula
-        bound = bound + ("and 2 * ASIN(SQRT( POWER(SIN(0.5*(%s - %s) * PI() / 180.0),2)" % (DECname,DEC))
-        bound = bound +("+ COS(%s * PI() / 180.0) * COS(%s * PI() / 180.0) * POWER(SIN(0.5 * (%s - %s) * PI() / 180.0),2)))"
-             % (DECname, DEC, RAname, RA))
-        bound = bound + (" < %s " % (radius*numpy.pi/180.0))
-        
-        
-        return bound
-
     def _postprocess_results(self, results):
         """Post-process the query results to put them
         in a structured array.
