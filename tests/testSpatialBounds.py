@@ -11,7 +11,7 @@ class SpatialBoundsTest(unittest.TestCase):
         self.assertEqual(myFov.RA,20.0)
         self.assertEqual(myFov.DEC,30.0)
         self.assertEqual(myFov.radius,1.0)
-    
+
     def testSquare(self):
         myFov1 = SpatialBounds.getSpatialBounds('box',20.0,30.0,2.0)
         self.assertEqual(myFov1.RA,20.0)
@@ -29,7 +29,7 @@ class SpatialBoundsTest(unittest.TestCase):
         self.assertEqual(myFov2.RAmin,18.0)
         self.assertEqual(myFov2.DECmax,32.0)
         self.assertEqual(myFov2.DECmin,28.0)
-        
+
         length = (2.0)
         myFov3 = SpatialBounds.getSpatialBounds('box',20.0,30.0,length)
         self.assertEqual(myFov3.RA,20.0)
@@ -52,7 +52,7 @@ class SpatialBoundsTest(unittest.TestCase):
                           'utterNonsense',20.0,30.0,length)
 
     def testRectangle(self):
-    
+
         length = [2.0,3.0]
         myFov2 = SpatialBounds.getSpatialBounds('box',20.0,30.0,length)
         self.assertEqual(myFov2.RA,20.0)
@@ -61,7 +61,7 @@ class SpatialBoundsTest(unittest.TestCase):
         self.assertEqual(myFov2.RAmin,18.0)
         self.assertEqual(myFov2.DECmax,33.0)
         self.assertEqual(myFov2.DECmin,27.0)
-        
+
         length = (2.0,3.0)
         myFov3 = SpatialBounds.getSpatialBounds('box',20.0,30.0,length)
         self.assertEqual(myFov3.RA,20.0)
@@ -82,7 +82,7 @@ class SpatialBoundsTest(unittest.TestCase):
 
         self.assertRaises(RuntimeError,SpatialBounds.getSpatialBounds,
                           'box',20.0,30.0,'moreUtterNonsense')
-            
+
 def suite():
     """Returns a suite containing all the test cases in this module."""
     utilsTests.init()
