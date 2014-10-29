@@ -40,7 +40,7 @@ class myTestGals(CatalogDBObject):
     objid = 'testgals'
     tableid = 'galaxies'
     idColKey = 'id'
-    #Make this implausibly large?  
+    #Make this implausibly large?
     appendint = 1022
     dbAddress = 'sqlite:///testDatabase.db'
     raColName = 'ra'
@@ -74,8 +74,8 @@ def makeGalTestDB(filename='testDatabase.db', size=1000, seedVal=None, **kwargs)
     c = conn.cursor()
     try:
         c.execute('''CREATE TABLE galaxies
-                     (id int, ra real, decl real, umag real, gmag real, rmag real, 
-                     imag real, zmag real, ymag real, 
+                     (id int, ra real, decl real, umag real, gmag real, rmag real,
+                     imag real, zmag real, ymag real,
                      mag_norm_agn real, mag_norm_bulge real, mag_norm_disk real,
                      redshift real, a_disk real, b_disk real, a_bulge real, b_bulge real, varParamStr text)''')
         conn.commit()
@@ -117,11 +117,11 @@ def makeGalTestDB(filename='testDatabase.db', size=1000, seedVal=None, **kwargs)
         amp = random()*5. + 0.2
         varParam = {'varMethodName':'testVar', 'pars':{'period':period, 'amplitude':amp}}
         paramStr = json.dumps(varParam)
-        qstr = '''INSERT INTO galaxies VALUES (%i, %f, %f, %f, 
-                     %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, 
+        qstr = '''INSERT INTO galaxies VALUES (%i, %f, %f, %f,
+                     %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f,
                      %f, %f, '%s')'''%\
                    (i, numpy.degrees(ra[i]), numpy.degrees(dec[i]), umag[i], gmag[i], rmag[i], imag[i],
-                   zmag[i], ymag[i], mag_norm_agn[i], mag_norm_bulge[i], mag_norm_disk[i], redshift[i], 
+                   zmag[i], ymag[i], mag_norm_agn[i], mag_norm_bulge[i], mag_norm_disk[i], redshift[i],
                    a_disk[i], b_disk[i], a_bulge[i], b_bulge[i], paramStr)
         c.execute(qstr)
     c.execute('''CREATE INDEX gal_ra_idx ON galaxies (ra)''')
@@ -133,7 +133,7 @@ class myTestStars(CatalogDBObject):
     objid = 'teststars'
     tableid = 'stars'
     idColKey = 'id'
-    #Make this implausibly large?  
+    #Make this implausibly large?
     appendint = 1023
     dbAddress = 'sqlite:///testDatabase.db'
     raColName = 'ra'
@@ -159,8 +159,8 @@ def makeStarTestDB(filename='testDatabase.db', size=1000, seedVal=None, **kwargs
     c = conn.cursor()
     try:
         c.execute('''CREATE TABLE stars
-                     (id int, ra real, decl real, umag real, gmag real, rmag real, 
-                     imag real, zmag real, ymag real, mag_norm real, 
+                     (id int, ra real, decl real, umag real, gmag real, rmag real,
+                     imag real, zmag real, ymag real, mag_norm real,
                      radialVelocity real, properMotionDec real, properMotionRa real, varParamStr text)''')
         conn.commit()
     except:
@@ -191,7 +191,7 @@ def makeStarTestDB(filename='testDatabase.db', size=1000, seedVal=None, **kwargs
         varParam = {'varMethodName':'testVar', 'pars':{'period':period, 'amplitude':amp}}
         paramStr = json.dumps(varParam)
         qstr = '''INSERT INTO stars VALUES (%i, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, '%s')'''%\
-                  (i, numpy.degrees(ra[i]), numpy.degrees(dec[i]), umag[i], gmag[i], rmag[i], 
+                  (i, numpy.degrees(ra[i]), numpy.degrees(dec[i]), umag[i], gmag[i], rmag[i],
                    imag[i], zmag[i], ymag[i], mag_norm[i], radVel[i], pmRa[i], pmDec[i], paramStr)
         c.execute(qstr)
     c.execute('''CREATE INDEX star_ra_idx ON stars (ra)''')
@@ -227,7 +227,7 @@ def makePhoSimTestDB(filename='PhoSimTestDatabase.db', size=1000, seedVal=32, **
     centerRA, centerDec = altAzToRaDec(alt,az,testSite.longitude,testSite.latitude,mjd)
     rotTel = getRotTelPos(az, centerDec, testSite.latitude, 0.0)
 
-    obsDict = calcObsDefaults(centerRA, centerDec, alt, az, rotTel, mjd, band, 
+    obsDict = calcObsDefaults(centerRA, centerDec, alt, az, rotTel, mjd, band,
                  testSite.longitude, testSite.latitude)
 
     obsDict['Opsim_expmjd'] = mjd
@@ -257,7 +257,7 @@ def makePhoSimTestDB(filename='PhoSimTestDatabase.db', size=1000, seedVal=32, **
         c.execute('''CREATE TABLE galaxy
                   (galtileid int, galid int, dra real, ddec real, ra real, dec real,
                   magnorm_disk real, sedname_disk text, a_d real, b_d real, pa_disk real,
-                  disk_n int, ext_model_d text, av_d real, rv_d real, u_ab real, 
+                  disk_n int, ext_model_d text, av_d real, rv_d real, u_ab real,
                   g_ab real, r_ab real, i_ab real, z_ab real, y_ab real, redshift real)''')
         conn.commit()
     except:
@@ -266,7 +266,7 @@ def makePhoSimTestDB(filename='PhoSimTestDatabase.db', size=1000, seedVal=32, **
     try:
         c.execute('''CREATE TABLE galaxy_agn
                   (galtileid int, galid int, agnra real, agndec real, ra real, dec real,
-                  magnorm_agn real, sedname_agn text, varParamStr text, u_ab real, 
+                  magnorm_agn real, sedname_agn text, varParamStr text, u_ab real,
                   g_ab real, r_ab real, i_ab real, z_ab real, y_ab real, redshift real)''')
     except:
         raise RuntimeError("Error creating galaxy_agn table.")
