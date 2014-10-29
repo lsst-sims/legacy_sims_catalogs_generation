@@ -1,8 +1,11 @@
+import os
 import sqlite3
+from collections import OrderedDict
 from numpy.random import random, seed
 import numpy, json
 
-from lsst.sims.catalogs.generation.db import CatalogDBObject
+from lsst.sims.catalogs.generation.db import CatalogDBObject, ObservationMetaData, altAzToRaDec, \
+                                             calcObsDefaults, getRotTelPos, Site
 
 __all__ = ["getOneChunk", "writeResult", "sampleSphere", "myTestGals",
            "makeGalTestDB", "myTestStars", "makeStarTestDB", "makePhoSimTestDB"]
@@ -273,7 +276,7 @@ def makePhoSimTestDB(filename='PhoSimTestDatabase.db', size=1000, seedVal=32, **
 
     try:
         c.execute('''CREATE TABLE starsALL_forceseek
-                  (simobjid int, ra real, decl real, gal_l real, gal_b real, magNorm real,
+                  (simobjid int, ra real, decl real, magNorm real,
                   mudecl real, mura real, galacticAv real, vrad real, varParamStar text, sedFilename text, parallax real)''')
     except:
         raise RuntimeError("Error creating starsALL_forceseek table.")
@@ -329,12 +332,9 @@ def makePhoSimTestDB(filename='PhoSimTestDatabase.db', size=1000, seedVal=32, **
     thetaStar = numpy.random.sample(size)*2.0*numpy.pi
     raStar = centerRA + rrStar*numpy.cos(thetaStar)
     decStar = centerDec + rrStar*numpy.sin(thetaStar)
-    gal_l, gal_b = AstrometryBase.equatorialToGalactic(raStar, decStar)
 
     raStar = numpy.degrees(raStar)
     decStar = numpy.degrees(decStar)
-    gal_l = numpy.degrees(gal_l)
-    gal_b = numpy.degrees(gal_b)
 
     magnormStar = numpy.random.sample(size)*4.0 + 17.0
     mudecl = numpy.random.sample(size)*0.0001
@@ -377,8 +377,8 @@ def makePhoSimTestDB(filename='PhoSimTestDatabase.db', size=1000, seedVal=32, **
                                                z_ab[i], y_ab[i], redshift[i])
         c.execute(cmd)
 
-        cmd = '''INSERT INTO starsALL_forceseek VALUES (%i, %f, %f, %f, %f, %f, %f, %f, %f, %f, %s, '%s', %f)''' %\
-                  (i, raStar[i], decStar[i], gal_l[i], gal_b[i], magnormStar[i], mudecl[i], mura[i],
+        cmd = '''INSERT INTO starsALL_forceseek VALUES (%i, %f, %f, %f, %f, %f, %f, %f, %s, '%s', %f)''' %\
+                  (i, raStar[i], decStar[i], magnormStar[i], mudecl[i], mura[i],
                   galacticAv[i], vrad[i], 'NULL', star_seds[i%len(star_seds)], parallax[i])
 
         c.execute(cmd)
