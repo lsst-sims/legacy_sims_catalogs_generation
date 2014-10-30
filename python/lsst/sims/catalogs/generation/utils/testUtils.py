@@ -4,6 +4,9 @@ import numpy, json
 
 from lsst.sims.catalogs.generation.db import CatalogDBObject
 
+__all__ = ["getOneChunk", "writeResult", "sampleSphere", "myTestGals",
+           "makeGalTestDB", "myTestStars", "makeStarTestDB"]
+
 def getOneChunk(results):
     try:
         chunk = results.next()
