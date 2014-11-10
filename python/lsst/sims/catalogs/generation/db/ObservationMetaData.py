@@ -60,16 +60,6 @@ class ObservationMetaData(object):
         self.unrefractedDec = unrefractedDec
         self.rotSkyPos = rotSkyPos
 
-        if boundType is not None:
-            if self.unrefractedRA is None or self.unrefractedDec is None:
-                raise RuntimeError("Cannot build an obs_metadata bound without unrefractedRA,Dec")
-
-            if boundLength is None:
-                raise RuntimeError("Cannot build an obs_metadata bound without a boundLength")
-
-            self.bounds = SpatialBounds.getSpatialBounds(boundType,self.unrefractedRA,
-                                   self.unrefractedDec,boundLength)
-
         if site is not None:
             self.site=site
         else:
@@ -89,6 +79,19 @@ class ObservationMetaData(object):
             self.assignPhoSimMetaData(phoSimMetadata)    
         else:
             self.phoSimMetadata = None
+        
+        #this should be done after phoSimMetadata is assigned, just in case
+        #assignPhoSimMetadata overwrites unrefractedRA/Dec
+        if boundType is not None:
+            if self.unrefractedRA is None or self.unrefractedDec is None:
+                raise RuntimeError("Cannot build an obs_metadata bound without unrefractedRA,Dec")
+
+            if boundLength is None:
+                raise RuntimeError("Cannot build an obs_metadata bound without a boundLength")
+
+            self.bounds = SpatialBounds.getSpatialBounds(boundType,self.unrefractedRA,
+                                   self.unrefractedDec,boundLength)
+
         
     def assignPhoSimMetaData(self, metaData):
         """
