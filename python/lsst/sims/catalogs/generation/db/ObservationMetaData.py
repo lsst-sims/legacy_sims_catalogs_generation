@@ -85,9 +85,9 @@ class ObservationMetaData(object):
         #this should be done after phoSimMetadata is assigned, just in case
         #assignPhoSimMetadata overwrites unrefractedRA/Dec
         if self.bounds is None:
-            self.assignBounds()
+            self.buildBounds()
 
-    def assignBounds(self):
+    def buildBounds(self):
         if self.boundType is None:
             return
 
@@ -126,7 +126,7 @@ class ObservationMetaData(object):
         #in case this method was called after __init__ and unrefractedRA/Dec were
         #overwritten by this method
         if self.bounds is not None:
-            self.assignBounds()
+            self.buildBounds()
 
     def m5(self,filterName):
 
