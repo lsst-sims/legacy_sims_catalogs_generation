@@ -89,12 +89,12 @@ class ObservationMetaData(object):
 
     def assignBounds(self):
         if self.boundType is None:
-            raise RuntimeError("ObservationMetaData cannot assign a bounds; it has no boundType")
+            return
 
         if self.boundLength is None:
             raise RuntimeError("ObservationMetadata cannot assign a bounds; it has no boundLength")
 
-        if self.unrefractedRA or self.unrefractedDec is None:
+        if self.unrefractedRA is None or self.unrefractedDec is None:
             raise RuntimeError("ObservationMetadata cannot assign a bounds; it has no unrefractedRA/Dec")
 
         self.bounds = SpatialBounds.getSpatialBounds(self.boundType, self.unrefractedRA, self.unrefractedDec,
@@ -123,7 +123,7 @@ class ObservationMetaData(object):
         if self.phoSimMetadata is not None and 'Opsim_filter' in self.phoSimMetadata:
             self.bandpass = self.phoSimMetadata['Opsim_filter'][0]
 
-        #in case this method was called afte __init__ and unrefractedRA/Dec were
+        #in case this method was called after __init__ and unrefractedRA/Dec were
         #overwritten by this method
         if self.bounds is not None:
             self.assignBounds()
