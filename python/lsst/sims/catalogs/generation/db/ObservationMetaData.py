@@ -7,7 +7,7 @@ __all__ = ["ObservationMetaData"]
 
 class ObservationMetaData(object):
     """Observation Metadata
-    
+
     This class contains any metadata for a query which is associated with
     a particular telescope pointing, including bounds in RA and DEC, and
     the time of the observation.
@@ -48,11 +48,11 @@ class ObservationMetaData(object):
                     boundLength=5.0)
 
     """
-            
+
     def __init__(self, boundType=None, boundLength=None,
                  mjd=None, unrefractedRA=None, unrefractedDec=None, rotSkyPos=0.0,
                  bandpassName='r', phoSimMetadata=None, site=None, m5=None):
-            
+
         self.bounds = None
         self.mjd = mjd
         self.bandpass = bandpassName
@@ -74,12 +74,12 @@ class ObservationMetaData(object):
             self.site=site
         else:
             self.site=Site()
-        
+
         if phoSimMetadata is not None:
-            self.assignPhoSimMetaData(phoSimMetadata)    
+            self.assignPhoSimMetaData(phoSimMetadata)
         else:
             self.phoSimMetadata = None
-        
+
         #this should be done after phoSimMetadata is assigned, just in case
         #assignPhoSimMetadata overwrites unrefractedRA/Dec
         if boundType is not None:
@@ -92,32 +92,32 @@ class ObservationMetaData(object):
             self.bounds = SpatialBounds.getSpatialBounds(boundType,self.unrefractedRA,
                                    self.unrefractedDec,boundLength)
 
-        
+
     def assignPhoSimMetaData(self, metaData):
         """
         Assign the dict metaData to be the associated metadata dict of this object
         """
-        
+
         self.phoSimMetadata = metaData
-        
+
         #overwrite member variables with values from the phoSimMetadata
         if self.phoSimMetadata is not None and 'Opsim_expmjd' in self.phoSimMetadata:
             self.mjd = self.phoSimMetadata['Opsim_expmjd'][0]
-        
+
         if self.phoSimMetadata is not None and 'Unrefracted_RA' in self.phoSimMetadata:
             self.unrefractedRA = self.phoSimMetadata['Unrefracted_RA'][0]
 
         if self.phoSimMetadata is not None and 'Opsim_rotskypos' in self.phoSimMetadata:
             self.rotSkyPos = self.phoSimMetadata['Opsim_rotskypos'][0]
-        
+
         if self.phoSimMetadata is not None and 'Unrefracted_Dec' in self.phoSimMetadata:
             self.unrefractedDec = self.phoSimMetadata['Unrefracted_Dec'][0]
-        
+
         if self.phoSimMetadata is not None and 'Opsim_filter' in self.phoSimMetadata:
             self.bandpass = self.phoSimMetadata['Opsim_filter'][0]
-               
+
     def m5(self,filterName):
-       
+
        if self.m5value is None:
            raise ValueError("m5 is None in ObservationMetaData")
        elif isinstance(self.m5value,dict):
