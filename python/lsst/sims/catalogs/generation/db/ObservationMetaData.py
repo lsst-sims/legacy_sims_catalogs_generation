@@ -41,7 +41,6 @@ class ObservationMetaData(object):
           This is used by the Astrometry mixins in sims_coordUtils
 
     **Examples**::
-        >>> if you want box_bounds = dict(ra_min=0.0, ra_max=10.0, dec_min=10.0, dec_max=20.0)
         >>> data = ObservationMetaData(boundType='box', unrefractedRA=5.0, unrefractedDec=15.0,
                     boundLength=5.0)
 
