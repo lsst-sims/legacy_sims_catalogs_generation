@@ -109,13 +109,15 @@ class ObservationMetaData(object):
             self.mjd = self.phoSimMetadata['Opsim_expmjd'][0]
 
         if self.phoSimMetadata is not None and 'Unrefracted_RA' in self.phoSimMetadata:
-            self.unrefractedRA = self.phoSimMetadata['Unrefracted_RA'][0]
+            #OpSim stores the Unrefracted_RA in radians; we want it in degrees here
+            self.unrefractedRA = numpy.degrees(self.phoSimMetadata['Unrefracted_RA'][0])
 
         if self.phoSimMetadata is not None and 'Opsim_rotskypos' in self.phoSimMetadata:
             self.rotSkyPos = self.phoSimMetadata['Opsim_rotskypos'][0]
 
         if self.phoSimMetadata is not None and 'Unrefracted_Dec' in self.phoSimMetadata:
-            self.unrefractedDec = self.phoSimMetadata['Unrefracted_Dec'][0]
+            #OpSim stores the Unrefracted_Dec in radians; we want it in degrees here
+            self.unrefractedDec = numpy.degrees(self.phoSimMetadata['Unrefracted_Dec'][0])
 
         if self.phoSimMetadata is not None and 'Opsim_filter' in self.phoSimMetadata:
             self.bandpass = self.phoSimMetadata['Opsim_filter'][0]
