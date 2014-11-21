@@ -163,10 +163,10 @@ class DBObject(object):
             dataString = ''
             for xx in results[0]:
                 if dataString is not '':
-                    dataString+=','
+                    dataString+=';'
                 dataString += str(xx)
             names = [str(ww) for ww in results[0].keys()]
-            dataArr = numpy.genfromtxt(StringIO(dataString), dtype=None, names=names, delimiter=',')
+            dataArr = numpy.genfromtxt(StringIO(dataString), dtype=None, names=names, delimiter=';')
             self.dtype = dataArr.dtype
         retresults = numpy.rec.fromrecords([tuple(xx) for xx in results],dtype = self.dtype)
         return self._final_pass(retresults)
@@ -479,7 +479,7 @@ class CatalogDBObject(DBObject):
         return self._final_pass(retresults)
 
     def query_columns(self, colnames=None, chunk_size=None,
-                      obs_metadata=None, constraint=None):
+                      obs_metadata=None, constraint=None, returnRecArray=False):
         """Execute a query
 
         **Parameters**
@@ -513,7 +513,7 @@ class CatalogDBObject(DBObject):
 
         if constraint is not None:
             query = query.filter(constraint)
-        return ChunkIterator(self, query, chunk_size)
+        return ChunkIterator(self, query, chunk_size, arbitrarySQL=returnRecArray)
 
 class fileDBObject(CatalogDBObject):
     ''' Class to read a file into a database and then query it'''
