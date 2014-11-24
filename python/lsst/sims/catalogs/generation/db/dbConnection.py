@@ -497,6 +497,8 @@ class CatalogDBObject(DBObject):
               will add a filter string to the query.
             * constraint : str (optional)
               a string which is interpreted as SQL and used as a predicate on the query
+            * returnRecArray : boolean (optional)
+              if true, results will be formatted and returned as a recarray
 
         **Returns**
 
