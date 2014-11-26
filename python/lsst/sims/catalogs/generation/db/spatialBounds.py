@@ -96,7 +96,7 @@ class CircleBounds(SpatialBounds):
         self.RA = ra
         self.DEC = dec
         self.radius = radius
-        
+
         self.RAdeg = np.degrees(ra)
         self.DECdeg = np.degrees(dec)
         self.radiusdeg = np.degrees(radius)
@@ -137,7 +137,7 @@ class BoxBounds(SpatialBounds):
     def __init__(self, ra, dec, length):
         self.RA = ra
         self.DEC = dec
-        
+
         self.RAdeg = np.degrees(ra)
         self.DECdeg = np.degrees(dec)
 
@@ -158,7 +158,7 @@ class BoxBounds(SpatialBounds):
         self.RAmaxDeg = self.RAdeg + lengthRAdeg
         self.DECminDeg = self.DECdeg - lengthDECdeg
         self.DECmaxDeg = self.DECdeg + lengthDECdeg
-        
+
         self.RAminDeg %= 360.0
         self.RAmaxDeg %= 360.0
 
