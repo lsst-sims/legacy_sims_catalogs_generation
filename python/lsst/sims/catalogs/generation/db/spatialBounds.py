@@ -97,9 +97,9 @@ class CircleBounds(SpatialBounds):
         self.DEC = dec
         self.radius = radius
         
-        self.RAdeg = numpy.degrees(ra)
-        self.DECdeg = numpy.degrees(dec)
-        self.radiusdeg = numpy.degrees(radius)
+        self.RAdeg = np.degrees(ra)
+        self.DECdeg = np.degrees(dec)
+        self.radiusdeg = np.degrees(radius)
 
     def to_SQL(self, RAname, DECname):
 
@@ -138,19 +138,19 @@ class BoxBounds(SpatialBounds):
         self.RA = ra
         self.DEC = dec
         
-        self.RAdeg = numpy.degrees(ra)
-        self.DECdeg = numpy.degrees(dec)
+        self.RAdeg = np.degrees(ra)
+        self.DECdeg = np.degrees(dec)
 
         if isinstance(length, float):
-            lengthRAdeg = numpy.degrees(length)
-            lengthDECdeg = numpy.degrees(length)
+            lengthRAdeg = np.degrees(length)
+            lengthDECdeg = np.degrees(length)
         elif len(length)==1:
-            lengthRAdeg = numpy.degrees(length[0])
-            lengthDECdeg = numpy.degrees(length[0])
+            lengthRAdeg = np.degrees(length[0])
+            lengthDECdeg = np.degrees(length[0])
         else:
             try:
-                lengthRAdeg = numpy.degrees(length[0])
-                lengthDECdeg = numpy.degrees(length[1])
+                lengthRAdeg = np.degrees(length[0])
+                lengthDECdeg = np.degrees(length[1])
             except:
                 raise RuntimeError("BoxBounds is unsure how to handle length %s " % str(length))
 
