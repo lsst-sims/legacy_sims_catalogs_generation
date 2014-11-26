@@ -2,9 +2,9 @@ import math
 import numpy
 from collections import OrderedDict
 
-__all__ = ["equationOfEquinoxes", "calcGmstGast", "calcLmstLast", "raDecToAltAz", 
-           "altAzToRaDec", "calcPa", "getRotSkyPos", "getRotTelPos", "haversine", 
-           "calcObsDefaults", "makeObservationMetadata", "makeObsParamsAzAltTel", 
+__all__ = ["equationOfEquinoxes", "calcGmstGast", "calcLmstLast", "raDecToAltAz",
+           "altAzToRaDec", "calcPa", "getRotSkyPos", "getRotTelPos", "haversine",
+           "calcObsDefaults", "makeObservationMetadata", "makeObsParamsAzAltTel",
            "makeObsParamsAzAltSky", "makeObsParamsRaDecTel", "makeObsParamsRaDecSky",
            "radiansToArcsec","arcsecToRadians"]
 
@@ -65,7 +65,7 @@ def altAzToRaDec(altRad, azRad, longRad, latRad, mjd):
 
 def calcPa(azRad, decRad, latRad):
     """
-    Calculate the Parallactic angle 
+    Calculate the Parallactic angle
     azRad is the azimuth of the object assuming OpSim conventions (radians)
     latRad is the latitude of the observatory (radians)
     decRad is the declination of the object (radians)
@@ -206,12 +206,12 @@ def radiansToArcsec(value):
     """
     Convert an angle in radians to arcseconds
     """
-    
+
     return 3600.0*numpy.degrees(value)
 
 def arcsecToRadians(value):
     """
     Convert an angle in arcseconds to radians
     """
-    
+
     return numpy.radians(value/3600.0)
