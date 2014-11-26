@@ -56,11 +56,11 @@ class SpatialBounds(object):
         Accepts a center point and a characteristic length defining the extent of
         the bounds
 
-        @param[in] ra is the center RA in degrees
+        @param[in] ra is the center RA in radians
 
-        @param[in] dec is the center Dec in degress
+        @param[in] dec is the center Dec in radians
 
-        @param[in] length is either a single characteristic length (in degrees)
+        @param[in] length is either a single characteristic length (in radians)
         or a list of characteristic lengths defining the shape of the bound
         """
 
@@ -96,21 +96,25 @@ class CircleBounds(SpatialBounds):
         self.RA = ra
         self.DEC = dec
         self.radius = radius
+        
+        self.RAdeg = numpy.degrees(ra)
+        self.DECdeg = numpy.degrees(dec)
+        self.radiusdeg = numpy.degrees(radius)
 
     def to_SQL(self, RAname, DECname):
 
-        if self.DEC != 90.0 and self.DEC != -90.0:
-            RAmax = self.RA + \
-            360.0 * np.arcsin(np.sin(0.5*np.radians(self.radius)) / np.cos(np.radians(self.DEC)))/np.pi
-            RAmin = self.RA - \
-            360.0 * np.arcsin(np.sin(0.5*np.radians(self.radius)) / np.cos(np.radians(self.DEC)))/np.pi
+        if self.DECdeg != 90.0 and self.DECdeg != -90.0:
+            RAmax = self.RAdeg + \
+            360.0 * np.arcsin(np.sin(0.5*self.radius) / np.cos(self.DEC))/np.pi
+            RAmin = self.RAdeg - \
+            360.0 * np.arcsin(np.sin(0.5*self.radius) / np.cos(self.DEC))/np.pi
         else:
            #just in case, for some reason, we are looking at the poles
            RAmax = 360.0
            RAmin = 0.0
 
-        DECmax = self.DEC + self.radius
-        DECmin = self.DEC - self.radius
+        DECmax = self.DECdeg + self.radiusdeg
+        DECmin = self.DECdeg - self.radiusdeg
 
         #initially demand that all objects are within a box containing the circle
         #set from the DEC1=DEC2 and RA1=RA2 limits of the haversine function
@@ -119,10 +123,10 @@ class CircleBounds(SpatialBounds):
 
         #then use the Haversine function to constrain the angular distance form boresite to be within
         #the desired radius.  See http://en.wikipedia.org/wiki/Haversine_formula
-        bound = bound + ("and 2 * ASIN(SQRT( POWER(SIN(0.5*(%s - %s) * PI() / 180.0),2)" % (DECname,self.DEC))
-        bound = bound + ("+ COS(%s * PI() / 180.0) * COS(%s * PI() / 180.0) " % (DECname, self.DEC))
-        bound = bound + ("* POWER(SIN(0.5 * (%s - %s) * PI() / 180.0),2)))" % (RAname, self.RA))
-        bound = bound + (" < %s " % (self.radius*np.pi/180.0))
+        bound = bound + ("and 2 * ASIN(SQRT( POWER(SIN(0.5*(%s - %s) * PI() / 180.0),2)" % (DECname,self.DECdeg))
+        bound = bound + ("+ COS(%s * PI() / 180.0) * COS(%s * PI() / 180.0) " % (DECname, self.DECdeg))
+        bound = bound + ("* POWER(SIN(0.5 * (%s - %s) * PI() / 180.0),2)))" % (RAname, self.RAdeg))
+        bound = bound + (" < %s " % self.radius)
 
         return bound
 
@@ -133,28 +137,30 @@ class BoxBounds(SpatialBounds):
     def __init__(self, ra, dec, length):
         self.RA = ra
         self.DEC = dec
+        
+        self.RAdeg = numpy.degrees(ra)
+        self.DECdeg = numpy.degrees(dec)
 
         if isinstance(length, float):
-            self.RAmin = self.RA - length
-            self.RAmax = self.RA + length
-            self.DECmin = self.DEC - length
-            self.DECmax = self.DEC + length
+            lengthRAdeg = numpy.degrees(length)
+            lengthDECdeg = numpy.degrees(length)
         elif len(length)==1:
-            self.RAmin = self.RA - length[0]
-            self.RAmax = self.RA + length[0]
-            self.DECmin = self.DEC - length[0]
-            self.DECmax = self.DEC + length[0]
+            lengthRAdeg = numpy.degrees(length[0])
+            lengthDECdeg = numpy.degrees(length[0])
         else:
             try:
-                self.RAmin = self.RA - length[0]
-                self.RAmax = self.RA + length[0]
-                self.DECmin = self.DEC - length[1]
-                self.DECmax = self.DEC + length[1]
+                lengthRAdeg = numpy.degrees(length[0])
+                lengthDECdeg = numpy.degrees(length[1])
             except:
                 raise RuntimeError("BoxBounds is unsure how to handle length %s " % str(length))
 
-        self.RAmin %= 360.0
-        self.RAmax %= 360.0
+        self.RAminDeg = self.RAdeg - lengthRAdeg
+        self.RAmaxDeg = self.RAdeg + lengthRAdeg
+        self.DECminDeg = self.DECdeg - lengthDECdeg
+        self.DECmaxDeg = self.DECdeg + lengthDECdeg
+        
+        self.RAminDeg %= 360.0
+        self.RAmaxDeg %= 360.0
 
     def to_SQL(self, RAname, DECname):
         #KSK:  I don't know exactly what we do here.  This is in code, but operating
@@ -163,18 +169,18 @@ class BoxBounds(SpatialBounds):
         #                                     (RAmin, RAmax, DECmin, DECmax))
 
         #Special case where the whole region is selected
-        if self.RAmin < 0 and self.RAmax > 360.:
-            bound = "%s between %f and %f" % (DECname, self.DECmin, self.DECmax)
+        if self.RAminDeg < 0 and self.RAmaxDeg > 360.:
+            bound = "%s between %f and %f" % (DECname, self.DECminDeg, self.DECmaxDeg)
             return bound
 
-        if self.RAmin > self.RAmax:
+        if self.RAminDeg > self.RAmaxDeg:
             # XXX is this right?  It seems strange.
             bound = ("%s not between %f and %f and %s between %f and %f"
-                     % (RAname, self.RAmax, self.RAmin,
-                        DECname, self.DECmin, self.DECmax))
+                     % (RAname, self.RAmaxDeg, self.RAminDeg,
+                        DECname, self.DECminDeg, self.DECmaxDeg))
         else:
             bound = ("%s between %f and %f and %s between %f and %f"
-                     % (RAname, self.RAmin, self.RAmax, DECname, self.DECmin, self.DECmax))
+                     % (RAname, self.RAminDeg, self.RAmaxDeg, DECname, self.DECminDeg, self.DECmaxDeg))
 
         return bound
 
