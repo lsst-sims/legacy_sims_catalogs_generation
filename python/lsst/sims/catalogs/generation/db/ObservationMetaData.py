@@ -54,20 +54,31 @@ class ObservationMetaData(object):
         self.boundType = boundType
         self.mjd = mjd
         self.bandpass = bandpassName
-        self.unrefractedRA = numpy.radians(unrefractedRA)
-        self.unrefractedDec = numpy.radians(unrefractedDec)
         self.rotSkyPos = rotSkyPos
         
-        if isinstance(boundLength, float):
-            self.boundLength = numpy.radians(boundLength)
+        if unrefractedRA is not None:
+            self.unrefractedRA = numpy.radians(unrefractedRA)
         else:
-            try:
-                self.boundLength = []
-                for ll in boundLength:
-                    self.boundLength.append(numpy.radians(ll))
-            except:
-                raise RuntimeError("You seem to have passed something that is neither a float nor " +
-                                   "list-like as boundLength to ObservationMetaData")
+            self.unrefractedRA = None
+        
+        if unrefractedDec is not None:
+            self.unrefractedDec = numpy.radians(unrefractedDec)
+        else:
+            self.unrefractedDec = None
+        
+        if boundLength is not None:
+            if isinstance(boundLength, float):
+                self.boundLength = numpy.radians(boundLength)
+            else:
+                try:
+                    self.boundLength = []
+                    for ll in boundLength:
+                        self.boundLength.append(numpy.radians(ll))
+                except:
+                    raise RuntimeError("You seem to have passed something that is neither a float nor " +
+                                       "list-like as boundLength to ObservationMetaData")
+        else:
+            self.boundLength = None
 
         if site is not None:
             self.site=site
