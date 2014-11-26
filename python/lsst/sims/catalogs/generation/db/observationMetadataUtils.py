@@ -5,7 +5,8 @@ from collections import OrderedDict
 __all__ = ["equationOfEquinoxes", "calcGmstGast", "calcLmstLast", "raDecToAltAz", 
            "altAzToRaDec", "calcPa", "getRotSkyPos", "getRotTelPos", "haversine", 
            "calcObsDefaults", "makeObservationMetadata", "makeObsParamsAzAltTel", 
-           "makeObsParamsAzAltSky", "makeObsParamsRaDecTel", "makeObsParamsRaDecSky"]
+           "makeObsParamsAzAltSky", "makeObsParamsRaDecTel", "makeObsParamsRaDecSky",
+           "radiansToArcsec","arcsecToRadians"]
 
 def equationOfEquinoxes(d):
     l = 280.47 + 0.98565*d
@@ -200,3 +201,17 @@ def makeObsParamsRaDecSky(raRad, decRad, mjd, band, rotSkyRad=math.pi, longRad=-
     altRad, azRad = raDecToAltAz(raRad, decRad, longRad, latRad, mjd)
     rotTelRad = getRotTelPos(azRad, decRad, latRad, rotSkyRad)
     return makeObsParamsRaDecTel(raRad, decRad, mjd, band, rotTelRad=rotTelRad, longRad=longRad, latRad=latRad, **kwargs)
+
+def radiansToArcsec(value):
+    """
+    Convert an angle in radians to arcseconds
+    """
+    
+    return 3600.0*numpy.degrees(value)
+
+def arcsecToRadians(value):
+    """
+    Convert an angle in arcseconds to radians
+    """
+    
+    return numpy.radians(value/3600.0)
