@@ -60,7 +60,7 @@ class ObservationMetaData(object):
         
         if isinstance(boundLength, float):
             self.boundLength = numpy.radians(boundLength)
-        elif:
+        else:
             try:
                 self.boundLength = []
                 for ll in boundLength:
