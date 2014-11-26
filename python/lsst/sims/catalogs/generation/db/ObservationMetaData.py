@@ -52,12 +52,22 @@ class ObservationMetaData(object):
 
         self.bounds = None
         self.boundType = boundType
-        self.boundLength = boundLength
         self.mjd = mjd
         self.bandpass = bandpassName
-        self.unrefractedRA = unrefractedRA
-        self.unrefractedDec = unrefractedDec
+        self.unrefractedRA = numpy.radians(unrefractedRA)
+        self.unrefractedDec = numpy.radians(unrefractedDec)
         self.rotSkyPos = rotSkyPos
+        
+        if isinstance(boundLength, float):
+            self.boundLength = numpy.radians(boundLength)
+        elif:
+            try:
+                self.boundLength = []
+                for ll in boundLength:
+                    self.boundLength.append(numpy.radians(ll))
+            except:
+                raise RuntimeError("You seem to have passed something that is neither a float nor " +
+                                   "list-like as boundLength to ObservationMetaData")
 
         if site is not None:
             self.site=site
@@ -110,14 +120,14 @@ class ObservationMetaData(object):
 
         if self.phoSimMetadata is not None and 'Unrefracted_RA' in self.phoSimMetadata:
             #OpSim stores the Unrefracted_RA in radians; we want it in degrees here
-            self.unrefractedRA = numpy.degrees(self.phoSimMetadata['Unrefracted_RA'][0])
+            self.unrefractedRA = self.phoSimMetadata['Unrefracted_RA'][0]
 
         if self.phoSimMetadata is not None and 'Opsim_rotskypos' in self.phoSimMetadata:
             self.rotSkyPos = self.phoSimMetadata['Opsim_rotskypos'][0]
 
         if self.phoSimMetadata is not None and 'Unrefracted_Dec' in self.phoSimMetadata:
             #OpSim stores the Unrefracted_Dec in radians; we want it in degrees here
-            self.unrefractedDec = numpy.degrees(self.phoSimMetadata['Unrefracted_Dec'][0])
+            self.unrefractedDec = self.phoSimMetadata['Unrefracted_Dec'][0]
 
         if self.phoSimMetadata is not None and 'Opsim_filter' in self.phoSimMetadata:
             self.bandpass = self.phoSimMetadata['Opsim_filter'][0]
