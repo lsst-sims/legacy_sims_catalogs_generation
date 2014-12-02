@@ -2,10 +2,11 @@ import math
 import numpy
 from collections import OrderedDict
 
-__all__ = ["equationOfEquinoxes", "calcGmstGast", "calcLmstLast", "raDecToAltAz", 
-           "altAzToRaDec", "calcPa", "getRotSkyPos", "getRotTelPos", "haversine", 
-           "calcObsDefaults", "makeObservationMetadata", "makeObsParamsAzAltTel", 
-           "makeObsParamsAzAltSky", "makeObsParamsRaDecTel", "makeObsParamsRaDecSky"]
+__all__ = ["equationOfEquinoxes", "calcGmstGast", "calcLmstLast", "raDecToAltAz",
+           "altAzToRaDec", "calcPa", "getRotSkyPos", "getRotTelPos", "haversine",
+           "calcObsDefaults", "makeObservationMetadata", "makeObsParamsAzAltTel",
+           "makeObsParamsAzAltSky", "makeObsParamsRaDecTel", "makeObsParamsRaDecSky",
+           "radiansToArcsec","arcsecToRadians"]
 
 def equationOfEquinoxes(d):
     l = 280.47 + 0.98565*d
@@ -64,7 +65,7 @@ def altAzToRaDec(altRad, azRad, longRad, latRad, mjd):
 
 def calcPa(azRad, decRad, latRad):
     """
-    Calculate the Parallactic angle 
+    Calculate the Parallactic angle
     azRad is the azimuth of the object assuming OpSim conventions (radians)
     latRad is the latitude of the observatory (radians)
     decRad is the declination of the object (radians)
@@ -200,3 +201,17 @@ def makeObsParamsRaDecSky(raRad, decRad, mjd, band, rotSkyRad=math.pi, longRad=-
     altRad, azRad = raDecToAltAz(raRad, decRad, longRad, latRad, mjd)
     rotTelRad = getRotTelPos(azRad, decRad, latRad, rotSkyRad)
     return makeObsParamsRaDecTel(raRad, decRad, mjd, band, rotTelRad=rotTelRad, longRad=longRad, latRad=latRad, **kwargs)
+
+def radiansToArcsec(value):
+    """
+    Convert an angle in radians to arcseconds
+    """
+
+    return 3600.0*numpy.degrees(value)
+
+def arcsecToRadians(value):
+    """
+    Convert an angle in arcseconds to radians
+    """
+
+    return numpy.radians(value/3600.0)
