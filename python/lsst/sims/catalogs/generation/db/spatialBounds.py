@@ -93,7 +93,7 @@ class CircleBounds(SpatialBounds):
     boundType = 'circle'
 
     def __init__(self, ra, dec, radius):
-            """
+        """
         Accepts a center point and a characteristic length defining the extent of
         the bounds
 
