@@ -93,6 +93,17 @@ class CircleBounds(SpatialBounds):
     boundType = 'circle'
 
     def __init__(self, ra, dec, radius):
+            """
+        Accepts a center point and a characteristic length defining the extent of
+        the bounds
+
+        @param[in] ra is the center RA in radians
+
+        @param[in] dec is the center Dec in radians
+
+        @param[in] length is the radius of the field of view in radians
+        """
+
         self.RA = ra
         self.DEC = dec
         self.radius = radius
@@ -135,6 +146,20 @@ class BoxBounds(SpatialBounds):
     boundType = 'box'
 
     def __init__(self, ra, dec, length):
+        """
+        Accepts a center point and a characteristic length defining the extent of
+        the bounds
+
+        @param[in] ra is the center RA in radians
+
+        @param[in] dec is the center Dec in radians
+
+        @param[in] length is either a single characteristic length (in radians)
+        or a list of characteristic lengths defining the shape of the bound.
+        If a single value, the field of view will be a square with side of 2 x length.
+        If it is a list/tuple/array, the field of view will be a rectangle with side lengths
+        RA = 2 x length[0] and Dec = 2 x length[1]
+        """
         self.RA = ra
         self.DEC = dec
 
