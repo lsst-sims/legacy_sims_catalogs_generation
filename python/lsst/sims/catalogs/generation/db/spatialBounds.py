@@ -199,7 +199,6 @@ class BoxBounds(SpatialBounds):
             return bound
 
         if self.RAminDeg > self.RAmaxDeg:
-            # XXX is this right?  It seems strange.
             bound = ("%s not between %f and %f and %s between %f and %f"
                      % (RAname, self.RAmaxDeg, self.RAminDeg,
                         DECname, self.DECminDeg, self.DECmaxDeg))
