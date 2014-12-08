@@ -299,7 +299,7 @@ def makePhoSimTestDB(filename='PhoSimTestDatabase.db', size=1000, seedVal=32, **
                  (galtileid int, galid int, bra real, bdec real, ra real, dec real, magnorm_bulge real,
                  sedname_bulge text, a_b real, b_b real, pa_bulge real, bulge_n int,
                  ext_model_b text, av_b real, rv_b real, u_ab real, g_ab real, r_ab real, i_ab real,
-                 z_ab real, y_ab real, redshift real)''')
+                 z_ab real, y_ab real, redshift real, BulgeHalfLightRadius real)''')
         conn.commit()
     except:
         raise RuntimeError("Error creating galaxy_bulge table.")
@@ -309,7 +309,8 @@ def makePhoSimTestDB(filename='PhoSimTestDatabase.db', size=1000, seedVal=32, **
                   (galtileid int, galid int, dra real, ddec real, ra real, dec real,
                   magnorm_disk real, sedname_disk text, a_d real, b_d real, pa_disk real,
                   disk_n int, ext_model_d text, av_d real, rv_d real, u_ab real,
-                  g_ab real, r_ab real, i_ab real, z_ab real, y_ab real, redshift real)''')
+                  g_ab real, r_ab real, i_ab real, z_ab real, y_ab real, redshift real, 
+                  BulgeHalfLightRadius real, DiskHalfLightRadius real)''')
         conn.commit()
     except:
         raise RuntimeError("Error creating galaxy table.")
@@ -345,10 +346,13 @@ def makePhoSimTestDB(filename='PhoSimTestDatabase.db', size=1000, seedVal=32, **
     magnorm_bulge = numpy.random.sample(size)*4.0 + 17.0
     magnorm_disk = numpy.random.sample(size)*5.0 + 17.0
     magnorm_agn = numpy.random.sample(size)*5.0 + 17.0
-    a_b = numpy.random.sample(size)*0.2
     b_b = numpy.random.sample(size)*0.2
-    a_d = numpy.random.sample(size)*0.5
+    a_b = b_b+numpy.random.sample(size)*0.05
     b_d = numpy.random.sample(size)*0.5
+    a_d = b_d+numpy.random.sample(size)*0.1
+
+    BulgeHalfLightRadius = numpy.random.sample(size)*0.2
+    DiskHalfLightRadius = numpy.random.sample(size)*0.5
 
     pa_bulge = numpy.random.sample(size)*360.0
     pa_disk = numpy.random.sample(size)*360.0
@@ -395,18 +399,19 @@ def makePhoSimTestDB(filename='PhoSimTestDatabase.db', size=1000, seedVal=32, **
     for i in range(size):
 
         cmd = '''INSERT INTO galaxy_bulge VALUES (%i, %i, %f, %f, %f, %f, %f,
-                     '%s', %f, %f, %f, %i, '%s', %f, %f, %f, %f, %f, %f, %f, %f, %f)''' %\
+                     '%s', %f, %f, %f, %i, '%s', %f, %f, %f, %f, %f, %f, %f, %f, %f, %f)''' %\
                      (i, i, bra[i], bdec[i], ra[i], dec[i], magnorm_bulge[i], galaxy_seds[i%len(galaxy_seds)],
                      a_b[i], b_b[i], pa_bulge[i], 4, 'CCM', av_b[i], rv_b[i], u_ab[i], g_ab[i],
-                     r_ab[i], i_ab[i], z_ab[i], y_ab[i], redshift[i])
+                     r_ab[i], i_ab[i], z_ab[i], y_ab[i], redshift[i], BulgeHalfLightRadius[i])
         c.execute(cmd)
 
         cmd = '''INSERT INTO galaxy VALUES (%i, %i, %f, %f, %f, %f, %f,
-                     '%s', %f, %f, %f, %i, '%s', %f, %f, %f, %f, %f, %f, %f, %f, %f)''' %\
+                     '%s', %f, %f, %f, %i, '%s', %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f)''' %\
                      (i, i, dra[i], ddec[i], ra[i], dec[i], magnorm_disk[i],
                      galaxy_seds[i%len(galaxy_seds)], a_d[i], b_d[i], pa_disk[i], 1, 'CCM',
                      av_d[i], rv_d[i], u_ab[i], g_ab[i],
-                     r_ab[i], i_ab[i], z_ab[i], y_ab[i], redshift[i])
+                     r_ab[i], i_ab[i], z_ab[i], y_ab[i], redshift[i],
+                     BulgeHalfLightRadius[i], DiskHalfLightRadius[i])
         c.execute(cmd)
 
         varParam = {'varMethodName':'applyAgn',
