@@ -250,7 +250,7 @@ def makeStarTestDB(filename='testDatabase.db', size=1000, seedVal=None,
     conn.commit()
     conn.close()
 
-def makePhoSimTestDB(filename='PhoSimTestDatabase.db', size=1000, seedVal=32, **kwargs):
+def makePhoSimTestDB(filename='PhoSimTestDatabase.db', size=1000, seedVal=32, radius=0.1, **kwargs):
     """
     Make a test database to storing cartoon information for the test phoSim input
     catalog to use.
@@ -282,7 +282,6 @@ def makePhoSimTestDB(filename='PhoSimTestDatabase.db', size=1000, seedVal=32, **
                  testSite.longitude, testSite.latitude)
 
     obsDict['Opsim_expmjd'] = mjd
-    radius = 0.1
     phoSimMetadata = OrderedDict([
                       (k, (obsDict[k],numpy.dtype(type(obsDict[k])))) for k in obsDict])
 
