@@ -258,6 +258,19 @@ def makePhoSimTestDB(filename='PhoSimTestDatabase.db', size=1000, seedVal=32, ra
 
     The method will return an ObservationMetaData object guaranteed to encompass the
     objects in this database.
+    
+    @param [in] filename is a string indicating the name of the DB file to be created
+    
+    @param [in] size is the number of objects int he database
+    
+    @param [in] seedVal is the seed passed to the random number generator
+    
+    @param [in] radius is the radius (in degrees) of the field of view to be returned
+    
+    @param [in] displacedRA/Dec are numpy arrays that indicate where (in relation to the center
+    of the field of view) objects should be placed.  These coordinates are in degrees.  Specifying
+    either of these paramters will overwrite size.  If you only specify one of these parameters, the other
+    will be set randomly.  These parameters are optional.
     """
 
     if os.path.exists(filename):
