@@ -250,7 +250,8 @@ def makeStarTestDB(filename='testDatabase.db', size=1000, seedVal=None,
     conn.commit()
     conn.close()
 
-def makePhoSimTestDB(filename='PhoSimTestDatabase.db', size=1000, seedVal=32, radius=0.1, **kwargs):
+def makePhoSimTestDB(filename='PhoSimTestDatabase.db', size=1000, seedVal=32, radius=0.1,
+                     displacedRA=None, displacedDec=None, **kwargs):
     """
     Make a test database to storing cartoon information for the test phoSim input
     catalog to use.
@@ -268,7 +269,16 @@ def makePhoSimTestDB(filename='PhoSimTestDatabase.db', size=1000, seedVal=32, ra
     star_seds = ['km20_5750.fits_g40_5790','m2.0Full.dat','bergeron_6500_85.dat_6700']
 
     numpy.random.seed(seedVal)
-
+    
+    if displacedRA is not None and displacedDec is not None:
+        if len(displacedRA) != len(displacedDec):
+            raise RuntimeError("WARNING in makePhoSimTestDB displacedRA and displacedDec have different lengths")
+    
+    if displacedRA is not None:
+        size = len(displacedRA)
+    elif displacedDec is not None:
+        size = len(displacedDec)
+    
     #create the ObservationMetaData object
     mjd = 52000.0
     alt = numpy.pi/2.0
@@ -330,10 +340,20 @@ def makePhoSimTestDB(filename='PhoSimTestDatabase.db', size=1000, seedVal=32, ra
         raise RuntimeError("Error creating starsALL_forceseek table.")
 
     #Now generate the data to be stored in the tables.
+
     rr = numpy.random.sample(size)*numpy.radians(radius)
     theta = numpy.random.sample(size)*2.0*numpy.pi
-    ra = numpy.degrees(centerRA + rr*numpy.cos(theta))
-    dec = numpy.degrees(centerDec + rr*numpy.sin(theta))
+    
+    if displacedRA is None:
+        ra = numpy.degrees(centerRA + rr*numpy.cos(theta))
+    else:
+        ra = numpy.degrees(centerRA) + displacedRA
+    
+    
+    if displacedDec is None:
+        dec = numpy.degrees(centerDec + rr*numpy.sin(theta))
+    else:
+        dec = numpy.degrees(centerDec) + displacedDec
 
     bra = numpy.radians(ra+numpy.random.sample(size)*0.01*radius)
     bdec = numpy.radians(dec+numpy.random.sample(size)*0.01*radius)
@@ -381,8 +401,16 @@ def makePhoSimTestDB(filename='PhoSimTestDatabase.db', size=1000, seedVal=32, ra
 
     rrStar = numpy.random.sample(size)*numpy.radians(radius)
     thetaStar = numpy.random.sample(size)*2.0*numpy.pi
-    raStar = centerRA + rrStar*numpy.cos(thetaStar)
-    decStar = centerDec + rrStar*numpy.sin(thetaStar)
+    
+    if displacedRA is None:
+        raStar = centerRA + rrStar*numpy.cos(thetaStar)
+    else:
+        raStar = centerRA + numpy.radians(displacedRA)
+    
+    if displacedDec is None:
+        decStar = centerDec + rrStar*numpy.sin(thetaStar)
+    else:
+        decStar = centerDec + numpy.radians(displacedDec)
 
     raStar = numpy.degrees(raStar)
     decStar = numpy.degrees(decStar)
