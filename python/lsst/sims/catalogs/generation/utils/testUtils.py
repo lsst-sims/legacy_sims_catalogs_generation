@@ -49,7 +49,7 @@ def sampleFocus(size, raCenter, decCenter, radius):
     theta = numpy.random.sample(size)
     rc = numpy.radians(raCenter)
     dc = numpy.radians(decCenter)
-    rr = numpy.radians(radius)
+    rr = numpy.radians(radius)*numpy.random.sample(size)
     ra = numpy.empty(size)
     dec = numpy.empty(size)
     for i, th in enumerate(theta):
@@ -119,7 +119,7 @@ def makeGalTestDB(filename='testDatabase.db', size=1000, seedVal=None,
         rc = numpy.radians(raCenter)
         dc = numpy.radians(decCenter)
         rr = numpy.radians(radius)
-        ra, dec = sampleFocus(rc, dc, radius)
+        ra, dec = sampleFocus(size, rc, dc, radius)
     #Typical colors for main sequece stars
     umg = 1.5
     gmr = 0.65
@@ -217,7 +217,7 @@ def makeStarTestDB(filename='testDatabase.db', size=1000, seedVal=None,
         rc = numpy.radians(raCenter)
         dc = numpy.radians(decCenter)
         rr = numpy.radians(radius)
-        ra, dec = sampleFocus(rc, dc, radius)
+        ra, dec = sampleFocus(size, rc, dc, radius)
     
     #Typical colors
     umg = 1.5
