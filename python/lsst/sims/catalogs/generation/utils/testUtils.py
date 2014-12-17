@@ -38,6 +38,25 @@ def sampleSphere(size, ramin = 0., dra = 2.*numpy.pi):
     dec = numpy.arccos(z) - numpy.pi/2.
     return ra, dec
 
+def sampleFocus(size, raCenter, decCenter, radius):
+    """
+    Sample points in a focused field of view
+    @param [in] raCenter is the RA at the center of the field of view in radians
+    @param [in] decCenter is the Dec at the center of the field of view in radians
+    @param [in] radius is the radius of the field of view in radians
+    @param [out] returns numpy arrays of ra and decs in radians
+    """
+    theta = numpy.random.sample(size)
+    rc = numpy.radians(raCenter)
+    dc = numpy.radians(decCenter)
+    rr = numpy.radians(radius)
+    ra = numpy.empty(size)
+    dec = numpy.empty(size)
+    for i, th in enumerate(theta):
+        ra[i] = rc + rr*numpy.cos(th)
+        dec[i] = dc + rr*numpy.sin(th)
+
+    return ra, dec      
 
 class myTestGals(CatalogDBObject):
     objid = 'testgals'
@@ -67,11 +86,18 @@ class myTestGals(CatalogDBObject):
                ('a_bulge', None),
                ('b_bulge', None),]
 
-def makeGalTestDB(filename='testDatabase.db', size=1000, seedVal=None, **kwargs):
+def makeGalTestDB(filename='testDatabase.db', size=1000, seedVal=None,
+    raCenter=None, decCenter=None, radius=None, **kwargs):
     """
     Make a test database to serve information to the myTestGals object
     @param size: Number of rows in the database
     @param seedVal: Random seed to use
+
+    @param raCenter,decCenter: the center of the field of view in degrees (optional)
+    @param radius: the radius of the field of view in degrees (optional)
+    
+    These last optional parameters exist in the event that you want to make sure
+    that the objects are clustered around the bore site for a unit test
     """
     conn = sqlite3.connect(filename)
     c = conn.cursor()
@@ -86,7 +112,14 @@ def makeGalTestDB(filename='testDatabase.db', size=1000, seedVal=None, **kwargs)
         raise RuntimeError("Error creating database.")
     if seedVal:
         seed(seedVal)
-    ra, dec = sampleSphere(size, **kwargs)
+   
+    if raCenter is None or decCenter is None or radius is None:
+        ra, dec = sampleSphere(size, **kwargs)
+    else:
+        rc = numpy.radians(raCenter)
+        dc = numpy.radians(decCenter)
+        rr = numpy.radians(radius)
+        ra, dec = sampleFocus(rc, dc, radius)
     #Typical colors for main sequece stars
     umg = 1.5
     gmr = 0.65
@@ -152,11 +185,18 @@ class myTestStars(CatalogDBObject):
                ('ymag', None),
                ('magNorm', 'mag_norm', float)]
 
-def makeStarTestDB(filename='testDatabase.db', size=1000, seedVal=None, **kwargs):
+def makeStarTestDB(filename='testDatabase.db', size=1000, seedVal=None,
+    raCenter=None, decCenter=None, radius=None, **kwargs):
     """
     Make a test database to serve information to the myTestStars object
     @param size: Number of rows in the database
     @param seedVal: Random seed to use
+    
+    @param raCenter,decCenter: the center of the field of view in degrees (optional)
+    @param radius: the radius of the field of view in degrees (optional)
+    
+    These last optional parameters exist in the event that you want to make sure
+    that the objects are clustered around the bore site for a unit test
     """
     conn = sqlite3.connect(filename)
     c = conn.cursor()
@@ -170,7 +210,15 @@ def makeStarTestDB(filename='testDatabase.db', size=1000, seedVal=None, **kwargs
         raise RuntimeError("Error creating database.")
     if seedVal:
         seed(seedVal)
-    ra, dec = sampleSphere(size, **kwargs)
+    
+    if raCenter is None or decCenter is None or radius is None:
+        ra, dec = sampleSphere(size, **kwargs)
+    else:
+        rc = numpy.radians(raCenter)
+        dc = numpy.radians(decCenter)
+        rr = numpy.radians(radius)
+        ra, dec = sampleFocus(rc, dc, radius)
+    
     #Typical colors
     umg = 1.5
     gmr = 0.65
