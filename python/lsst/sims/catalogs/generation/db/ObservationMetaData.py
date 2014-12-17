@@ -54,7 +54,11 @@ class ObservationMetaData(object):
         self.boundType = boundType
         self.mjd = mjd
         self.bandpass = bandpassName
-        self.rotSkyPos = rotSkyPos
+        
+        if rotSkyPos is not None:
+            self.rotSkyPos = numpy.radians(rotSkyPos)
+        else:
+            self.rotSkyPos = None
 
         if unrefractedRA is not None:
             self.unrefractedRA = numpy.radians(unrefractedRA)

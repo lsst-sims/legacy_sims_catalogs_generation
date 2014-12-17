@@ -91,7 +91,7 @@ class ObservationMetaDataTest(unittest.TestCase):
         mjd = 5120.0
         RA = 1.5
         Dec = -1.1
-        rotSkyPos = -0.2
+        rotSkyPos = -10.0
 
         testObsMD = ObservationMetaData(mjd=mjd, unrefractedRA=RA,
             unrefractedDec=Dec, rotSkyPos=rotSkyPos, bandpassName = 'z')
@@ -99,7 +99,7 @@ class ObservationMetaDataTest(unittest.TestCase):
         self.assertAlmostEqual(testObsMD.mjd,5120.0,10)
         self.assertAlmostEqual(numpy.degrees(testObsMD.unrefractedRA),1.5,10)
         self.assertAlmostEqual(numpy.degrees(testObsMD.unrefractedDec),-1.1,10)
-        self.assertAlmostEqual(testObsMD.rotSkyPos,-0.2,10)
+        self.assertAlmostEqual(numpy.degrees(testObsMD.rotSkyPos),-10.0,10)
         self.assertEqual(testObsMD.bandpass,'z')
 
         phosimMD = OrderedDict([('Unrefracted_RA', (-2.0,float)),
