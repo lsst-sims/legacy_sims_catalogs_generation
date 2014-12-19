@@ -16,8 +16,10 @@ class ObservationMetaData(object):
 
         * unrefracted[RA,Dec] float
           The coordinates of the pointing (in degrees)
+
         * boundType characterizes the shape of the field of view.  Current options
           are 'box, and 'circle'
+
         * boundLength is the characteristic length scale of the field of view in degrees.
           If boundType is 'box', boundLength can be a float(in which case boundLength is
           half the length of the side of each box) or boundLength can be a numpy array
@@ -26,16 +28,21 @@ class ObservationMetaData(object):
           Dec side of the box.
           If boundType is 'circle,' this will be the radius of the circle.
           The bound will be centered on the point (unrefractedRA, unrefractedDec)
+
         * mjd : float (optional)
           The MJD of the observation
+
         * bandpassName : float (optional)
-          The canonical name of the bandpass for this observation..
+          The canonical name of the bandpass for this observation.
+
         * phoSimMetadata : dict (optional)
           a dictionary containing metadata used by PhoSim
+
         * m5: float (optional) or dict (optional)
           the m5 value for either all bands (if a float), or for each band
           in the dict.  This is accessed by the rest of the code through the
           m5(filterName) method.
+
         * rotSkyPos float (optional)
           The orientation of the telescope (see PhoSim documentation) in degrees.
           This is used by the Astrometry mixins in sims_coordUtils
@@ -54,7 +61,11 @@ class ObservationMetaData(object):
         self.boundType = boundType
         self.mjd = mjd
         self.bandpass = bandpassName
-        self.rotSkyPos = rotSkyPos
+
+        if rotSkyPos is not None:
+            self.rotSkyPos = numpy.radians(rotSkyPos)
+        else:
+            self.rotSkyPos = None
 
         if unrefractedRA is not None:
             self.unrefractedRA = numpy.radians(unrefractedRA)
