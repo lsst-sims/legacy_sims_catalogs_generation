@@ -415,6 +415,9 @@ class CatalogDBObjectTestCase(unittest.TestCase):
 
         colsShouldBe = [('id',None,int),('raJ2000','ra*%f'%(numpy.pi/180.)),
                         ('decJ2000','decl*%f'%(numpy.pi/180.)),
+                        ('parallax', 'parallax*%e'%(numpy.pi/(648000000.0))),
+                        ('properMotionRa', 'properMotionRa*%e'%(numpy.pi/180.)),
+                        ('properMotionDec', 'properMotionDec*%e'%(numpy.pi/180.)),
                         ('umag',None),('gmag',None),('rmag',None),('imag',None),
                         ('zmag',None),('ymag',None),
                         ('magNorm','mag_norm',float)]
