@@ -178,6 +178,8 @@ class myTestStars(CatalogDBObject):
                ('raJ2000', 'ra*%f'%(numpy.pi/180.)),
                ('decJ2000', 'decl*%f'%(numpy.pi/180.)),
                ('parallax', 'parallax*%e'%(numpy.pi/(648000000.0))),
+               ('properMotionRa', 'properMotionRa*%e'%(numpy.pi/180.)),
+               ('properMotionDec', 'properMotionDec*%e'%(numpy.pi/180.)),
                ('umag', None),
                ('gmag', None),
                ('rmag', None),
