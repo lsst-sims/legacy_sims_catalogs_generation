@@ -177,9 +177,9 @@ class myTestStars(CatalogDBObject):
     columns = [('id', None, int),
                ('raJ2000', 'ra*%f'%(numpy.pi/180.)),
                ('decJ2000', 'decl*%f'%(numpy.pi/180.)),
-               ('parallax', 'parallax*%e'%(numpy.pi/(648000000.0))),
-               ('properMotionRa', 'properMotionRa*%e'%(numpy.pi/180.)),
-               ('properMotionDec', 'properMotionDec*%e'%(numpy.pi/180.)),
+               ('parallax', 'parallax*%.15f'%(numpy.pi/(648000000.0))),
+               ('properMotionRa', 'properMotionRa*%.15f'%(numpy.pi/180)),
+               ('properMotionDec', 'properMotionDec*%.15f'%(numpy.pi/180.)),
                ('umag', None),
                ('gmag', None),
                ('rmag', None),
@@ -246,7 +246,7 @@ def makeStarTestDB(filename='testDatabase.db', size=1000, seedVal=None,
         amp = random()*5. + 0.2
         varParam = {'varMethodName':'testVar', 'pars':{'period':period, 'amplitude':amp}}
         paramStr = json.dumps(varParam)
-        qstr = '''INSERT INTO stars VALUES (%i, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, '%s')'''%\
+        qstr = '''INSERT INTO stars VALUES (%i, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %.15f, %.15f, %.15f, '%s')'''%\
                   (i, numpy.degrees(ra[i]), numpy.degrees(dec[i]), umag[i], gmag[i], rmag[i],
                    imag[i], zmag[i], ymag[i], mag_norm[i], radVel[i], pmRa[i], pmDec[i], parallax[i],
                    paramStr)
