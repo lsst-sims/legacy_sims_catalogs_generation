@@ -204,7 +204,7 @@ def makeStarTestDB(filename='testDatabase.db', size=1000, seedVal=None,
         c.execute('''CREATE TABLE stars
                      (id int, ra real, decl real, umag real, gmag real, rmag real,
                      imag real, zmag real, ymag real, mag_norm real,
-                     radialVelocity real, properMotionDec real, properMotionRa real, parallax real,
+                     radialVelocity real, properMotionDec real, properMotionRa real, px_millisec real,
                      varParamStr text)''')
         conn.commit()
     except:
