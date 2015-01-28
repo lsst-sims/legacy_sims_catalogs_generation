@@ -168,6 +168,10 @@ class DBObject(object):
             names = [str(ww) for ww in results[0].keys()]
             dataArr = numpy.genfromtxt(StringIO(dataString), dtype=None, names=names, delimiter=',')
             self.dtype = dataArr.dtype
+
+        if len(results) == 0:
+            return numpy.recarray((0,), dtype = self.dtype)
+
         retresults = numpy.rec.fromrecords([tuple(xx) for xx in results],dtype = self.dtype)
         return self._final_pass(retresults)
 
