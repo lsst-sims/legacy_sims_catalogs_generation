@@ -250,25 +250,48 @@ def makeStarTestDB(filename='testDatabase.db', size=1000, seedVal=None,
     conn.commit()
     conn.close()
 
-def makePhoSimTestDB(filename='PhoSimTestDatabase.db', size=1000, seedVal=32, **kwargs):
+def makePhoSimTestDB(filename='PhoSimTestDatabase.db', size=1000, seedVal=32, radius=0.1,
+                     displacedRA=None, displacedDec=None, **kwargs):
     """
     Make a test database to storing cartoon information for the test phoSim input
     catalog to use.
 
     The method will return an ObservationMetaData object guaranteed to encompass the
     objects in this database.
+    
+    @param [in] filename is a string indicating the name of the DB file to be created
+    
+    @param [in] size is the number of objects int he database
+    
+    @param [in] seedVal is the seed passed to the random number generator
+    
+    @param [in] radius is the radius (in degrees) of the field of view to be returned
+    
+    @param [in] displacedRA/Dec are numpy arrays that indicate where (in relation to the center
+    of the field of view) objects should be placed.  These coordinates are in degrees.  Specifying
+    either of these paramters will overwrite size.  If you only specify one of these parameters, the other
+    will be set randomly.  These parameters are optional.
     """
 
     if os.path.exists(filename):
         os.unlink(filename)
 
     #just an example of some valid SED file names
-    galaxy_seds = ['Const.80E07.02z.spec','Inst.80E07.002Z.spec','Burst.19E07.0005Z.spec']
+    galaxy_seds = ['Const.80E07.02Z.spec','Inst.80E07.002Z.spec','Burst.19E07.0005Z.spec']
     agn_sed = 'agn.spec'
     star_seds = ['km20_5750.fits_g40_5790','m2.0Full.dat','bergeron_6500_85.dat_6700']
 
     numpy.random.seed(seedVal)
-
+    
+    if displacedRA is not None and displacedDec is not None:
+        if len(displacedRA) != len(displacedDec):
+            raise RuntimeError("WARNING in makePhoSimTestDB displacedRA and displacedDec have different lengths")
+    
+    if displacedRA is not None:
+        size = len(displacedRA)
+    elif displacedDec is not None:
+        size = len(displacedDec)
+    
     #create the ObservationMetaData object
     mjd = 52000.0
     alt = numpy.pi/2.0
@@ -282,7 +305,6 @@ def makePhoSimTestDB(filename='PhoSimTestDatabase.db', size=1000, seedVal=32, **
                  testSite.longitude, testSite.latitude)
 
     obsDict['Opsim_expmjd'] = mjd
-    radius = 0.1
     phoSimMetadata = OrderedDict([
                       (k, (obsDict[k],numpy.dtype(type(obsDict[k])))) for k in obsDict])
 
@@ -299,7 +321,7 @@ def makePhoSimTestDB(filename='PhoSimTestDatabase.db', size=1000, seedVal=32, **
                  (galtileid int, galid int, bra real, bdec real, ra real, dec real, magnorm_bulge real,
                  sedname_bulge text, a_b real, b_b real, pa_bulge real, bulge_n int,
                  ext_model_b text, av_b real, rv_b real, u_ab real, g_ab real, r_ab real, i_ab real,
-                 z_ab real, y_ab real, redshift real)''')
+                 z_ab real, y_ab real, redshift real, BulgeHalfLightRadius real)''')
         conn.commit()
     except:
         raise RuntimeError("Error creating galaxy_bulge table.")
@@ -309,7 +331,8 @@ def makePhoSimTestDB(filename='PhoSimTestDatabase.db', size=1000, seedVal=32, **
                   (galtileid int, galid int, dra real, ddec real, ra real, dec real,
                   magnorm_disk real, sedname_disk text, a_d real, b_d real, pa_disk real,
                   disk_n int, ext_model_d text, av_d real, rv_d real, u_ab real,
-                  g_ab real, r_ab real, i_ab real, z_ab real, y_ab real, redshift real)''')
+                  g_ab real, r_ab real, i_ab real, z_ab real, y_ab real, redshift real, 
+                  BulgeHalfLightRadius real, DiskHalfLightRadius real)''')
         conn.commit()
     except:
         raise RuntimeError("Error creating galaxy table.")
@@ -330,10 +353,20 @@ def makePhoSimTestDB(filename='PhoSimTestDatabase.db', size=1000, seedVal=32, **
         raise RuntimeError("Error creating starsALL_forceseek table.")
 
     #Now generate the data to be stored in the tables.
+
     rr = numpy.random.sample(size)*numpy.radians(radius)
     theta = numpy.random.sample(size)*2.0*numpy.pi
-    ra = numpy.degrees(centerRA + rr*numpy.cos(theta))
-    dec = numpy.degrees(centerDec + rr*numpy.sin(theta))
+    
+    if displacedRA is None:
+        ra = numpy.degrees(centerRA + rr*numpy.cos(theta))
+    else:
+        ra = numpy.degrees(centerRA) + displacedRA
+    
+    
+    if displacedDec is None:
+        dec = numpy.degrees(centerDec + rr*numpy.sin(theta))
+    else:
+        dec = numpy.degrees(centerDec) + displacedDec
 
     bra = numpy.radians(ra+numpy.random.sample(size)*0.01*radius)
     bdec = numpy.radians(dec+numpy.random.sample(size)*0.01*radius)
@@ -345,10 +378,13 @@ def makePhoSimTestDB(filename='PhoSimTestDatabase.db', size=1000, seedVal=32, **
     magnorm_bulge = numpy.random.sample(size)*4.0 + 17.0
     magnorm_disk = numpy.random.sample(size)*5.0 + 17.0
     magnorm_agn = numpy.random.sample(size)*5.0 + 17.0
-    a_b = numpy.random.sample(size)*0.2
     b_b = numpy.random.sample(size)*0.2
-    a_d = numpy.random.sample(size)*0.5
+    a_b = b_b+numpy.random.sample(size)*0.05
     b_d = numpy.random.sample(size)*0.5
+    a_d = b_d+numpy.random.sample(size)*0.1
+
+    BulgeHalfLightRadius = numpy.random.sample(size)*0.2
+    DiskHalfLightRadius = numpy.random.sample(size)*0.5
 
     pa_bulge = numpy.random.sample(size)*360.0
     pa_disk = numpy.random.sample(size)*360.0
@@ -378,8 +414,16 @@ def makePhoSimTestDB(filename='PhoSimTestDatabase.db', size=1000, seedVal=32, **
 
     rrStar = numpy.random.sample(size)*numpy.radians(radius)
     thetaStar = numpy.random.sample(size)*2.0*numpy.pi
-    raStar = centerRA + rrStar*numpy.cos(thetaStar)
-    decStar = centerDec + rrStar*numpy.sin(thetaStar)
+    
+    if displacedRA is None:
+        raStar = centerRA + rrStar*numpy.cos(thetaStar)
+    else:
+        raStar = centerRA + numpy.radians(displacedRA)
+    
+    if displacedDec is None:
+        decStar = centerDec + rrStar*numpy.sin(thetaStar)
+    else:
+        decStar = centerDec + numpy.radians(displacedDec)
 
     raStar = numpy.degrees(raStar)
     decStar = numpy.degrees(decStar)
@@ -395,18 +439,19 @@ def makePhoSimTestDB(filename='PhoSimTestDatabase.db', size=1000, seedVal=32, **
     for i in range(size):
 
         cmd = '''INSERT INTO galaxy_bulge VALUES (%i, %i, %f, %f, %f, %f, %f,
-                     '%s', %f, %f, %f, %i, '%s', %f, %f, %f, %f, %f, %f, %f, %f, %f)''' %\
+                     '%s', %f, %f, %f, %i, '%s', %f, %f, %f, %f, %f, %f, %f, %f, %f, %f)''' %\
                      (i, i, bra[i], bdec[i], ra[i], dec[i], magnorm_bulge[i], galaxy_seds[i%len(galaxy_seds)],
                      a_b[i], b_b[i], pa_bulge[i], 4, 'CCM', av_b[i], rv_b[i], u_ab[i], g_ab[i],
-                     r_ab[i], i_ab[i], z_ab[i], y_ab[i], redshift[i])
+                     r_ab[i], i_ab[i], z_ab[i], y_ab[i], redshift[i], BulgeHalfLightRadius[i])
         c.execute(cmd)
 
         cmd = '''INSERT INTO galaxy VALUES (%i, %i, %f, %f, %f, %f, %f,
-                     '%s', %f, %f, %f, %i, '%s', %f, %f, %f, %f, %f, %f, %f, %f, %f)''' %\
+                     '%s', %f, %f, %f, %i, '%s', %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f)''' %\
                      (i, i, dra[i], ddec[i], ra[i], dec[i], magnorm_disk[i],
                      galaxy_seds[i%len(galaxy_seds)], a_d[i], b_d[i], pa_disk[i], 1, 'CCM',
                      av_d[i], rv_d[i], u_ab[i], g_ab[i],
-                     r_ab[i], i_ab[i], z_ab[i], y_ab[i], redshift[i])
+                     r_ab[i], i_ab[i], z_ab[i], y_ab[i], redshift[i],
+                     BulgeHalfLightRadius[i], DiskHalfLightRadius[i])
         c.execute(cmd)
 
         varParam = {'varMethodName':'applyAgn',
