@@ -334,14 +334,19 @@ def makePhoSimTestDB(filename='PhoSimTestDatabase.db', size=1000, seedVal=32, ra
 
     try:
         c.execute('''CREATE TABLE galaxy
-                  (galtileid int, galid int, dra real, ddec real, ra real, dec real,
-                  magnorm_disk real, sedname_disk text, a_d real, b_d real, pa_disk real,
-                  disk_n int, ext_model_d text, av_d real, rv_d real, u_ab real,
-                  g_ab real, r_ab real, i_ab real, z_ab real, y_ab real, redshift real, 
-                  BulgeHalfLightRadius real, DiskHalfLightRadius real,
-                  agnra real, agndec real, magnorm_agn real, sedname_agn text, varParamStr text,
-                  bra real, bdec real, magnorm_bulge real, sedname_bulge text, bulge_n int,
-                  a_b real, b_b real, ext_model_b text, av_b real, rv_b real, pa_bulge real)''')
+                     (galtileid int, galid int, ra real, dec real,
+                      bra real, bdec real, dra real, ddec real,
+                      agnra real, agndec real,
+                      magnorm_bulge, magnorm_disk, magnorm_agn,
+                      sedname_bulge text, sedname_disk text, sedname_agn text,
+                      a_b real, b_b real, pa_bulge real, bulge_n int,
+                      a_d real, b_d real, pa_disk real, disk_n int,
+                      ext_model_b text, av_b real, rv_b real,
+                      ext_model_d text, av_d real, rv_d real,
+                      u_ab real, g_ab real, r_ab real, i_ab real,
+                      z_ab real, y_ab real,
+                      redshift real, BulgeHalfLightRadius real, DiskHalfLightRadius real)''')
+
         conn.commit()
     except:
         raise RuntimeError("Error creating galaxy table.")
@@ -452,6 +457,25 @@ def makePhoSimTestDB(filename='PhoSimTestDatabase.db', size=1000, seedVal=32, ra
                      (i, i, bra[i], bdec[i], ra[i], dec[i], magnorm_bulge[i], galaxy_seds[i%len(galaxy_seds)],
                      a_b[i], b_b[i], pa_bulge[i], 4, 'CCM', av_b[i], rv_b[i], u_ab[i], g_ab[i],
                      r_ab[i], i_ab[i], z_ab[i], y_ab[i], redshift[i], BulgeHalfLightRadius[i])
+        c.execute(cmd)
+
+        cmd = '''INSERT INTO galaxy VALUES (%i, %i, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f,
+                                            '%s', '%s', '%s',
+                                            %f, %f, %f, %i,
+                                            %f, %f, %f, %i,
+                                            '%s', %f, %f,
+                                            '%s', %f, %f,
+                                            %f, %f, %f, %f, %f, %f,
+                                            %f, %f, %f)''' %\
+                     (i, i, ra[i], dec[i], bra[i], bdec[i], dra[i], ddec[i], agnra[i], agndec[i],
+                     magnorm_bulge[i], magnorm_disk[i], magnorm_agn[i],
+                     galaxy_seds[(i+1)%len(galaxy_seds)], galaxy_seds[i%len(galaxy_seds)], agn_sed,
+                     a_b[i], b_b[i], pa_bulge[i], 4,
+                     a_d[i], b_d[i], pa_disk[i], 1,
+                     'CCM', av_b[i], rv_b[i],
+                     'CCM', av_d[i], rv_d[i],
+                     u_ab[i], g_ab[i], r_ab[i], i_ab[i], z_ab[i], y_ab[i], redshift[i],
+                     BulgeHalfLightRadius[i], DiskHalfLightRadius[i])
         c.execute(cmd)
 
         varParam = {'varMethodName':'applyAgn',
