@@ -177,6 +177,9 @@ class myTestStars(CatalogDBObject):
     columns = [('id', None, int),
                ('raJ2000', 'ra*%f'%(numpy.pi/180.)),
                ('decJ2000', 'decl*%f'%(numpy.pi/180.)),
+               ('parallax', 'parallax*%.15f'%(numpy.pi/(648000000.0))),
+               ('properMotionRa', 'properMotionRa*%.15f'%(numpy.pi/180)),
+               ('properMotionDec', 'properMotionDec*%.15f'%(numpy.pi/180.)),
                ('umag', None),
                ('gmag', None),
                ('rmag', None),
@@ -204,7 +207,8 @@ def makeStarTestDB(filename='testDatabase.db', size=1000, seedVal=None,
         c.execute('''CREATE TABLE stars
                      (id int, ra real, decl real, umag real, gmag real, rmag real,
                      imag real, zmag real, ymag real, mag_norm real,
-                     radialVelocity real, properMotionDec real, properMotionRa real, varParamStr text)''')
+                     radialVelocity real, properMotionDec real, properMotionRa real, parallax real,
+                     varParamStr text)''')
         conn.commit()
     except:
         raise RuntimeError("Error creating database.")
@@ -236,14 +240,16 @@ def makeStarTestDB(filename='testDatabase.db', size=1000, seedVal=None,
     radVel = random(size)*50. - 25.
     pmRa = random(size)*4./(1000*3600.) # deg/yr
     pmDec = random(size)*4./(1000*3600.) # deg/yr
+    parallax = random(size)*1.0 #milliarcseconds per year
     for i in xrange(size):
         period = random()*490. + 10.
         amp = random()*5. + 0.2
         varParam = {'varMethodName':'testVar', 'pars':{'period':period, 'amplitude':amp}}
         paramStr = json.dumps(varParam)
-        qstr = '''INSERT INTO stars VALUES (%i, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, '%s')'''%\
+        qstr = '''INSERT INTO stars VALUES (%i, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %.15f, %.15f, %.15f, '%s')'''%\
                   (i, numpy.degrees(ra[i]), numpy.degrees(dec[i]), umag[i], gmag[i], rmag[i],
-                   imag[i], zmag[i], ymag[i], mag_norm[i], radVel[i], pmRa[i], pmDec[i], paramStr)
+                   imag[i], zmag[i], ymag[i], mag_norm[i], radVel[i], pmRa[i], pmDec[i], parallax[i],
+                   paramStr)
         c.execute(qstr)
     c.execute('''CREATE INDEX star_ra_idx ON stars (ra)''')
     c.execute('''CREATE INDEX star_dec_idx ON stars (decl)''')
