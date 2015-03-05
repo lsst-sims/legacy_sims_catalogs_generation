@@ -1,7 +1,6 @@
 import numpy
-from .Site import Site
-from .observationMetadataUtils import haversine
 from .spatialBounds import SpatialBounds
+from lsst.sims.utils import haversine, Site
 
 __all__ = ["ObservationMetaData"]
 

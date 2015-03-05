@@ -3,7 +3,8 @@ import numpy
 import unittest
 import lsst.utils.tests as utilsTests
 from collections import OrderedDict
-from lsst.sims.catalogs.generation.db import ObservationMetaData, Site
+from lsst.sims.catalogs.generation.db import ObservationMetaData
+from lsst.sims.utils import Site
 
 class ObservationMetaDataTest(unittest.TestCase):
     """

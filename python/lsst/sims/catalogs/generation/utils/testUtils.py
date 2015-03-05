@@ -4,8 +4,8 @@ from collections import OrderedDict
 from numpy.random import random, seed
 import numpy, json
 
-from lsst.sims.catalogs.generation.db import CatalogDBObject, ObservationMetaData, altAzToRaDec, \
-                                             calcObsDefaults, getRotTelPos, Site
+from lsst.sims.catalogs.generation.db import CatalogDBObject, ObservationMetaData
+from lsst.sims.utils import altAzToRaDec, calcObsDefaults, getRotTelPos, Site
 
 __all__ = ["getOneChunk", "writeResult", "sampleSphere", "myTestGals",
            "makeGalTestDB", "myTestStars", "makeStarTestDB", "makePhoSimTestDB"]
