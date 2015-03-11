@@ -480,7 +480,7 @@ def makePhoSimTestDB(filename='PhoSimTestDatabase.db', size=1000, seedVal=32, ra
                                             %f, %f, %f)''' %\
                      (i, i, ra[i], dec[i], bra[i], bdec[i], dra[i], ddec[i], agnra[i], agndec[i],
                      magnorm_bulge[i], magnorm_disk[i], magnorm_agn[i],
-                     galaxy_seds[i%len(galaxy_seds)], galaxy_seds[(i+1)%len(galaxy_seds)], agn_sed,
+                     galaxy_seds[i%len(galaxy_seds)], galaxy_seds[i%len(galaxy_seds)], agn_sed,
                      paramStr,
                      a_b[i], b_b[i], pa_bulge[i], 4,
                      a_d[i], b_d[i], pa_disk[i], 1,
