@@ -42,6 +42,9 @@ class ObservationMetaData(object):
           in the dict.  This is accessed by the rest of the code through the
           m5(filterName) method.
 
+        * skyBrightness: float (optional) the magnitude of the sky in the
+          filter specified by bandpassName
+
         * rotSkyPos float (optional)
           The orientation of the telescope (see PhoSim documentation) in degrees.
           This is used by the Astrometry mixins in sims_coordUtils
@@ -54,12 +57,13 @@ class ObservationMetaData(object):
 
     def __init__(self, boundType=None, boundLength=None,
                  mjd=None, unrefractedRA=None, unrefractedDec=None, rotSkyPos=0.0,
-                 bandpassName='r', phoSimMetadata=None, site=None, m5=None):
+                 bandpassName='r', phoSimMetadata=None, site=None, m5=None, skyBrightness=None):
 
         self.bounds = None
         self.boundType = boundType
         self.mjd = mjd
         self.bandpass = bandpassName
+        self.skyBrightness = skyBrightness
 
         if rotSkyPos is not None:
             self.rotSkyPos = numpy.radians(rotSkyPos)

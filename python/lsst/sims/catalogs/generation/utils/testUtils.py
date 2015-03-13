@@ -56,7 +56,7 @@ def sampleFocus(size, raCenter, decCenter, radius):
         ra[i] = rc + rr*numpy.cos(th)
         dec[i] = dc + rr*numpy.sin(th)
 
-    return ra, dec      
+    return ra, dec
 
 class myTestGals(CatalogDBObject):
     objid = 'testgals'
@@ -95,7 +95,7 @@ def makeGalTestDB(filename='testDatabase.db', size=1000, seedVal=None,
 
     @param raCenter,decCenter: the center of the field of view in degrees (optional)
     @param radius: the radius of the field of view in degrees (optional)
-    
+
     These last optional parameters exist in the event that you want to make sure
     that the objects are clustered around the bore site for a unit test
     """
@@ -112,7 +112,7 @@ def makeGalTestDB(filename='testDatabase.db', size=1000, seedVal=None,
         raise RuntimeError("Error creating database.")
     if seedVal:
         seed(seedVal)
-   
+
     if raCenter is None or decCenter is None or radius is None:
         ra, dec = sampleSphere(size, **kwargs)
     else:
@@ -194,10 +194,10 @@ def makeStarTestDB(filename='testDatabase.db', size=1000, seedVal=None,
     Make a test database to serve information to the myTestStars object
     @param size: Number of rows in the database
     @param seedVal: Random seed to use
-    
+
     @param raCenter,decCenter: the center of the field of view in degrees (optional)
     @param radius: the radius of the field of view in degrees (optional)
-    
+
     These last optional parameters exist in the event that you want to make sure
     that the objects are clustered around the bore site for a unit test
     """
@@ -214,7 +214,7 @@ def makeStarTestDB(filename='testDatabase.db', size=1000, seedVal=None,
         raise RuntimeError("Error creating database.")
     if seedVal:
         seed(seedVal)
-    
+
     if raCenter is None or decCenter is None or radius is None:
         ra, dec = sampleSphere(size, **kwargs)
     else:
@@ -222,7 +222,7 @@ def makeStarTestDB(filename='testDatabase.db', size=1000, seedVal=None,
         dc = numpy.radians(decCenter)
         rr = numpy.radians(radius)
         ra, dec = sampleFocus(size, rc, dc, radius)
-    
+
     #Typical colors
     umg = 1.5
     gmr = 0.65
@@ -264,15 +264,15 @@ def makePhoSimTestDB(filename='PhoSimTestDatabase.db', size=1000, seedVal=32, ra
 
     The method will return an ObservationMetaData object guaranteed to encompass the
     objects in this database.
-    
+
     @param [in] filename is a string indicating the name of the DB file to be created
-    
+
     @param [in] size is the number of objects int he database
-    
+
     @param [in] seedVal is the seed passed to the random number generator
-    
+
     @param [in] radius is the radius (in degrees) of the field of view to be returned
-    
+
     @param [in] displacedRA/Dec are numpy arrays that indicate where (in relation to the center
     of the field of view) objects should be placed.  These coordinates are in degrees.  Specifying
     either of these paramters will overwrite size.  If you only specify one of these parameters, the other
@@ -288,16 +288,16 @@ def makePhoSimTestDB(filename='PhoSimTestDatabase.db', size=1000, seedVal=32, ra
     star_seds = ['km20_5750.fits_g40_5790','m2.0Full.dat','bergeron_6500_85.dat_6700']
 
     numpy.random.seed(seedVal)
-    
+
     if displacedRA is not None and displacedDec is not None:
         if len(displacedRA) != len(displacedDec):
             raise RuntimeError("WARNING in makePhoSimTestDB displacedRA and displacedDec have different lengths")
-    
+
     if displacedRA is not None:
         size = len(displacedRA)
     elif displacedDec is not None:
         size = len(displacedDec)
-    
+
     #create the ObservationMetaData object
     mjd = 52000.0
     alt = numpy.pi/2.0
@@ -334,14 +334,20 @@ def makePhoSimTestDB(filename='PhoSimTestDatabase.db', size=1000, seedVal=32, ra
 
     try:
         c.execute('''CREATE TABLE galaxy
-                  (galtileid int, galid int, dra real, ddec real, ra real, dec real,
-                  magnorm_disk real, sedname_disk text, a_d real, b_d real, pa_disk real,
-                  disk_n int, ext_model_d text, av_d real, rv_d real, u_ab real,
-                  g_ab real, r_ab real, i_ab real, z_ab real, y_ab real, redshift real, 
-                  BulgeHalfLightRadius real, DiskHalfLightRadius real,
-                  agnra real, agndec real, magnorm_agn real, sedname_agn text, varParamStr text,
-                  bra real, bdec real, magnorm_bulge real, sedname_bulge text, bulge_n int,
-                  a_b real, b_b real, ext_model_b text, av_b real, rv_b real, pa_bulge real)''')
+                     (galtileid int, galid int, ra real, dec real,
+                      bra real, bdec real, dra real, ddec real,
+                      agnra real, agndec real,
+                      magnorm_bulge, magnorm_disk, magnorm_agn,
+                      sedname_bulge text, sedname_disk text, sedname_agn text,
+                      varParamStr text,
+                      a_b real, b_b real, pa_bulge real, bulge_n int,
+                      a_d real, b_d real, pa_disk real, disk_n int,
+                      ext_model_b text, av_b real, rv_b real,
+                      ext_model_d text, av_d real, rv_d real,
+                      u_ab real, g_ab real, r_ab real, i_ab real,
+                      z_ab real, y_ab real,
+                      redshift real, BulgeHalfLightRadius real, DiskHalfLightRadius real)''')
+
         conn.commit()
     except:
         raise RuntimeError("Error creating galaxy table.")
@@ -365,13 +371,13 @@ def makePhoSimTestDB(filename='PhoSimTestDatabase.db', size=1000, seedVal=32, ra
 
     rr = numpy.random.sample(size)*numpy.radians(radius)
     theta = numpy.random.sample(size)*2.0*numpy.pi
-    
+
     if displacedRA is None:
         ra = numpy.degrees(centerRA + rr*numpy.cos(theta))
     else:
         ra = numpy.degrees(centerRA) + displacedRA
-    
-    
+
+
     if displacedDec is None:
         dec = numpy.degrees(centerDec + rr*numpy.sin(theta))
     else:
@@ -423,12 +429,12 @@ def makePhoSimTestDB(filename='PhoSimTestDatabase.db', size=1000, seedVal=32, ra
 
     rrStar = numpy.random.sample(size)*numpy.radians(radius)
     thetaStar = numpy.random.sample(size)*2.0*numpy.pi
-    
+
     if displacedRA is None:
         raStar = centerRA + rrStar*numpy.cos(thetaStar)
     else:
         raStar = centerRA + numpy.radians(displacedRA)
-    
+
     if displacedDec is None:
         decStar = centerDec + rrStar*numpy.sin(thetaStar)
     else:
@@ -462,19 +468,26 @@ def makePhoSimTestDB(filename='PhoSimTestDatabase.db', size=1000, seedVal=32, ra
 
         paramStr = json.dumps(varParam)
 
-        cmd = '''INSERT INTO galaxy VALUES (%i, %i, %f, %f, %f, %f, %f,
-                     '%s', %f, %f, %f, %i, '%s', %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f,
-                     %f, %f, %f, '%s', '%s',
-                     %f, %f, %f, '%s', %i,
-                     %f, %f, '%s', %f, %f, %f)''' %\
-                     (i, i, dra[i], ddec[i], ra[i], dec[i], magnorm_disk[i],
-                     galaxy_seds[i%len(galaxy_seds)], a_d[i], b_d[i], pa_disk[i], 1, 'CCM',
-                     av_d[i], rv_d[i], u_ab[i], g_ab[i],
-                     r_ab[i], i_ab[i], z_ab[i], y_ab[i], redshift[i],
-                     BulgeHalfLightRadius[i], DiskHalfLightRadius[i],
-                     agnra[i], agndec[i], magnorm_agn[i], agn_sed, paramStr,
-                     bra[i], bdec[i], magnorm_bulge[i], galaxy_seds[i%len(galaxy_seds)], 4,
-                     a_b[i], b_b[i], 'CCM', av_b[i], rv_b[i], pa_bulge[i])
+
+
+        cmd = '''INSERT INTO galaxy VALUES (%i, %i, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f,
+                                            '%s', '%s', '%s', '%s',
+                                            %f, %f, %f, %i,
+                                            %f, %f, %f, %i,
+                                            '%s', %f, %f,
+                                            '%s', %f, %f,
+                                            %f, %f, %f, %f, %f, %f,
+                                            %f, %f, %f)''' %\
+                     (i, i, ra[i], dec[i], bra[i], bdec[i], dra[i], ddec[i], agnra[i], agndec[i],
+                     magnorm_bulge[i], magnorm_disk[i], magnorm_agn[i],
+                     galaxy_seds[i%len(galaxy_seds)], galaxy_seds[i%len(galaxy_seds)], agn_sed,
+                     paramStr,
+                     a_b[i], b_b[i], pa_bulge[i], 4,
+                     a_d[i], b_d[i], pa_disk[i], 1,
+                     'CCM', av_b[i], rv_b[i],
+                     'CCM', av_d[i], rv_d[i],
+                     u_ab[i], g_ab[i], r_ab[i], i_ab[i], z_ab[i], y_ab[i], redshift[i],
+                     BulgeHalfLightRadius[i], DiskHalfLightRadius[i])
         c.execute(cmd)
 
         cmd = '''INSERT INTO galaxy_agn VALUES (%i, %i, %f, %f, %f, %f, %f, '%s', '%s',
