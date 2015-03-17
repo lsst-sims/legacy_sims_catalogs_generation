@@ -1,4 +1,5 @@
 import numpy
+import inspect
 from .spatialBounds import SpatialBounds
 from lsst.sims.utils import haversine, Site
 
@@ -54,7 +55,6 @@ class ObservationMetaData(object):
                     boundLength=5.0)
 
     """
-
     def __init__(self, boundType=None, boundLength=None,
                  mjd=None, unrefractedRA=None, unrefractedDec=None, rotSkyPos=0.0,
                  bandpassName='r', phoSimMetadata=None, site=None, m5=None, skyBrightness=None):
@@ -118,6 +118,26 @@ class ObservationMetaData(object):
         #assignPhoSimMetadata overwrites unrefractedRA/Dec
         if self.bounds is None:
             self.buildBounds()
+
+    @property
+    def summary(self):
+        mydict = {}
+        mydict['site'] = self.site
+
+        mydict['boundType'] = self.boundType
+        mydict['boundLength'] = self.boundLength
+        mydict['unrefractedRA'] = self.unrefractedRA
+        mydict['unrefractedDec'] = self.unrefractedDec
+        mydict['rotSkyPos'] = self.rotSkyPos
+
+        mydict['mjd'] = self.mjd
+        mydict['bandpass'] = self.bandpass
+        mydict['skyBrightness'] = self.skyBrightness
+        # mydict['m5'] = self.m5
+
+        mydict['phoSimMetadata'] = self.phoSimMetadata
+
+        return mydict
 
     def buildBounds(self):
         if self.boundType is None:
