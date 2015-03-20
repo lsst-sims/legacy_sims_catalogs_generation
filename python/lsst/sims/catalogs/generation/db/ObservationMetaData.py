@@ -59,6 +59,7 @@ class ObservationMetaData(object):
                  mjd=None, unrefractedRA=None, unrefractedDec=None, rotSkyPos=0.0,
                  bandpassName='r', phoSimMetadata=None, site=None, m5=None, skyBrightness=None):
 
+
         self.bounds = None
         self.boundType = boundType
         self.mjd = mjd
@@ -122,8 +123,18 @@ class ObservationMetaData(object):
 
     @property
     def summary(self):
+        """
+        return a  dict summarizing the attributes of the obs_metadata class
+
+
+        Parameters
+        ----------
+        None
+
+        .. note: we have left out some of the attributes like site and m5 which
+        will be dealt with later
+        """
         mydict = {}
-        mydict['site'] = self.site
 
         mydict['boundType'] = self.boundType
         mydict['boundLength'] = self.boundLength
@@ -134,7 +145,6 @@ class ObservationMetaData(object):
         mydict['mjd'] = self.mjd
         mydict['bandpass'] = self.bandpass
         mydict['skyBrightness'] = self.skyBrightness
-        # mydict['m5'] = self.m5
 
         mydict['phoSimMetadata'] = self.phoSimMetadata
 
