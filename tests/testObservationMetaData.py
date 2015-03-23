@@ -18,30 +18,20 @@ class ObservationMetaDataTest(unittest.TestCase):
         Test behavior of ObservationMetaData's m5 member variable
         """
 
-        m5tuple = (0,1,2,3)
-        m5float = 25.
-        m5dict = dict(u=25., g=23., r=22.)
+        self.assertRaises(RuntimeError, ObservationMetaData, bandpassName='u', m5=[12.0, 13.0])
+        self.assertRaises(RuntimeError, ObservationMetaData, bandpassName=['u', 'g'], m5=15.0)
+        self.assertRaises(RuntimeError, ObservationMetaData, bandpassName=['u', 'g'], m5=[12.0, 13.0, 15.0])
 
-        #make sure ObservationMetaData.m5() throws an error when it does
-        #not have the data you want
         obsMD = ObservationMetaData()
-        self.assertRaises(ValueError,obsMD.m5,'u')
-        obsMD = ObservationMetaData(m5=m5dict)
-        self.assertRaises(ValueError,obsMD.m5,'i')
+        self.assertIsNone(obsMD.m5)
 
-        #make sure that ObservationMetaData.m5() returns the correct values
-        self.assertAlmostEqual(obsMD.m5('u'),m5dict['u'],10)
-        self.assertAlmostEqual(obsMD.m5('g'),m5dict['g'],10)
-        self.assertAlmostEqual(obsMD.m5('r'),m5dict['r'],10)
+        obsMD = ObservationMetaData(bandpassName='g', m5=12.0)
+        self.assertAlmostEqual(obsMD.m5['g'], 12.0, 10)
 
-        obsMD = ObservationMetaData(m5=m5float)
-        self.assertAlmostEqual(obsMD.m5('u'),m5float,10)
-        self.assertAlmostEqual(obsMD.m5('sally'),m5float,10)
-
-        #make sure that ObservationMetaData raises an exception when you
-        #try to set m5 to something that is neither float nor dict
-        self.assertRaises(ValueError,ObservationMetaData,m5=m5tuple)
-
+        obsMD = ObservationMetaData(bandpassName=['u','g','r'], m5=[10,11,12])
+        self.assertEqual(obsMD.m5['u'], 10)
+        self.assertEqual(obsMD.m5['g'], 11)
+        self.assertEqual(obsMD.m5['r'], 12)
 
     def testDefault(self):
         """
