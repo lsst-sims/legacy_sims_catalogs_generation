@@ -32,16 +32,20 @@ class ObservationMetaData(object):
         * mjd : float (optional)
           The MJD of the observation
 
-        * bandpassName : float (optional)
-          The canonical name of the bandpass for this observation.
+        * bandpassName : a char (e.g. 'u') or list (e.g. ['u', 'g', 'z'])
+          denoting the bandpasses used for this particular observation
 
         * phoSimMetadata : dict (optional)
           a dictionary containing metadata used by PhoSim
 
-        * m5: float (optional) or dict (optional)
-          the m5 value for either all bands (if a float), or for each band
-          in the dict.  This is accessed by the rest of the code through the
-          m5(filterName) method.
+        * m5: float or list (optional)
+          this should be the 5-sigma limiting magnitude in the bandpass or
+          bandpasses specified in bandpassName.  Ultimately, m5 will be stored
+          in a dict keyed to the bandpassName (or Names) you passed in, i.e.
+          you will be able to access m5 from outside of this class using, for
+          example:
+
+          myObservationMetaData.m5['u']
 
         * skyBrightness: float (optional) the magnitude of the sky in the
           filter specified by bandpassName
@@ -99,11 +103,6 @@ class ObservationMetaData(object):
         else:
             self.site=Site()
 
-        if m5 is None or isinstance(m5, dict) or isinstance(m5, float):
-            self.m5value = m5
-        else:
-            raise ValueError("You passed neither a dict nor a float as m5 to ObservationMetaData")
-
         if site is not None:
             self.site=site
         else:
@@ -118,6 +117,39 @@ class ObservationMetaData(object):
         #assignPhoSimMetadata overwrites unrefractedRA/Dec
         if self.bounds is None:
             self.buildBounds()
+
+        if m5 is None:
+            self.m5 = None
+        else:
+            bandpassIsList = False
+            m5IsList = False
+            if hasattr(self.bandpass, '__iter__'):
+                bandpassIsList = True
+
+            if hasattr(m5, '__iter__'):
+                m5IsList = True
+
+            if bandpassIsList and not m5IsList:
+                raise RuntimeError('You passed a list of bandpass names' + \
+                                   'but did not pass a list of m5s to ObservationMetaData')
+
+            if m5IsList and not bandpassIsList:
+                raise RuntimeError('You passed a list of m5s ' + \
+                                    'but did not pass a list of bandpass names to ObservationMetaData')
+
+
+            if m5IsList:
+                if len(m5) != len(self.bandpass):
+                    raise RuntimeError('The list of m5s you passed to ObservationMetaData ' + \
+                                       'has a different length than the list of bandpass names you passed')
+
+            #now build the m5 dict
+            if bandpassIsList:
+                self.m5 = {}
+                for b, m in zip(self.bandpass, m5):
+                    self.m5[b] = m
+            else:
+                self.m5 = {self.bandpass:m5}
 
     @property
     def summary(self):
@@ -179,17 +211,4 @@ class ObservationMetaData(object):
         #overwritten by this method
         if self.bounds is not None:
             self.buildBounds()
-
-    def m5(self,filterName):
-
-       if self.m5value is None:
-           raise ValueError("m5 is None in ObservationMetaData")
-       elif isinstance(self.m5value,dict):
-           if filterName not in self.m5value:
-               raise ValueError("Filter %s is not in the m5 dict in ObservationMetaData" % filterName)
-           return self.m5value[filterName]
-       elif isinstance(self.m5value,float):
-           return self.m5value
-       else:
-           raise ValueError("Somehow, m5 is not set in ObservationMetaData")
 
