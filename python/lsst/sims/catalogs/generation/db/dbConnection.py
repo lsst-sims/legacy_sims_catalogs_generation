@@ -1,5 +1,4 @@
 import warnings
-import math
 import numpy
 import os
 import inspect
@@ -7,11 +6,11 @@ from StringIO import StringIO
 from collections import OrderedDict
 
 from .utils import loadData
-from sqlalchemy.orm import scoped_session, sessionmaker, mapper
+from sqlalchemy.orm import scoped_session, sessionmaker
 from sqlalchemy.sql import expression
-from sqlalchemy.engine import reflection
-from sqlalchemy import (create_engine, ThreadLocalMetaData, MetaData,
-                        Table, Column, BigInteger, event)
+from sqlalchemy.engine import reflection, url
+from sqlalchemy import (create_engine, MetaData,
+                        Table, event)
 from sqlalchemy import exc as sa_exc
 
 #The documentation at http://docs.sqlalchemy.org/en/rel_0_7/core/types.html#sqlalchemy.types.Numeric
