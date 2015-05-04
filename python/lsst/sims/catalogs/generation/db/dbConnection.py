@@ -12,6 +12,7 @@ from sqlalchemy.engine import reflection, url
 from sqlalchemy import (create_engine, MetaData,
                         Table, event)
 from sqlalchemy import exc as sa_exc
+from lsst.daf.persistence import DbAuth
 
 #The documentation at http://docs.sqlalchemy.org/en/rel_0_7/core/types.html#sqlalchemy.types.Numeric
 #suggests using the cdecimal module.  Since it is not standard, import decimal.
@@ -83,20 +84,45 @@ class ChunkIterator(object):
 
 class DBObject(object):
 
-    def __init__(self, address=None, verbose=False):
+    def __init__(self, driver=None, host=None, port=None, database=None, verbose=False):
+
+        #Override the class variables if supplied arguments
+        if driver is not None:
+            self.driver = driver
+        if host is not None:
+            self.host = host
+        if port is not None:
+            self.port = port
+        if database is not None:
+            self.database = database
+
+        if self.driver == 'sqlite':
+            #When passed sqlite database, override default host/port
+            self.host = None
+            self.port = None
+
         self.verbose=verbose
-
-        self.dtype = None 
+        self.dtype = None
         #this is a cache for the query, so that any one query does not have to guess dtype multiple times
-
-        if address is not None:
-            self.dbAddress = address
 
         self._connect_to_engine()
 
     def _connect_to_engine(self):
         """create and connect to a database engine"""
-        self.engine = create_engine(self.dbAddress, echo=self.verbose)
+
+        #DbAuth will not look up hosts that are None, '' or 0
+        if self.host:
+            dbUrl = url.URL(self.driver,
+                            username=DbAuth.username(self.host, str(self.port)),
+                            password=DbAuth.password(self.host, str(self.port)),
+                            host=self.host,
+                            port=self.port,
+                            database=self.database)
+        else:
+            dbUrl = url.URL(self.driver,
+                            database=self.database)
+
+        self.engine = create_engine(dbUrl, echo=self.verbose)
 
         if self.engine.dialect.name == 'sqlite':
             event.listen(self.engine,'checkout',declareTrigFunctions)
@@ -104,9 +130,6 @@ class DBObject(object):
         self.session = scoped_session(sessionmaker(autoflush=True,
                                                    bind=self.engine))
         self.metadata = MetaData(bind=self.engine)
-
-    def getDbAddress(self):
-        return self.dbAddress
 
     def get_table_names(self):
         """Return a list of the names of the tables in the database"""
@@ -322,7 +345,8 @@ class CatalogDBObject(DBObject):
         cls = cls.registry.get(objid, CatalogDBObject)
         return cls(*args, **kwargs)
 
-    def __init__(self, address=None, verbose=False):
+    def __init__(self, driver=None, host=None, port=None,
+                 database=None, verbose=False):
         if not verbose:
             with warnings.catch_warnings():
                 warnings.simplefilter("ignore", category=sa_exc.SAWarning)
@@ -337,8 +361,8 @@ class CatalogDBObject(DBObject):
                           "been set.  Input files for phosim are not "
                           "possible.")
 
-        #call DBObject's constructor (this will actually connect to the engine)
-        super(CatalogDBObject, self).__init__(address, verbose=verbose)
+        super(CatalogDBObject, self).__init__(driver=driver, host=host,
+                                              port=port, database=database, verbose=verbose)
 
         self._get_table()
 
@@ -522,7 +546,7 @@ class fileDBObject(CatalogDBObject):
     ''' Class to read a file into a database and then query it'''
     #Column names to index.  Specify compound indexes using tuples of column names
     indexCols = []
-    def __init__(self, dataLocatorString, runtable=None, dbAddress="sqlite:///:memory:",
+    def __init__(self, dataLocatorString, runtable=None, driver="sqlite", host=None, port=None, database=":memory:",
                 dtype=None, numGuess=1000, delimiter=None, verbose=False, **kwargs):
         """
         Initialize an object for querying databases loaded from a file
@@ -530,7 +554,10 @@ class fileDBObject(CatalogDBObject):
         Keyword arguments:
         @param dataLocatorString: Path to the file to load
         @param runtable: The name of the table to create.  If None, a random table name will be used.
-        @param dbAddress: Database connection string.  By defualt the database is loaded in memory
+        @param driver: name of database driver (e.g. 'sqlite', 'mssql+pymssql')
+        @param host: hostname for database connection (None if sqlite)
+        @param port: port for database connection (None if sqlite)
+        @param database: name of database (filename if sqlite)
         @param dtype: The numpy dtype to use when loading the file.  If None, it the dtype will be guessed.
         @param numGuess: The number of lines to use in guessing the dtype from the file.
         @param delimiter: The delimiter to use when parsing the file default is white space.
@@ -546,7 +573,10 @@ class fileDBObject(CatalogDBObject):
                           "possible.")
 
         if os.path.exists(dataLocatorString):
-            self.dbAddress = dbAddress
+            self.driver = driver
+            self.host = host
+            self.port = port
+            self.database = database
             self._connect_to_engine()
             self.tableid = loadData(dataLocatorString, dtype, delimiter, runtable, self.idColKey,
                                     self.engine, self.metadata, numGuess, indexCols=self.indexCols, **kwargs)

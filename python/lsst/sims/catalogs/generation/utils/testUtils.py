@@ -64,7 +64,8 @@ class myTestGals(CatalogDBObject):
     idColKey = 'id'
     #Make this implausibly large?
     appendint = 1022
-    dbAddress = 'sqlite:///testDatabase.db'
+    driver = 'sqlite'
+    database = 'testDatabase.db'
     raColName = 'ra'
     decColName = 'decl'
     spatialModel = 'SERSIC2D'
@@ -171,7 +172,8 @@ class myTestStars(CatalogDBObject):
     idColKey = 'id'
     #Make this implausibly large?
     appendint = 1023
-    dbAddress = 'sqlite:///testDatabase.db'
+    driver = 'sqlite'
+    database = 'testDatabase.db'
     raColName = 'ra'
     decColName = 'decl'
     columns = [('id', None, int),
