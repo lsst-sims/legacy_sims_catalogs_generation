@@ -63,55 +63,55 @@ class ObservationMetaData(object):
                  mjd=None, unrefractedRA=None, unrefractedDec=None, rotSkyPos=0.0,
                  bandpassName='r', phoSimMetadata=None, site=None, m5=None, skyBrightness=None):
 
-        self.bounds = None
-        self.boundType = boundType
-        self.mjd = mjd
-        self.bandpass = bandpassName
-        self.skyBrightness = skyBrightness
+        self._bounds = None
+        self._boundType = boundType
+        self._mjd = mjd
+        self._bandpass = bandpassName
+        self._skyBrightness = skyBrightness
 
         if rotSkyPos is not None:
-            self.rotSkyPos = numpy.radians(rotSkyPos)
+            self._rotSkyPos = numpy.radians(rotSkyPos)
         else:
-            self.rotSkyPos = None
+            self._rotSkyPos = None
 
         if unrefractedRA is not None:
-            self.unrefractedRA = numpy.radians(unrefractedRA)
+            self._unrefractedRA = numpy.radians(unrefractedRA)
         else:
-            self.unrefractedRA = None
+            self._unrefractedRA = None
 
         if unrefractedDec is not None:
-            self.unrefractedDec = numpy.radians(unrefractedDec)
+            self._unrefractedDec = numpy.radians(unrefractedDec)
         else:
-            self.unrefractedDec = None
+            self._unrefractedDec = None
 
         if boundLength is not None:
             if isinstance(boundLength, float):
-                self.boundLength = numpy.radians(boundLength)
+                self._boundLength = numpy.radians(boundLength)
             else:
                 try:
-                    self.boundLength = []
+                    self._boundLength = []
                     for ll in boundLength:
-                        self.boundLength.append(numpy.radians(ll))
+                        self._boundLength.append(numpy.radians(ll))
                 except:
                     raise RuntimeError("You seem to have passed something that is neither a float nor " +
                                        "list-like as boundLength to ObservationMetaData")
         else:
-            self.boundLength = None
+            self._boundLength = None
 
         if site is not None:
-            self.site=site
+            self._site=site
         else:
-            self.site=Site()
+            self._site=Site()
 
         if site is not None:
-            self.site=site
+            self._site=site
         else:
-            self.site=Site()
+            self._site=Site()
 
         if phoSimMetadata is not None:
             self.assignPhoSimMetaData(phoSimMetadata)
         else:
-            self.phoSimMetadata = None
+            self._phoSimMetadata = None
 
         #this should be done after phoSimMetadata is assigned, just in case
         #assignPhoSimMetadata overwrites unrefractedRA/Dec
@@ -119,7 +119,7 @@ class ObservationMetaData(object):
             self.buildBounds()
 
         if m5 is None:
-            self.m5 = None
+            self._m5 = None
         else:
             bandpassIsList = False
             m5IsList = False
@@ -145,11 +145,11 @@ class ObservationMetaData(object):
 
             #now build the m5 dict
             if bandpassIsList:
-                self.m5 = {}
-                for b, m in zip(self.bandpass, m5):
-                    self.m5[b] = m
+                self._m5 = {}
+                for b, m in zip(self._bandpass, m5):
+                    self._m5[b] = m
             else:
-                self.m5 = {self.bandpass:m5}
+                self._m5 = {self._bandpass:m5}
 
     @property
     def summary(self):
@@ -172,43 +172,90 @@ class ObservationMetaData(object):
         return mydict
 
     def buildBounds(self):
-        if self.boundType is None:
+        if self._boundType is None:
             return
 
-        if self.boundLength is None:
+        if self._boundLength is None:
             raise RuntimeError("ObservationMetadata cannot assign a bounds; it has no boundLength")
 
-        if self.unrefractedRA is None or self.unrefractedDec is None:
+        if self._unrefractedRA is None or self._unrefractedDec is None:
             raise RuntimeError("ObservationMetadata cannot assign a bounds; it has no unrefractedRA/Dec")
 
-        self.bounds = SpatialBounds.getSpatialBounds(self.boundType, self.unrefractedRA, self.unrefractedDec,
-                                                     self.boundLength)
+        self._bounds = SpatialBounds.getSpatialBounds(self._boundType, self._unrefractedRA, self._unrefractedDec,
+                                                     self._boundLength)
 
     def assignPhoSimMetaData(self, metaData):
         """
         Assign the dict metaData to be the associated metadata dict of this object
         """
 
-        self.phoSimMetadata = metaData
+        self._phoSimMetadata = metaData
 
         #overwrite member variables with values from the phoSimMetadata
-        if self.phoSimMetadata is not None and 'Opsim_expmjd' in self.phoSimMetadata:
-            self.mjd = self.phoSimMetadata['Opsim_expmjd'][0]
+        if self._phoSimMetadata is not None and 'Opsim_expmjd' in self._phoSimMetadata:
+            self._mjd = self._phoSimMetadata['Opsim_expmjd'][0]
 
-        if self.phoSimMetadata is not None and 'Unrefracted_RA' in self.phoSimMetadata:
-            self.unrefractedRA = self.phoSimMetadata['Unrefracted_RA'][0]
+        if self._phoSimMetadata is not None and 'Unrefracted_RA' in self._phoSimMetadata:
+            self._unrefractedRA = self._phoSimMetadata['Unrefracted_RA'][0]
 
-        if self.phoSimMetadata is not None and 'Opsim_rotskypos' in self.phoSimMetadata:
-            self.rotSkyPos = self.phoSimMetadata['Opsim_rotskypos'][0]
+        if self._phoSimMetadata is not None and 'Opsim_rotskypos' in self._phoSimMetadata:
+            self._rotSkyPos = self.phoSimMetadata['Opsim_rotskypos'][0]
 
-        if self.phoSimMetadata is not None and 'Unrefracted_Dec' in self.phoSimMetadata:
-            self.unrefractedDec = self.phoSimMetadata['Unrefracted_Dec'][0]
+        if self._phoSimMetadata is not None and 'Unrefracted_Dec' in self._phoSimMetadata:
+            self._unrefractedDec = self._phoSimMetadata['Unrefracted_Dec'][0]
 
-        if self.phoSimMetadata is not None and 'Opsim_filter' in self.phoSimMetadata:
-            self.bandpass = self.phoSimMetadata['Opsim_filter'][0]
+        if self._phoSimMetadata is not None and 'Opsim_filter' in self._phoSimMetadata:
+            self._bandpass = self._phoSimMetadata['Opsim_filter'][0]
 
         #in case this method was called after __init__ and unrefractedRA/Dec were
         #overwritten by this method
-        if self.bounds is not None:
+        if self._bounds is not None:
             self.buildBounds()
 
+    @property
+    def unrefractedRA(self):
+        return self._unrefractedRA
+
+    @property
+    def unrefractedDec(self):
+        return self._unrefractedDec
+
+    @property
+    def boundLength(self):
+        return self._boundLength
+
+    @property
+    def boundType(self):
+        return self._boundType
+
+    @property
+    def bounds(self):
+        return self._bounds
+
+    @property
+    def rotSkyPos(self):
+        return self._rotSkyPos
+
+    @property
+    def m5(self):
+        return self._m5
+
+    @property
+    def site(self):
+        return self._site
+
+    @property
+    def mjd(self):
+        return self._mjd
+
+    @property
+    def bandpass(self):
+        return self._bandpass
+
+    @property
+    def skyBrightness(self):
+        return self._skyBrightness
+
+    @property
+    def phoSimMetadata(self):
+        return self._phoSimMetadata
