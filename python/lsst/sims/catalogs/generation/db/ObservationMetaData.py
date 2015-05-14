@@ -60,14 +60,15 @@ class ObservationMetaData(object):
 
     """
     def __init__(self, boundType=None, boundLength=None,
-                 mjd=None, unrefractedRA=None, unrefractedDec=None, rotSkyPos=0.0,
-                 bandpassName='r', phoSimMetadata=None, site=None, m5=None, skyBrightness=None):
+                 mjd=None, unrefractedRA=None, unrefractedDec=None, rotSkyPos=None,
+                 bandpassName=None, phoSimMetadata=None, site=Site(), m5=None, skyBrightness=None):
 
         self._bounds = None
         self._boundType = boundType
         self._mjd = mjd
         self._bandpass = bandpassName
         self._skyBrightness = skyBrightness
+        self._site = site
 
         if rotSkyPos is not None:
             self._rotSkyPos = numpy.radians(rotSkyPos)
@@ -98,16 +99,6 @@ class ObservationMetaData(object):
         else:
             self._boundLength = None
 
-        if site is not None:
-            self._site=site
-        else:
-            self._site=Site()
-
-        if site is not None:
-            self._site=site
-        else:
-            self._site=Site()
-
         if phoSimMetadata is not None:
             self.assignPhoSimMetaData(phoSimMetadata)
         else:
@@ -115,7 +106,7 @@ class ObservationMetaData(object):
 
         #this should be done after phoSimMetadata is assigned, just in case
         #assignPhoSimMetadata overwrites unrefractedRA/Dec
-        if self.bounds is None:
+        if self._bounds is None:
             self.buildBounds()
 
         if m5 is None:
@@ -193,24 +184,40 @@ class ObservationMetaData(object):
 
         #overwrite member variables with values from the phoSimMetadata
         if self._phoSimMetadata is not None and 'Opsim_expmjd' in self._phoSimMetadata:
+            if self._mjd is not None:
+                raise RuntimeError("WARNING in ObservationMetaData trying to overwrite mjd with phoSimMetadata")
+
             self._mjd = self._phoSimMetadata['Opsim_expmjd'][0]
 
         if self._phoSimMetadata is not None and 'Unrefracted_RA' in self._phoSimMetadata:
+            if self._unrefractedRA is not None:
+                raise RuntimeError("WARNING in ObservationMetaData trying to overwrite unrefractedRA " +
+                                   "with phoSimMetadata")
+
             self._unrefractedRA = self._phoSimMetadata['Unrefracted_RA'][0]
 
         if self._phoSimMetadata is not None and 'Opsim_rotskypos' in self._phoSimMetadata:
+            if self._rotSkyPos is not None:
+                raise RuntimeError("WARNING in ObservationMetaData trying to overwrite rotSkyPos " +
+                                   "with phoSimMetadata")
+
             self._rotSkyPos = self.phoSimMetadata['Opsim_rotskypos'][0]
 
         if self._phoSimMetadata is not None and 'Unrefracted_Dec' in self._phoSimMetadata:
+            if self._unrefractedDec is not None:
+                raise RuntimeError("WARNING in ObservationMetaData trying to overwrite unrefractedDec " +
+                                   "with phoSimMetadata")
+
             self._unrefractedDec = self._phoSimMetadata['Unrefracted_Dec'][0]
 
         if self._phoSimMetadata is not None and 'Opsim_filter' in self._phoSimMetadata:
+            if self._bandpass is not None:
+                raise RuntimeError("WARNING in ObservationMetaData trying to overwrite bandpass " +
+                                   "with phoSimMetadata")
+
             self._bandpass = self._phoSimMetadata['Opsim_filter'][0]
 
-        #in case this method was called after __init__ and unrefractedRA/Dec were
-        #overwritten by this method
-        if self._bounds is not None:
-            self.buildBounds()
+        self.buildBounds()
 
     @property
     def unrefractedRA(self):
@@ -234,11 +241,18 @@ class ObservationMetaData(object):
 
     @property
     def rotSkyPos(self):
-        return self._rotSkyPos
+        if self._rotSkyPos is not None:
+            return self._rotSkyPos
+        else:
+            return 0.0
 
     @property
     def m5(self):
         return self._m5
+
+    @m5.setter
+    def m5(self, value):
+        self._m5 = value
 
     @property
     def site(self):
@@ -250,7 +264,10 @@ class ObservationMetaData(object):
 
     @property
     def bandpass(self):
-        return self._bandpass
+        if self._bandpass is not None:
+            return self._bandpass
+        else:
+            return 'r'
 
     @property
     def skyBrightness(self):

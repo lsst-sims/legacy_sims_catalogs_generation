@@ -102,6 +102,7 @@ class ObservationMetaDataTest(unittest.TestCase):
                                 ('Opsim_expmjd',(4000.0,float)),
                                 ('Opsim_filter',('g',str))])
 
+        testObsMD = ObservationMetaData()
         testObsMD.assignPhoSimMetaData(phosimMD)
 
         self.assertAlmostEqual(testObsMD.mjd,4000.0,10)
@@ -111,6 +112,7 @@ class ObservationMetaDataTest(unittest.TestCase):
         self.assertAlmostEqual(testObsMD.unrefractedDec,0.9,10)
         self.assertAlmostEqual(testObsMD.rotSkyPos,1.1,10)
         self.assertEqual(testObsMD.bandpass,'g')
+
 
     def testBoundExceptions(self):
         """
