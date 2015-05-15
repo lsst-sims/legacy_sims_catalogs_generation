@@ -1,10 +1,42 @@
+from __future__ import with_statement
+
 import os
 import numpy
 import unittest
 import lsst.utils.tests as utilsTests
 from lsst.sims.catalogs.generation.db.spatialBounds import SpatialBounds
+from lsst.sims.catalogs.generation.db import CircleBounds, BoxBounds
 
 class SpatialBoundsTest(unittest.TestCase):
+
+    def testExceptions(self):
+        """
+        Test that the spatial bound classes raise exceptions when you
+        give them improperly formatted arguments
+        """
+
+        with self.assertRaises(RuntimeError):
+            circ = CircleBounds(1.0, 2.0, [3.0,4.0])
+
+        with self.assertRaises(RuntimeError):
+            circ = CircleBounds('a',2.0,3.0)
+
+        with self.assertRaises(RuntimeError):
+            circ = CircleBounds(1.0, 'b', 4.0)
+
+        circ = CircleBounds(1.0,2.0,3)
+
+        with self.assertRaises(RuntimeError):
+            box = BoxBounds(1.0, 2.0, 'abcde')
+
+        with self.assertRaises(RuntimeError):
+            box = BoxBounds('a', 2, 3.0)
+
+        with self.assertRaises(RuntimeError):
+            box = BoxBounds(1.0, 'b', 4.0)
+
+        box = BoxBounds(1,2,3)
+        box = BoxBounds(1,2,[3,5])
 
     def testCircle(self):
         myFov = SpatialBounds.getSpatialBounds('circle',1.0,2.0,1.0)
