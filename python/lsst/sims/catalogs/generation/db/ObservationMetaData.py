@@ -245,8 +245,7 @@ class ObservationMetaData(object):
         if self._phoSimMetadata is not None:
             if 'Unrefracted_RA' in self._phoSimMetadata:
                 raise RuntimeError('WARNING overwriting Unrefracted_RA ' +
-                                   'which was set by phoSimMetaData which was set ' +
-                                   'by phoSimMetadata')
+                                   'which was set by phoSimMetaData')
 
         self._unrefractedRA = numpy.degrees(value)
         self.buildBounds()
@@ -263,8 +262,7 @@ class ObservationMetaData(object):
         if self._phoSimMetadata is not None:
             if 'Unrefracted_Dec' in self._phoSimMetadata:
                 raise RuntimeError('WARNING overwriting Unrefracted_Dec ' +
-                                   'which was set by phoSimMetaData which was set ' +
-                                   'by phoSimMetadata')
+                                   'which was set by phoSimMetaData')
 
         self._unrefractedDec = numpy.radians(value)
         self.buildBounds()
