@@ -110,19 +110,19 @@ class CircleBounds(SpatialBounds):
             try:
                 ra = np.float(ra)
             except:
-                raise RuntimeError('in CircleBounds, ra must be a float')
+                raise RuntimeError('in CircleBounds, ra must be a float; you have %s' % type(ra))
 
         if not (isinstance(dec, float) or isinstance(dec, np.float)):
             try:
                 dec = np.float(dec)
             except:
-                raise RuntimeError('in CircleBounds, dec must be a float')
+                raise RuntimeError('in CircleBounds, dec must be a float; you hve %s' % type(dec))
 
         if not (isinstance(radius, float) or isinstance(radius, np.float)):
             try:
                 radius = np.float(radius)
             except:
-                raise RuntimeError('in CircleBounds, radius must be a float')
+                raise RuntimeError('in CircleBounds, radius must be a float; you have %s' % type(radius))
 
         self.RA = ra
         self.DEC = dec
@@ -185,13 +185,13 @@ class BoxBounds(SpatialBounds):
             try:
                 ra = np.float(ra)
             except:
-                raise RuntimeError('in BoxBounds ra must be a float')
+                raise RuntimeError('in BoxBounds ra must be a float; you have %s' % type(ra))
 
         if not (isinstance(dec, float) or isinstance(dec, np.float)):
             try:
                 dec = np.float(dec)
             except:
-                raise RuntimeError('in BoxBounds dec must be a float')
+                raise RuntimeError('in BoxBounds dec must be a float; you have %s' % type(dec))
 
         self.RA = ra
         self.DEC = dec
