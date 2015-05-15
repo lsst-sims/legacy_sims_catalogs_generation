@@ -124,6 +124,19 @@ class ObservationMetaData(object):
         return mydict
 
     def _assignM5(self, m5):
+        """
+        This method sets up the dict self._m5.  It reads in a list of m5 values
+        and associates them with the list of bandpass names in self._bandpass.
+
+        Note: this method assumes that self._bandpass has already been set.
+        It will raise an exception of self._bandpass is None.
+
+        @param [in] m5 is a list of m5 values corresponding to the bandpasses
+        stored in self._bandpass
+
+        This method does not return anything.  It just sets the member variable
+        self._m5.
+        """
 
         if m5 is None:
             self._m5 = None
@@ -168,6 +181,13 @@ class ObservationMetaData(object):
 
 
     def _buildBounds(self):
+        """
+        Set up the member variable self._bounds.
+
+        If self._boundType, self._boundLength, self._unrefractedRA, or
+        self._unrefractedDec are None, nothing will happen.
+        """
+
         if self._boundType is None:
             return
 
@@ -182,7 +202,12 @@ class ObservationMetaData(object):
 
     def _assignPhoSimMetaData(self, metaData):
         """
-        Assign the dict metaData to be the associated metadata dict of this object
+        Assign the dict metaData to be the associated phoSimMetaData dict of this object.
+
+        In doing so, this method will copy unrefractedRA, unrefractedDec, rotSkyPos,
+        MJD, and bandpass from the phoSimMetaData (if present) to the corresponding
+        member variables.  If by doing so you try to overwrite a parameter that you
+        have already set by hand, this method will raise an exception.
         """
 
         self._phoSimMetaData = metaData
@@ -226,6 +251,9 @@ class ObservationMetaData(object):
 
     @property
     def unrefractedRA(self):
+        """
+        The above-the-atmospher RA of the telescope pointing in degrees.
+        """
         if self._unrefractedRA is not None:
             return numpy.degrees(self._unrefractedRA)
         else:
@@ -243,6 +271,9 @@ class ObservationMetaData(object):
 
     @property
     def unrefractedDec(self):
+        """
+        The above-the-atmosphere Dec of the telescope pointing in degrees.
+        """
         if self._unrefractedDec is not None:
             return numpy.degrees(self._unrefractedDec)
         else:
@@ -260,6 +291,17 @@ class ObservationMetaData(object):
 
     @property
     def boundLength(self):
+        """
+        Either a list or a float indicating the size of the field
+        of view associated with this ObservationMetaData.
+
+        See the documentation in the SpatialBounds class for more
+        details (specifically, the 'length' paramter).
+
+        In degrees (Yes: the documentation in SpatialBounds says that
+        the length should be in degrees.  The present class converts
+        from degrees to radians before passing to SpatialBounds.
+        """
         return numpy.degrees(self._boundLength)
 
     @boundLength.setter
@@ -269,6 +311,10 @@ class ObservationMetaData(object):
 
     @property
     def boundType(self):
+        """
+        Tag indicating what sub-class of SpatialBounds should
+        be instantiated for this ObservationMetaData.
+        """
         return self._boundType
 
     @boundType.setter
@@ -278,10 +324,19 @@ class ObservationMetaData(object):
 
     @property
     def bounds(self):
+        """
+        Instantiation of a sub-class of SpatialBounds.  This
+        is what actually construct the WHERE clause of the SQL
+        query associated with this ObservationMetaData.
+        """
         return self._bounds
 
     @property
     def rotSkyPos(self):
+        """
+        The rotation of the telescope with respect to the sky in degrees.
+        It is a parameter you should get from OpSim.
+        """
         if self._rotSkyPos is not None:
             return numpy.degrees(self._rotSkyPos)
         else:
@@ -300,6 +355,11 @@ class ObservationMetaData(object):
 
     @property
     def m5(self):
+        """
+        A dict of m5 (the 5-sigma limiting magnitude) values
+        associated with the bandpasses represented by this
+        ObservationMetaData.
+        """
         return self._m5
 
     @m5.setter
@@ -308,6 +368,10 @@ class ObservationMetaData(object):
 
     @property
     def site(self):
+        """
+        An instantiation of the Site class containing information about
+        the telescope site.
+        """
         return self._site
 
     @site.setter
@@ -316,6 +380,9 @@ class ObservationMetaData(object):
 
     @property
     def mjd(self):
+        """
+        The MJD of the observation associated with this ObservationMetaData.
+        """
         return self._mjd
 
     @mjd.setter
@@ -330,12 +397,29 @@ class ObservationMetaData(object):
 
     @property
     def bandpass(self):
+        """
+        The bandpass associated with this ObservationMetaData.
+        Can be a list.
+        """
         if self._bandpass is not None:
             return self._bandpass
         else:
             return 'r'
 
     def setBandpassAndM5(self, bandpassName=None, m5=None):
+        """
+        Set the bandpasses and associated 5-sigma limiting magnitudes
+        for this ObservationMetaData.
+
+        @param [in] bandpassName is either a char or a list of chars denoting
+        the name of the bandpass associated with this ObservationMetaData.
+
+        @param [in] m5 is the 5-sigma-limiting magnitude(s) associated
+        with bandpassName
+
+        Nothing is returned.  This method just sets member variables of
+        this ObservationMetaData.
+        """
         if self._phoSimMetaData is not None:
             if 'Opsim_filter' in self._phoSimMetaData:
                 raise RuntimeError('WARNING overwriting bandpass ' +
@@ -347,6 +431,10 @@ class ObservationMetaData(object):
 
     @property
     def skyBrightness(self):
+        """
+        The sky brightness in mags per square arcsecond associated
+        with this ObservationMetaData.
+        """
         return self._skyBrightness
 
     @skyBrightness.setter
@@ -355,6 +443,13 @@ class ObservationMetaData(object):
 
     @property
     def phoSimMetaData(self):
+        """
+        A dict of parameters expected by PhoSim characterizing this
+        ObservationMetaData.  Note that setting this paramter
+        could overwrite unrefractedRA, unrefractedDec, rotSkyPos,
+        MJD, or bandpass and m5 (if they are present in this
+        dict).
+        """
         return self._phoSimMetaData
 
     @phoSimMetaData.setter
