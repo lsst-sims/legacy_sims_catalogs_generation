@@ -95,7 +95,7 @@ class ObservationMetaData(object):
         else:
             self._phoSimMetadata = None
 
-        self.assignM5(m5)
+        self._assignM5(m5)
 
         #this should be done after phoSimMetadata is assigned, just in case
         #assignPhoSimMetadata overwrites unrefractedRA/Dec
@@ -123,7 +123,7 @@ class ObservationMetaData(object):
 
         return mydict
 
-    def assignM5(self, m5):
+    def _assignM5(self, m5):
 
         if m5 is None:
             self._m5 = None
@@ -304,7 +304,7 @@ class ObservationMetaData(object):
 
     @m5.setter
     def m5(self, value):
-        self.assignM5(value)
+        self._assignM5(value)
 
     @property
     def site(self):
@@ -343,7 +343,7 @@ class ObservationMetaData(object):
                                    'by phoSimMetadata')
 
         self._bandpass = bandpassName
-        self.assignM5(m5)
+        self._assignM5(m5)
 
     @property
     def skyBrightness(self):
