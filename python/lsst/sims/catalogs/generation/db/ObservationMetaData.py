@@ -100,7 +100,7 @@ class ObservationMetaData(object):
         #this should be done after phoSimMetadata is assigned, just in case
         #assignPhoSimMetadata overwrites unrefractedRA/Dec
         if self._bounds is None:
-            self.buildBounds()
+            self._buildBounds()
 
 
     @property
@@ -167,7 +167,7 @@ class ObservationMetaData(object):
                 self._m5 = {self._bandpass:m5}
 
 
-    def buildBounds(self):
+    def _buildBounds(self):
         if self._boundType is None:
             return
 
@@ -222,7 +222,7 @@ class ObservationMetaData(object):
 
             self._bandpass = self._phoSimMetadata['Opsim_filter'][0]
 
-        self.buildBounds()
+        self._buildBounds()
 
     @property
     def unrefractedRA(self):
@@ -239,7 +239,7 @@ class ObservationMetaData(object):
                                    'which was set by phoSimMetaData')
 
         self._unrefractedRA = numpy.radians(value)
-        self.buildBounds()
+        self._buildBounds()
 
     @property
     def unrefractedDec(self):
@@ -256,7 +256,7 @@ class ObservationMetaData(object):
                                    'which was set by phoSimMetaData')
 
         self._unrefractedDec = numpy.radians(value)
-        self.buildBounds()
+        self._buildBounds()
 
     @property
     def boundLength(self):
@@ -265,7 +265,7 @@ class ObservationMetaData(object):
     @boundLength.setter
     def boundLength(self, value):
         self._boundLength = numpy.radians(value)
-        self.buildBounds()
+        self._buildBounds()
 
     @property
     def boundType(self):
@@ -274,7 +274,7 @@ class ObservationMetaData(object):
     @boundType.setter
     def boundType(self, value):
         self._boundType = value
-        self.buildBounds()
+        self._buildBounds()
 
     @property
     def bounds(self):
