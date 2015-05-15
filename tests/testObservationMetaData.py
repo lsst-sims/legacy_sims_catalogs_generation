@@ -153,21 +153,11 @@ class ObservationMetaDataTest(unittest.TestCase):
         self.assertEqual(testObsMD.bandpass,'g')
 
 
-    def testBoundExceptions(self):
+    def testBoundBuilding(self):
         """
-        Make sure ObservationMetaData throws an error when you incorrectly set Bounds
+        Make sure ObservationMetaData can build bounds
         """
-
-        self.assertRaises(RuntimeError,ObservationMetaData,boundType='hex',
-                          boundLength=1.0,unrefractedRA=0.0,unrefractedDec=0.0)
-        self.assertRaises(RuntimeError,ObservationMetaData,boundType='box',unrefractedRA=0.0,unrefractedDec=0.0)
-        self.assertRaises(RuntimeError,ObservationMetaData,boundType='box',unrefractedRA=0.0,boundLength=1.0)
-        self.assertRaises(RuntimeError,ObservationMetaData,boundType='box',unrefractedDec=0.0,boundLength=1.0)
-
-        boxBounds = numpy.array([1.0,2.0])
-        self.assertRaises(RuntimeError,ObservationMetaData,boundType='box',unrefractedRA=0.0,boundLength=boxBounds)
-        self.assertRaises(RuntimeError,ObservationMetaData,boundType='box',unrefractedDec=0.0,boundLength=boxBounds)
-
+        boxBounds = [0.1, 0.3]
         circObs = ObservationMetaData(boundType='circle',unrefractedRA=0.0, unrefractedDec=0.0, boundLength=1.0)
         squareObs = ObservationMetaData(boundType = 'box',unrefractedRA=0.0, unrefractedDec=0.0, boundLength=1.0)
         boxObs = ObservationMetaData(boundType = 'box', unrefractedRA=0.0, unrefractedDec=0.0, boundLength=boxBounds)

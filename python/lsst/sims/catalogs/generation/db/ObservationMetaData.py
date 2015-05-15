@@ -181,10 +181,10 @@ class ObservationMetaData(object):
             return
 
         if self._boundLength is None:
-            raise RuntimeError('ObservationMetadata cannot assign a bounds; it has no boundLength')
+            return
 
         if self._unrefractedRA is None or self._unrefractedDec is None:
-            raise RuntimeError('ObservationMetadata cannot assign a bounds; it has no unrefractedRA/Dec')
+            return
 
         self._bounds = SpatialBounds.getSpatialBounds(self._boundType, self._unrefractedRA, self._unrefractedDec,
                                                      self._boundLength)
