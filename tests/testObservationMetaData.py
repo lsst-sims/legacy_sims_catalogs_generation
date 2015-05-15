@@ -33,8 +33,14 @@ class ObservationMetaDataTest(unittest.TestCase):
 
         with self.assertRaises(RuntimeError):
             obs_metadata.unrefractedRA=1.2
+
+        with self.assertRaises(RuntimeError):
             obs_metadata.unrefractedDec=1.2
+
+        with self.assertRaises(RuntimeError):
             obs_metadata.rotSkyPos=1.5
+
+        with self.assertRaises(RuntimeError):
             obs_metadata.setBandpassAndM5()
 
         obs_metadata = ObservationMetaData(unrefractedRA=1.5,
