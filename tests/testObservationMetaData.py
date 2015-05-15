@@ -67,6 +67,31 @@ class ObservationMetaDataTest(unittest.TestCase):
         self.assertEqual(obsMD.m5['g'], 11)
         self.assertEqual(obsMD.m5['r'], 12)
 
+
+    def testM5Assignment(self):
+        """
+        Test assignment of M5 and bandpass in ObservationMetaData
+        """
+        obsMD = ObservationMetaData(bandpassName=['u','g'], m5=[12.0, 11.0])
+        self.assertAlmostEqual(obsMD.m5['u'], 12.0, 10)
+        self.assertAlmostEqual(obsMD.m5['g'], 11.0, 10)
+
+        obsMD.setBandpassAndM5(bandpassName=['i','z'], m5=[25.0, 22.0])
+        self.assertAlmostEqual(obsMD.m5['i'], 25.0, 10)
+        self.assertAlmostEqual(obsMD.m5['z'], 22.0, 10)
+
+        with self.assertRaises(KeyError):
+            obsMD.m5['u']
+
+        with self.assertRaises(KeyError):
+            obsMD.m5['g']
+
+        phoSimMD = {'Opsim_filter':[4]}
+        obsMD.phoSimMetadata = phoSimMD
+        self.assertEqual(obsMD.bandpass, 4)
+        self.assertTrue(obsMD.m5 is None)
+
+
     def testDefault(self):
         """
         Test that ObservationMetaData's default variables are properly set
