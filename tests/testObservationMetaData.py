@@ -27,7 +27,7 @@ class ObservationMetaDataTest(unittest.TestCase):
                     'Opsim_rotskypos':[1.3],
                     'Opsim_filter':[2]}
 
-        obs_metadata = ObservationMetaData(phoSimMetadata=metadata,
+        obs_metadata = ObservationMetaData(phoSimMetaData=metadata,
                                            boundType='circle',
                                            boundLength=0.1)
 
@@ -87,7 +87,7 @@ class ObservationMetaDataTest(unittest.TestCase):
             obsMD.m5['g']
 
         phoSimMD = {'Opsim_filter':[4]}
-        obsMD.phoSimMetadata = phoSimMD
+        obsMD.phoSimMetaData = phoSimMD
         self.assertEqual(obsMD.bandpass, 4)
         self.assertTrue(obsMD.m5 is None)
 
@@ -187,7 +187,7 @@ class ObservationMetaDataTest(unittest.TestCase):
                                 ('Opsim_filter',('g',str))])
 
 
-        testObsMD.phoSimMetadata = phosimMD
+        testObsMD.phoSimMetaData = phosimMD
         self.assertAlmostEqual(testObsMD.unrefractedRA, numpy.degrees(-2.0), 10)
         self.assertAlmostEqual(testObsMD.unrefractedDec, numpy.degrees(0.9), 10)
         self.assertAlmostEqual(testObsMD.rotSkyPos, numpy.degrees(1.1))
@@ -206,7 +206,7 @@ class ObservationMetaDataTest(unittest.TestCase):
         self.assertAlmostEqual(testObsMD.skyBrightness, skyBrightness, 10)
 
         testObsMD = ObservationMetaData()
-        testObsMD.assignPhoSimMetaData(phosimMD)
+        testObsMD.phoSimMetaData = phosimMD
 
         self.assertAlmostEqual(testObsMD.mjd,4000.0,10)
 
@@ -217,7 +217,7 @@ class ObservationMetaDataTest(unittest.TestCase):
         self.assertEqual(testObsMD.bandpass,'g')
 
         testObsMD = ObservationMetaData()
-        testObsMD.phoSimMetadata = phosimMD
+        testObsMD.phoSimMetaData = phosimMD
 
         self.assertAlmostEqual(testObsMD.mjd,4000.0,10)
 

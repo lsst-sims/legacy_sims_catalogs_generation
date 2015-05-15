@@ -35,7 +35,7 @@ class ObservationMetaData(object):
         * bandpassName : a char (e.g. 'u') or list (e.g. ['u', 'g', 'z'])
           denoting the bandpasses used for this particular observation
 
-        * phoSimMetadata : dict (optional)
+        * phoSimMetaData : dict (optional)
           a dictionary containing metadata used by PhoSim
 
         * m5: float or list (optional)
@@ -61,7 +61,7 @@ class ObservationMetaData(object):
     """
     def __init__(self, boundType=None, boundLength=None,
                  mjd=None, unrefractedRA=None, unrefractedDec=None, rotSkyPos=None,
-                 bandpassName=None, phoSimMetadata=None, site=Site(), m5=None, skyBrightness=None):
+                 bandpassName=None, phoSimMetaData=None, site=Site(), m5=None, skyBrightness=None):
 
         self._bounds = None
         self._boundType = boundType
@@ -90,15 +90,15 @@ class ObservationMetaData(object):
         else:
             self._boundLength = None
 
-        if phoSimMetadata is not None:
-            self.assignPhoSimMetaData(phoSimMetadata)
+        if phoSimMetaData is not None:
+            self._assignPhoSimMetaData(phoSimMetaData)
         else:
-            self._phoSimMetadata = None
+            self._phoSimMetaData = None
 
         self._assignM5(m5)
 
-        #this should be done after phoSimMetadata is assigned, just in case
-        #assignPhoSimMetadata overwrites unrefractedRA/Dec
+        #this should be done after phoSimMetaData is assigned, just in case
+        #self._assignPhoSimMetadata overwrites unrefractedRA/Dec
         if self._bounds is None:
             self._buildBounds()
 
@@ -119,7 +119,7 @@ class ObservationMetaData(object):
         mydict['skyBrightness'] = self.skyBrightness
         # mydict['m5'] = self.m5
 
-        mydict['phoSimMetadata'] = self.phoSimMetadata
+        mydict['phoSimMetaData'] = self.phoSimMetaData
 
         return mydict
 
@@ -180,47 +180,47 @@ class ObservationMetaData(object):
         self._bounds = SpatialBounds.getSpatialBounds(self._boundType, self._unrefractedRA, self._unrefractedDec,
                                                      self._boundLength)
 
-    def assignPhoSimMetaData(self, metaData):
+    def _assignPhoSimMetaData(self, metaData):
         """
         Assign the dict metaData to be the associated metadata dict of this object
         """
 
-        self._phoSimMetadata = metaData
+        self._phoSimMetaData = metaData
 
-        #overwrite member variables with values from the phoSimMetadata
-        if self._phoSimMetadata is not None and 'Opsim_expmjd' in self._phoSimMetadata:
+        #overwrite member variables with values from the phoSimMetaData
+        if self._phoSimMetaData is not None and 'Opsim_expmjd' in self._phoSimMetaData:
             if self._mjd is not None:
-                raise RuntimeError('WARNING in ObservationMetaData trying to overwrite mjd with phoSimMetadata')
+                raise RuntimeError('WARNING in ObservationMetaData trying to overwrite mjd with phoSimMetaData')
 
-            self._mjd = self._phoSimMetadata['Opsim_expmjd'][0]
+            self._mjd = self._phoSimMetaData['Opsim_expmjd'][0]
 
-        if self._phoSimMetadata is not None and 'Unrefracted_RA' in self._phoSimMetadata:
+        if self._phoSimMetaData is not None and 'Unrefracted_RA' in self._phoSimMetaData:
             if self._unrefractedRA is not None:
                 raise RuntimeError('WARNING in ObservationMetaData trying to overwrite unrefractedRA ' +
-                                   'with phoSimMetadata')
+                                   'with phoSimMetaData')
 
-            self._unrefractedRA = self._phoSimMetadata['Unrefracted_RA'][0]
+            self._unrefractedRA = self._phoSimMetaData['Unrefracted_RA'][0]
 
-        if self._phoSimMetadata is not None and 'Opsim_rotskypos' in self._phoSimMetadata:
+        if self._phoSimMetaData is not None and 'Opsim_rotskypos' in self._phoSimMetaData:
             if self._rotSkyPos is not None:
                 raise RuntimeError('WARNING in ObservationMetaData trying to overwrite rotSkyPos ' +
-                                   'with phoSimMetadata')
+                                   'with phoSimMetaData')
 
-            self._rotSkyPos = self.phoSimMetadata['Opsim_rotskypos'][0]
+            self._rotSkyPos = self.phoSimMetaData['Opsim_rotskypos'][0]
 
-        if self._phoSimMetadata is not None and 'Unrefracted_Dec' in self._phoSimMetadata:
+        if self._phoSimMetaData is not None and 'Unrefracted_Dec' in self._phoSimMetaData:
             if self._unrefractedDec is not None:
                 raise RuntimeError('WARNING in ObservationMetaData trying to overwrite unrefractedDec ' +
-                                   'with phoSimMetadata')
+                                   'with phoSimMetaData')
 
-            self._unrefractedDec = self._phoSimMetadata['Unrefracted_Dec'][0]
+            self._unrefractedDec = self._phoSimMetaData['Unrefracted_Dec'][0]
 
-        if self._phoSimMetadata is not None and 'Opsim_filter' in self._phoSimMetadata:
+        if self._phoSimMetaData is not None and 'Opsim_filter' in self._phoSimMetaData:
             if self._bandpass is not None:
                 raise RuntimeError('WARNING in ObservationMetaData trying to overwrite bandpass ' +
-                                   'with phoSimMetadata')
+                                   'with phoSimMetaData')
 
-            self._bandpass = self._phoSimMetadata['Opsim_filter'][0]
+            self._bandpass = self._phoSimMetaData['Opsim_filter'][0]
 
         self._buildBounds()
 
@@ -233,8 +233,8 @@ class ObservationMetaData(object):
 
     @unrefractedRA.setter
     def unrefractedRA(self, value):
-        if self._phoSimMetadata is not None:
-            if 'Unrefracted_RA' in self._phoSimMetadata:
+        if self._phoSimMetaData is not None:
+            if 'Unrefracted_RA' in self._phoSimMetaData:
                 raise RuntimeError('WARNING overwriting Unrefracted_RA ' +
                                    'which was set by phoSimMetaData')
 
@@ -250,8 +250,8 @@ class ObservationMetaData(object):
 
     @unrefractedDec.setter
     def unrefractedDec(self, value):
-        if self._phoSimMetadata is not None:
-            if 'Unrefracted_Dec' in self._phoSimMetadata:
+        if self._phoSimMetaData is not None:
+            if 'Unrefracted_Dec' in self._phoSimMetaData:
                 raise RuntimeError('WARNING overwriting Unrefracted_Dec ' +
                                    'which was set by phoSimMetaData')
 
@@ -289,11 +289,11 @@ class ObservationMetaData(object):
 
     @rotSkyPos.setter
     def rotSkyPos(self,value):
-        if self._phoSimMetadata is not None:
-            if 'Opsim_rotskypos' in self._phoSimMetadata:
+        if self._phoSimMetaData is not None:
+            if 'Opsim_rotskypos' in self._phoSimMetaData:
                 raise RuntimeError('WARNING overwriting rotSkyPos ' +
                                    'which was set by phoSimMetaData which was set ' +
-                                   'by phoSimMetadata')
+                                   'by phoSimMetaData')
 
         self._rotSkyPos = numpy.radians(value)
 
@@ -320,11 +320,11 @@ class ObservationMetaData(object):
 
     @mjd.setter
     def mjd(self, value):
-        if self._phoSimMetadata is not None:
-            if 'Opsim_expmjd' in self._phoSimMetadata:
+        if self._phoSimMetaData is not None:
+            if 'Opsim_expmjd' in self._phoSimMetaData:
                 raise RuntimeError('WARNING overwriting mjd ' +
                                    'which was set by phoSimMetaData which was set ' +
-                                   'by phoSimMetadata')
+                                   'by phoSimMetaData')
 
         self._mjd = value
 
@@ -336,11 +336,11 @@ class ObservationMetaData(object):
             return 'r'
 
     def setBandpassAndM5(self, bandpassName=None, m5=None):
-        if self._phoSimMetadata is not None:
-            if 'Opsim_filter' in self._phoSimMetadata:
+        if self._phoSimMetaData is not None:
+            if 'Opsim_filter' in self._phoSimMetaData:
                 raise RuntimeError('WARNING overwriting bandpass ' +
                                    'which was set by phoSimMetaData which was set ' +
-                                   'by phoSimMetadata')
+                                   'by phoSimMetaData')
 
         self._bandpass = bandpassName
         self._assignM5(m5)
@@ -354,11 +354,11 @@ class ObservationMetaData(object):
         self._skyBrightness = value
 
     @property
-    def phoSimMetadata(self):
-        return self._phoSimMetadata
+    def phoSimMetaData(self):
+        return self._phoSimMetaData
 
-    @phoSimMetadata.setter
-    def phoSimMetadata(self, value):
+    @phoSimMetaData.setter
+    def phoSimMetaData(self, value):
         if 'Unrefracted_RA' in value:
             self._unrefractedRA = None
 
@@ -375,4 +375,4 @@ class ObservationMetaData(object):
             self._bandpass = None
             self._m5 = None
 
-        self.assignPhoSimMetaData(value)
+        self._assignPhoSimMetaData(value)
