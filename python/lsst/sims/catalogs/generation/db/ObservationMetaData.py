@@ -344,7 +344,7 @@ class ObservationMetaData(object):
         else:
             return 'r'
 
-    def setBandpassAndM5(self, bandpass, m5):
+    def setBandpassAndM5(self, bandpass=None, m5=None):
         if self._phoSimMetadata is not None:
             if 'Opsim_filter' in self._phoSimMetadata:
                 raise RuntimeError('WARNING overwriting bandpass ' +
