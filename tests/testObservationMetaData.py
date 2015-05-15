@@ -1,3 +1,5 @@
+from __future__ import with_statement
+
 import os
 import numpy
 import unittest
@@ -13,6 +15,32 @@ class ObservationMetaDataTest(unittest.TestCase):
 
     It will also test the behavior of the m5 member variable.
     """
+
+    def testExceptions(self):
+        """
+        Test that errors are produced whenever ObservationMetaData
+        parameters are overwritten in an unintentional way
+        """
+
+        metadata = {'Unrefracted_RA':[1.5], 'Unrefracted_Dec':[0.5],
+                    'Opsim_expmjd':[52000.0],
+                    'Opsim_rotskypos':[1.3],
+                    'Opsim_filter':[2]}
+
+        obs_metadata = ObservationMetaData(phoSimMetadata=metadata,
+                                           boundType='circle',
+                                           boundLength=0.1)
+
+        with self.assertRaises(RuntimeError):
+            obs_metadata.unrefractedRA=1.2
+            obs_metadata.unrefractedDec=1.2
+            obs_metadata.rotSkyPos=1.5
+            obs_metadata.setBandpassAndM5()
+
+        obs_metadata = ObservationMetaData(unrefractedRA=1.5,
+                                           unrefractedDec=1.5)
+
+
     def testM5(self):
         """
         Test behavior of ObservationMetaData's m5 member variable
