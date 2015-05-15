@@ -235,7 +235,10 @@ class ObservationMetaData(object):
 
     @property
     def unrefractedRA(self):
-        return self._unrefractedRA
+        if self._unrefractedRA is not None:
+            return numpy.degrees(self._unrefractedRA)
+        else:
+            return None
 
     @unrefractedRA.setter
     def unrefractedRA(self, value):
@@ -250,7 +253,10 @@ class ObservationMetaData(object):
 
     @property
     def unrefractedDec(self):
-        return self._unrefractedDec
+        if self._unrefractedDec is not None:
+            return numpy.degrees(self._unrefractedDec)
+        else:
+            return None
 
     @unrefractedDec.setter
     def unrefractedDec(self, value):

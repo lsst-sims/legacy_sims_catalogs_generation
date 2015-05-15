@@ -90,8 +90,8 @@ class ObservationMetaDataTest(unittest.TestCase):
             skyBrightness=skyBrightness)
 
         self.assertAlmostEqual(testObsMD.mjd,5120.0,10)
-        self.assertAlmostEqual(numpy.degrees(testObsMD.unrefractedRA),1.5,10)
-        self.assertAlmostEqual(numpy.degrees(testObsMD.unrefractedDec),-1.1,10)
+        self.assertAlmostEqual(testObsMD.unrefractedRA,1.5,10)
+        self.assertAlmostEqual(testObsMD.unrefractedDec,-1.1,10)
         self.assertAlmostEqual(numpy.degrees(testObsMD.rotSkyPos),-10.0,10)
         self.assertEqual(testObsMD.bandpass,'z')
         self.assertAlmostEqual(testObsMD.skyBrightness, skyBrightness, 10)
@@ -108,8 +108,8 @@ class ObservationMetaDataTest(unittest.TestCase):
         self.assertAlmostEqual(testObsMD.mjd,4000.0,10)
 
         #recall that Unrefracted_RA/Dec are stored as radians in phoSim metadata
-        self.assertAlmostEqual(testObsMD.unrefractedRA,-2.0,10)
-        self.assertAlmostEqual(testObsMD.unrefractedDec,0.9,10)
+        self.assertAlmostEqual(testObsMD.unrefractedRA,numpy.degrees(-2.0),10)
+        self.assertAlmostEqual(testObsMD.unrefractedDec,numpy.degrees(0.9),10)
         self.assertAlmostEqual(testObsMD.rotSkyPos,1.1,10)
         self.assertEqual(testObsMD.bandpass,'g')
 
@@ -149,13 +149,13 @@ class ObservationMetaDataTest(unittest.TestCase):
 
         testObsMD = ObservationMetaData(boundType='circle',
                      unrefractedRA = circRA, unrefractedDec=circDec, boundLength = radius)
-        self.assertAlmostEqual(numpy.degrees(testObsMD.unrefractedRA),25.0,10)
-        self.assertAlmostEqual(numpy.degrees(testObsMD.unrefractedDec),50.0,10)
+        self.assertAlmostEqual(testObsMD.unrefractedRA,25.0,10)
+        self.assertAlmostEqual(testObsMD.unrefractedDec,50.0,10)
 
         testObsMD = ObservationMetaData(boundType = 'box',
                                         unrefractedRA = boxRA, unrefractedDec = boxDec, boundLength=boxLength)
-        self.assertAlmostEqual(numpy.degrees(testObsMD.unrefractedRA),15.0,10)
-        self.assertAlmostEqual(numpy.degrees(testObsMD.unrefractedDec),0.0,10)
+        self.assertAlmostEqual(testObsMD.unrefractedRA,15.0,10)
+        self.assertAlmostEqual(testObsMD.unrefractedDec,0.0,10)
 
 def suite():
     """Returns a suite containing all the test cases in this module."""
