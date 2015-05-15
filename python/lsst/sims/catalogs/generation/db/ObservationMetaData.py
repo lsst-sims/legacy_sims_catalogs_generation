@@ -86,16 +86,7 @@ class ObservationMetaData(object):
             self._unrefractedDec = None
 
         if boundLength is not None:
-            if isinstance(boundLength, float):
-                self._boundLength = numpy.radians(boundLength)
-            else:
-                try:
-                    self._boundLength = []
-                    for ll in boundLength:
-                        self._boundLength.append(numpy.radians(ll))
-                except:
-                    raise RuntimeError('You seem to have passed something that is neither a float nor ' +
-                                       'list-like as boundLength to ObservationMetaData')
+            self._boundLength = numpy.radians(boundLength)
         else:
             self._boundLength = None
 
@@ -247,7 +238,7 @@ class ObservationMetaData(object):
                 raise RuntimeError('WARNING overwriting Unrefracted_RA ' +
                                    'which was set by phoSimMetaData')
 
-        self._unrefractedRA = numpy.degrees(value)
+        self._unrefractedRA = numpy.radians(value)
         self.buildBounds()
 
     @property
@@ -269,7 +260,7 @@ class ObservationMetaData(object):
 
     @property
     def boundLength(self):
-        return self._boundLength
+        return numpy.degrees(self._boundLength)
 
     @boundLength.setter
     def boundLength(self, value):
@@ -292,7 +283,7 @@ class ObservationMetaData(object):
     @property
     def rotSkyPos(self):
         if self._rotSkyPos is not None:
-            return self._rotSkyPos
+            return numpy.degrees(self._rotSkyPos)
         else:
             return 0.0
 

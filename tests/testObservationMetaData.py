@@ -119,6 +119,22 @@ class ObservationMetaDataTest(unittest.TestCase):
         rotSkyPos = -10.0
         skyBrightness = 25.0
 
+        testObsMD = ObservationMetaData()
+        testObsMD.unrefractedRA = RA
+        testObsMD.unrefractedDec = Dec
+        testObsMD.rotSkyPos = rotSkyPos
+        testObsMD.skyBrightness = skyBrightness
+        testObsMD.boundType = 'box'
+        testObsMD.boundLength = [1.2, 3.0]
+
+        self.assertAlmostEqual(testObsMD.unrefractedRA, RA, 10)
+        self.assertAlmostEqual(testObsMD.unrefractedDec, Dec, 10)
+        self.assertAlmostEqual(testObsMD.rotSkyPos, rotSkyPos, 10)
+        self.assertAlmostEqual(testObsMD.skyBrightness, skyBrightness, 10)
+        self.assertEqual(testObsMD.boundType, 'box')
+        self.assertAlmostEqual(testObsMD.boundLength[0],1.2, 10)
+        self.assertAlmostEqual(testObsMD.boundLength[1], 3.0, 10)
+
         testObsMD = ObservationMetaData(mjd=mjd, unrefractedRA=RA,
             unrefractedDec=Dec, rotSkyPos=rotSkyPos, bandpassName='z',
             skyBrightness=skyBrightness)
@@ -126,7 +142,7 @@ class ObservationMetaDataTest(unittest.TestCase):
         self.assertAlmostEqual(testObsMD.mjd,5120.0,10)
         self.assertAlmostEqual(testObsMD.unrefractedRA,1.5,10)
         self.assertAlmostEqual(testObsMD.unrefractedDec,-1.1,10)
-        self.assertAlmostEqual(numpy.degrees(testObsMD.rotSkyPos),-10.0,10)
+        self.assertAlmostEqual(testObsMD.rotSkyPos,-10.0,10)
         self.assertEqual(testObsMD.bandpass,'z')
         self.assertAlmostEqual(testObsMD.skyBrightness, skyBrightness, 10)
 
@@ -144,7 +160,7 @@ class ObservationMetaDataTest(unittest.TestCase):
         #recall that Unrefracted_RA/Dec are stored as radians in phoSim metadata
         self.assertAlmostEqual(testObsMD.unrefractedRA,numpy.degrees(-2.0),10)
         self.assertAlmostEqual(testObsMD.unrefractedDec,numpy.degrees(0.9),10)
-        self.assertAlmostEqual(testObsMD.rotSkyPos,1.1,10)
+        self.assertAlmostEqual(testObsMD.rotSkyPos,numpy.degrees(1.1),10)
         self.assertEqual(testObsMD.bandpass,'g')
 
         testObsMD = ObservationMetaData()
@@ -155,7 +171,7 @@ class ObservationMetaDataTest(unittest.TestCase):
         #recall that Unrefracted_RA/Dec are stored as radians in phoSim metadata
         self.assertAlmostEqual(testObsMD.unrefractedRA,numpy.degrees(-2.0),10)
         self.assertAlmostEqual(testObsMD.unrefractedDec,numpy.degrees(0.9),10)
-        self.assertAlmostEqual(testObsMD.rotSkyPos,1.1,10)
+        self.assertAlmostEqual(testObsMD.rotSkyPos,numpy.degrees(1.1),10)
         self.assertEqual(testObsMD.bandpass,'g')
 
 
