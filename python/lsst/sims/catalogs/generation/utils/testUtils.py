@@ -313,11 +313,11 @@ def makePhoSimTestDB(filename='PhoSimTestDatabase.db', size=1000, seedVal=32, ra
                  testSite.longitude, testSite.latitude)
 
     obsDict['Opsim_expmjd'] = mjd
-    phoSimMetadata = OrderedDict([
+    phoSimMetaData = OrderedDict([
                       (k, (obsDict[k],numpy.dtype(type(obsDict[k])))) for k in obsDict])
 
     obs_metadata = ObservationMetaData(boundType = 'circle', boundLength = 2.0*radius,
-                                       phoSimMetadata=phoSimMetadata, site=testSite)
+                                       phoSimMetaData=phoSimMetaData, site=testSite)
 
     #Now begin building the database.
     #First create the tables.
