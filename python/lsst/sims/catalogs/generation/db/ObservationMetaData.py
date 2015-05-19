@@ -340,7 +340,7 @@ class ObservationMetaData(object):
         if self._rotSkyPos is not None:
             return numpy.degrees(self._rotSkyPos)
         else:
-            return 0.0
+            return None
 
     @rotSkyPos.setter
     def rotSkyPos(self,value):
