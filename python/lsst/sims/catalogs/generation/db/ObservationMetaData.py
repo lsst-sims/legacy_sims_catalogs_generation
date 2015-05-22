@@ -231,7 +231,7 @@ class ObservationMetaData(object):
                 raise RuntimeError('WARNING in ObservationMetaData trying to overwrite rotSkyPos ' +
                                    'with phoSimMetaData')
 
-            self._rotSkyPos = self.phoSimMetaData['Opsim_rotskypos'][0]
+            self._rotSkyPos = self._phoSimMetaData['Opsim_rotskypos'][0]
 
         if self._phoSimMetaData is not None and 'Unrefracted_Dec' in self._phoSimMetaData:
             if self._unrefractedDec is not None:
