@@ -419,7 +419,7 @@ def makePhoSimTestDB(filename='PhoSimTestDatabase.db', size=1000, seedVal=32, ra
     y_ab = numpy.random.sample(size)*4.0 +17.0
     redshift = numpy.random.sample(size)*2.0
 
-    t0_mjd = numpy.random.sample(size)*10.0+mjd
+    t0_mjd = mjd - numpy.random.sample(size)*1000.0
     agn_tau = numpy.random.sample(size)*1000.0 + 1000.0
     agnSeed = numpy.random.random_integers(low=2, high=4000, size=size)
     agn_sfu = numpy.random.sample(size)
@@ -465,14 +465,12 @@ def makePhoSimTestDB(filename='PhoSimTestDatabase.db', size=1000, seedVal=32, ra
         c.execute(cmd)
 
         varParam = {'varMethodName':'applyAgn',
-                    'pars':{'agn_tau':agn_tau[i], 't0_mjd':t0_mjd[i],
-                    'agn_sfu':agn_sfu[i], 'agn_sfg':agn_sfg[i], 'agn_sfr':agn_sfr[i],
-                    'agn_sfi':agn_sfi[i], 'agn_sfz':agn_sfz[i], 'agn_sfy':agn_sfy[i],
+                    'pars':{'agn_tau':round(agn_tau[i],4), 't0_mjd':round(t0_mjd[i],4),
+                    'agn_sfu':round(agn_sfu[i],4), 'agn_sfg':round(agn_sfg[i],4), 'agn_sfr':round(agn_sfr[i],4),
+                    'agn_sfi':round(agn_sfi[i],4), 'agn_sfz':round(agn_sfz[i],4), 'agn_sfy':round(agn_sfy[i],4),
                     'seed':int(agnSeed[i])}}
 
         paramStr = json.dumps(varParam)
-
-
 
         cmd = '''INSERT INTO galaxy VALUES (%i, %i, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f,
                                             '%s', '%s', '%s', '%s',
