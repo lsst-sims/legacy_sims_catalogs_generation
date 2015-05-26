@@ -504,7 +504,7 @@ def makePhoSimTestDB(filename='PhoSimTestDatabase.db', size=1000, seedVal=32, ra
 
         varParam = {'varMethodName':'testVar', 'pars':{'period':period[i], 'amplitude':amp[i]}}
         paramStr = json.dumps(varParam)
-        cmd = '''INSERT INTO starsALL_forceseek VALUES (%i, %f, %f, %f, %f, %f, %f, %f, %s, '%s', %f)''' %\
+        cmd = '''INSERT INTO starsALL_forceseek VALUES (%i, %f, %f, %f, %f, %f, %f, %f, '%s', '%s', %f)''' %\
                   (i, raStar[i], decStar[i], magnormStar[i], mudecl[i], mura[i],
                   galacticAv[i], vrad[i], paramStr, star_seds[i%len(star_seds)], parallax[i])
 
