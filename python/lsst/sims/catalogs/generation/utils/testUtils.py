@@ -451,6 +451,8 @@ def makePhoSimTestDB(filename='PhoSimTestDatabase.db', size=1000, seedVal=32, ra
     galacticAv = numpy.random.sample(size)*0.05*3.1
     vrad = numpy.random.sample(size)*1.0
     parallax = 0.00045+numpy.random.sample(size)*0.00001
+    period = numpy.random.sample(size)*20.0
+    amp = numpy.random.sample(size)*5.0
 
     #write the data to the tables.
     for i in range(size):
@@ -500,9 +502,11 @@ def makePhoSimTestDB(filename='PhoSimTestDatabase.db', size=1000, seedVal=32, ra
                                                z_ab[i], y_ab[i], redshift[i])
         c.execute(cmd)
 
+        varParam = {'varMethodName':'testVar', 'pars':{'period':period[i], 'amplitude':amp[i]}}
+        paramStr = json.dumps(varParam)
         cmd = '''INSERT INTO starsALL_forceseek VALUES (%i, %f, %f, %f, %f, %f, %f, %f, %s, '%s', %f)''' %\
                   (i, raStar[i], decStar[i], magnormStar[i], mudecl[i], mura[i],
-                  galacticAv[i], vrad[i], 'NULL', star_seds[i%len(star_seds)], parallax[i])
+                  galacticAv[i], vrad[i], paramStr, star_seds[i%len(star_seds)], parallax[i])
 
         c.execute(cmd)
 
