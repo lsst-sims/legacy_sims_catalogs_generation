@@ -365,7 +365,7 @@ def makePhoSimTestDB(filename='PhoSimTestDatabase.db', size=1000, seedVal=32, ra
     try:
         c.execute('''CREATE TABLE starsALL_forceseek
                   (simobjid int, ra real, decl real, magNorm real,
-                  mudecl real, mura real, galacticAv real, vrad real, varParamStar text, sedFilename text, parallax real)''')
+                  mudecl real, mura real, galacticAv real, vrad real, varParamStr text, sedFilename text, parallax real)''')
     except:
         raise RuntimeError("Error creating starsALL_forceseek table.")
 
