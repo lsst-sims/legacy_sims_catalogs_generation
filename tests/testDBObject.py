@@ -1,7 +1,7 @@
 import os
 import sqlite3
 
-import unittest, numpy
+import unittest, numpy, warnings
 import lsst.utils.tests as utilsTests
 from lsst.sims.catalogs.generation.db import DBObject
 
@@ -267,6 +267,30 @@ class DBObjectTestCase(unittest.TestCase):
 
         dtype = [('MAXthrice',int),('MINthrice',int)]
         self.assertEqual(results.dtype,dtype)
+
+    def testValidationErrors(self):
+        """ Test that appropriate errors and warnings are thrown when connecting
+        """
+
+        with warnings.catch_warnings(record=True) as w:
+            warnings.simplefilter("always")
+            DBObject(database=self.database,  driver=self.driver,
+                          username='Test', password='ShouldWarnIfPasswordSupplied')
+            assert len(w) == 1
+
+        #missing database
+        self.assertRaises(AttributeError, DBObject, driver=self.driver)
+        #missing driver
+        self.assertRaises(AttributeError, DBObject, database=self.database)
+        #missing host
+        self.assertRaises(AttributeError, DBObject, driver='mssql+pymssql')
+        #missing port
+        self.assertRaises(AttributeError, DBObject, driver='mssql+pymssql', host='localhost')
+
+        #passing password for known account is forbidden
+        self.assertRaises(RuntimeError, DBObject, database=self.database,
+                          driver=self.driver, username='LSST-2', password='DoesntMatter')
+
 
 def suite():
     """Returns a suite containing all the test cases in this module."""

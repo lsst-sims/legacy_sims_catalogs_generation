@@ -84,40 +84,83 @@ class ChunkIterator(object):
 
 class DBObject(object):
 
-    def __init__(self, driver=None, host=None, port=None, database=None, verbose=False):
+    def __init__(self, database=None, driver=None, host=None, port=None,
+                 username=None, password=None, verbose=False):
+        """Initialize DBObject.
+        """
+        #Explicit constructor to DBObject preferred
+        kwargDict = dict(database=database,
+                         driver=driver,
+                         host=host,
+                         port=port,
+                         username=username,
+                         password=password,
+                         verbose=verbose)
 
-        #Override the class variables if supplied arguments
-        if driver is not None:
-            self.driver = driver
-        if host is not None:
-            self.host = host
-        if port is not None:
-            self.port = port
-        if database is not None:
-            self.database = database
+        for key, value in kwargDict.iteritems():
+            if value is not None:
+                setattr(self, key, value)
+
+        self.dtype = None
+        #this is a cache for the query, so that any one query does not have to guess dtype multiple times
+
+        self._validate_conn_params()
+        self._connect_to_engine()
+
+
+    def _validate_conn_params(self):
+        """Validate connection parameters
+
+        - Check that required connection paramters are present
+        - Warn if clear-text password is provided
+        - Replace default host/port if driver is 'sqlite'
+        """
+
+        if hasattr(self, 'password'):
+            warnings.warn("SECURITY WARNING! %s object received clear-text password."
+                          " All database passwords should be stored in DbAuth policy file: "
+                          "$HOME/.lsst/db-auth.paf."%(self.__class__.__name__), RuntimeWarning,  stacklevel=4)
+            if self.username == 'LSST-2':
+                raise RuntimeError("Including CATSIM database password in script is forbidden.")
+
+
+        errMessage = "Please supply a 'driver' kwarg to the constructor or in class definition. "
+        errMessage += "'driver' is formatted as dialect+driver, such as 'sqlite' or 'mssql+pymssql'."
+        if not hasattr(self, 'driver'):
+            raise AttributeError("%s has no attribute 'driver'. "%(self.__class__.__name__) + errMessage)
+        elif self.driver is None:
+            raise AttributeError("%s.driver is None. "%(self.__class__.__name__) + errMessage)
+
+        errMessage = "Please supply a 'database' kwarg to the constructor or in class definition. "
+        errMessage += " 'database' is the database name or the filename path if driver is 'sqlite'. "
+        if not hasattr(self, 'database'):
+            raise AttributeError("%s has no attribute 'database'. "%(self.__class__.__name__) + errMessage)
+        elif self.database is None:
+            raise AttributeError("%s.database is None. "%(self.__class__.__name__) + errMessage)
 
         if self.driver == 'sqlite':
             #When passed sqlite database, override default host/port
             self.host = None
             self.port = None
 
-        self.verbose=verbose
-        self.dtype = None
-        #this is a cache for the query, so that any one query does not have to guess dtype multiple times
-
-        self._connect_to_engine()
 
     def _connect_to_engine(self):
         """create and connect to a database engine"""
 
         #DbAuth will not look up hosts that are None, '' or 0
         if self.host:
+            if hasattr(self, 'username') & hasattr(self, 'password'):
+                authDict = {'username': self.username,
+                            'password': self.password}
+            else:
+                authDict = {'username': DbAuth.username(self.host, str(self.port)),
+                            'password': DbAuth.password(self.host, str(self.port))}
+
             dbUrl = url.URL(self.driver,
-                            username=DbAuth.username(self.host, str(self.port)),
-                            password=DbAuth.password(self.host, str(self.port)),
                             host=self.host,
                             port=self.port,
-                            database=self.database)
+                            database=self.database,
+                            **authDict)
         else:
             dbUrl = url.URL(self.driver,
                             database=self.database)
@@ -345,8 +388,8 @@ class CatalogDBObject(DBObject):
         cls = cls.registry.get(objid, CatalogDBObject)
         return cls(*args, **kwargs)
 
-    def __init__(self, driver=None, host=None, port=None,
-                 database=None, verbose=False):
+    def __init__(self, database=None, driver=None, host=None, port=None,
+                 username=None, password=None, verbose=False):
         if not verbose:
             with warnings.catch_warnings():
                 warnings.simplefilter("ignore", category=sa_exc.SAWarning)
@@ -361,10 +404,10 @@ class CatalogDBObject(DBObject):
                           "been set.  Input files for phosim are not "
                           "possible.")
 
-        super(CatalogDBObject, self).__init__(driver=driver, host=host,
-                                              port=port, database=database, verbose=verbose)
 
         self._get_table()
+        super(CatalogDBObject, self).__init__(database=database, driver=driver, host=host, port=port,
+                                              username=username, password=password, verbose=verbose)
 
         #Need to do this after the table is instantiated so that
         #the default columns can be filled from the table object.
