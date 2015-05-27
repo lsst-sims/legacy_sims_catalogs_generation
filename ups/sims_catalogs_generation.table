@@ -1,6 +1,7 @@
 setupRequired(utils)
 setupRequired(python)
 setupRequired(sims_utils)
+setupRequired(daf_persistence)
 
 #This package also requires sqlalchemy provided by
 #Anaconda
