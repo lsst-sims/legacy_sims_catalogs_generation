@@ -271,13 +271,6 @@ class DBObjectTestCase(unittest.TestCase):
     def testValidationErrors(self):
         """ Test that appropriate errors and warnings are thrown when connecting
         """
-
-        with warnings.catch_warnings(record=True) as w:
-            warnings.simplefilter("always")
-            DBObject(database=self.database,  driver=self.driver,
-                          username='Test', password='ShouldWarnIfPasswordSupplied')
-            assert len(w) == 1
-
         #missing database
         self.assertRaises(AttributeError, DBObject, driver=self.driver)
         #missing driver
@@ -286,10 +279,6 @@ class DBObjectTestCase(unittest.TestCase):
         self.assertRaises(AttributeError, DBObject, driver='mssql+pymssql')
         #missing port
         self.assertRaises(AttributeError, DBObject, driver='mssql+pymssql', host='localhost')
-
-        #passing password for known account is forbidden
-        self.assertRaises(RuntimeError, DBObject, database=self.database,
-                          driver=self.driver, username='LSST-2', password='DoesntMatter')
 
 
 def suite():

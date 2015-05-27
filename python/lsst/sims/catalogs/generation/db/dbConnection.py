@@ -84,8 +84,7 @@ class ChunkIterator(object):
 
 class DBObject(object):
 
-    def __init__(self, database=None, driver=None, host=None, port=None,
-                 username=None, password=None, verbose=False):
+    def __init__(self, database=None, driver=None, host=None, port=None, verbose=False):
         """Initialize DBObject.
         """
         #Explicit constructor to DBObject preferred
@@ -93,8 +92,6 @@ class DBObject(object):
                          driver=driver,
                          host=host,
                          port=port,
-                         username=username,
-                         password=password,
                          verbose=verbose)
 
         for key, value in kwargDict.iteritems():
@@ -112,17 +109,8 @@ class DBObject(object):
         """Validate connection parameters
 
         - Check that required connection paramters are present
-        - Warn if clear-text password is provided
         - Replace default host/port if driver is 'sqlite'
         """
-
-        if hasattr(self, 'password'):
-            warnings.warn("SECURITY WARNING! %s object received clear-text password."
-                          " All database passwords should be stored in DbAuth policy file: "
-                          "$HOME/.lsst/db-auth.paf."%(self.__class__.__name__), RuntimeWarning,  stacklevel=4)
-            if self.username == 'LSST-2':
-                raise RuntimeError("Including CATSIM database password in script is forbidden.")
-
 
         errMessage = "Please supply a 'driver' kwarg to the constructor or in class definition. "
         errMessage += "'driver' is formatted as dialect+driver, such as 'sqlite' or 'mssql+pymssql'."
@@ -149,12 +137,15 @@ class DBObject(object):
 
         #DbAuth will not look up hosts that are None, '' or 0
         if self.host:
-            if hasattr(self, 'username') & hasattr(self, 'password'):
-                authDict = {'username': self.username,
-                            'password': self.password}
-            else:
+            try:
                 authDict = {'username': DbAuth.username(self.host, str(self.port)),
                             'password': DbAuth.password(self.host, str(self.port))}
+            except:
+                if self.driver == 'mssql+pymssql':
+                    print("\nFor more information on database authentication using the db-auth.paf"
+                          " policy file see: "
+                          "https://confluence.lsstcorp.org/display/SIM/Accessing+the+UW+CATSIM+Database\n")
+                raise
 
             dbUrl = url.URL(self.driver,
                             host=self.host,
@@ -388,8 +379,7 @@ class CatalogDBObject(DBObject):
         cls = cls.registry.get(objid, CatalogDBObject)
         return cls(*args, **kwargs)
 
-    def __init__(self, database=None, driver=None, host=None, port=None,
-                 username=None, password=None, verbose=False):
+    def __init__(self, database=None, driver=None, host=None, port=None, verbose=False):
         if not verbose:
             with warnings.catch_warnings():
                 warnings.simplefilter("ignore", category=sa_exc.SAWarning)
@@ -405,11 +395,20 @@ class CatalogDBObject(DBObject):
                           "possible.")
 
         super(CatalogDBObject, self).__init__(database=database, driver=driver, host=host, port=port,
-                                              username=username, password=password, verbose=verbose)
+                                              verbose=verbose)
+
         try:
             self._get_table()
         except sa_exc.OperationalError, e:
-            raise RuntimeError("Failed to connect to %s: sqlalchemy.%s" % (self.engine, e.message))
+            if self.driver == 'mssql+pymssql':
+                message = "\n To connect to the UW CATSIM database: "
+                message += " Check that you have valid connection parameters, an open ssh tunnel "
+                message += "and that your $HOME/.lsst/db-auth.paf contains the appropriate credientials. "
+                message += "Please consult the following link for more information on access: "
+                message += " https://confluence.lsstcorp.org/display/SIM/Accessing+the+UW+CATSIM+Database "
+            else:
+                message = ''
+            raise RuntimeError("Failed to connect to %s: sqlalchemy.%s %s" % (self.engine, e.message, message))
 
         #Need to do this after the table is instantiated so that
         #the default columns can be filled from the table object.
