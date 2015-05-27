@@ -52,7 +52,8 @@ class myNonsenseDB(CatalogDBObject):
     objid = 'Nonsense'
     tableid = 'test'
     idColKey = 'NonsenseId'
-    dbAddress = 'sqlite:///testCatalogDBObjectNonsenseDB.db'
+    driver = 'sqlite'
+    database = 'testCatalogDBObjectNonsenseDB.db'
     raColName = 'ra'
     decColName = 'dec'
     columns = [('NonsenseId', 'id', int),
@@ -73,11 +74,13 @@ class myNonsenseFileDB(fileDBObject):
 
 class testCatalogDBObjectTestStars(myTestStars):
     objid = 'testCatalogDBObjectTeststars'
-    dbAddress = 'sqlite:///testCatalogDBObjectDatabase.db'
+    driver = 'sqlite'
+    database = 'testCatalogDBObjectDatabase.db'
 
 class testCatalogDBObjectTestGalaxies(myTestGals):
     objid = 'testCatalogDBObjectTestgals'
-    dbAddress = 'sqlite:///testCatalogDBObjectDatabase.db'
+    driver = 'sqlite'
+    database = 'testCatalogDBObjectDatabase.db'
 
 class CatalogDBObjectTestCase(unittest.TestCase):
 
@@ -382,7 +385,8 @@ class CatalogDBObjectTestCase(unittest.TestCase):
         self.assertEqual(mystars.raColName,'ra')
         self.assertEqual(mystars.decColName,'decl')
         self.assertEqual(mystars.idColKey,'id')
-        self.assertEqual(mystars.dbAddress,'sqlite:///testCatalogDBObjectDatabase.db')
+        self.assertEqual(mystars.driver,'sqlite')
+        self.assertEqual(mystars.database, 'testCatalogDBObjectDatabase.db')
         self.assertEqual(mystars.appendint, 1023)
         self.assertEqual(mystars.tableid,'stars')
         self.assertFalse(hasattr(mystars,'spatialModel'))
@@ -391,7 +395,8 @@ class CatalogDBObjectTestCase(unittest.TestCase):
         self.assertEqual(mygalaxies.raColName,'ra')
         self.assertEqual(mygalaxies.decColName,'decl')
         self.assertEqual(mygalaxies.idColKey,'id')
-        self.assertEqual(mygalaxies.dbAddress,'sqlite:///testCatalogDBObjectDatabase.db')
+        self.assertEqual(mygalaxies.driver,'sqlite')
+        self.assertEqual(mygalaxies.database, 'testCatalogDBObjectDatabase.db')
         self.assertEqual(mygalaxies.appendint, 1022)
         self.assertEqual(mygalaxies.tableid,'galaxies')
         self.assertTrue(hasattr(mygalaxies,'spatialModel'))
@@ -401,7 +406,8 @@ class CatalogDBObjectTestCase(unittest.TestCase):
         self.assertEqual(myNonsense.raColName,'ra')
         self.assertEqual(myNonsense.decColName,'dec')
         self.assertEqual(myNonsense.idColKey,'NonsenseId')
-        self.assertEqual(myNonsense.dbAddress,'sqlite:///testCatalogDBObjectNonsenseDB.db')
+        self.assertEqual(myNonsense.driver,'sqlite')
+        self.assertEqual(myNonsense.database, 'testCatalogDBObjectNonsenseDB.db')
         self.assertFalse(hasattr(myNonsense,'appendint'))
         self.assertEqual(myNonsense.tableid,'test')
         self.assertFalse(hasattr(myNonsense,'spatialModel'))
@@ -495,8 +501,8 @@ class fileDBObjectTestCase(unittest.TestCase):
         del self.dtype
         del self.baselineData
 
-    def testDBaddress(self):
-        self.assertEqual(self.myNonsense.dbAddress,'sqlite:///:memory:')
+    def testDatabaseName(self):
+        self.assertEqual(self.myNonsense.database, ':memory:')
 
     def testNonsenseCircularConstraints(self):
         """

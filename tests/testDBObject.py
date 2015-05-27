@@ -1,7 +1,7 @@
 import os
 import sqlite3
 
-import unittest, numpy
+import unittest, numpy, warnings
 import lsst.utils.tests as utilsTests
 from lsst.sims.catalogs.generation.db import DBObject
 
@@ -75,16 +75,18 @@ class DBObjectTestCase(unittest.TestCase):
             os.unlink('testDBObjectDB.db')
 
     def setUp(self):
-       self.dbAddress = 'sqlite:///testDBObjectDB.db'
+       self.driver = 'sqlite'
+       self.database = 'testDBObjectDB.db'
 
     def tearDown(self):
-        del self.dbAddress
+       self.driver = 'sqlite'
+       self.database = 'testDBObjectDB.db'
 
     def testTableNames(self):
         """
         Test the method that returns the names of tables in a database
         """
-        dbobj = DBObject(self.dbAddress)
+        dbobj = DBObject(driver=self.driver, database=self.database)
         names = dbobj.get_table_names()
         self.assertEqual(len(names),3)
         self.assertTrue('doubleTable' in names)
@@ -95,7 +97,7 @@ class DBObjectTestCase(unittest.TestCase):
         Test that the filters we placed on queries made with execute_aribtrary()
         work
         """
-        dbobj = DBObject(self.dbAddress)
+        dbobj = DBObject(driver=self.driver, database=self.database)
         controlQuery = 'SELECT doubleTable.id, intTable.id, doubleTable.log, intTable.thrice '
         controlQuery += 'FROM doubleTable, intTable WHERE doubleTable.id = intTable.id'
         controlResults = dbobj.execute_arbitrary(controlQuery)
@@ -141,7 +143,7 @@ class DBObjectTestCase(unittest.TestCase):
         """
         Test the method that returns the names of columns in a table
         """
-        dbobj = DBObject(self.dbAddress)
+        dbobj = DBObject(driver=self.driver, database=self.database)
         names = dbobj.get_column_names('doubleTable')
         self.assertEqual(len(names),3)
         self.assertTrue('id' in names)
@@ -172,7 +174,7 @@ class DBObjectTestCase(unittest.TestCase):
         """
         Test a query on a single table (using chunk iterator)
         """
-        dbobj = DBObject(self.dbAddress)
+        dbobj = DBObject(driver=self.driver, database=self.database)
         query = 'SELECT id, sqrt FROM doubleTable'
         results = dbobj.get_chunk_iterator(query)
 
@@ -196,7 +198,7 @@ class DBObjectTestCase(unittest.TestCase):
 
         (also test q query on a single table using .execute_arbitrary() directly
         """
-        dbobj = DBObject(self.dbAddress)
+        dbobj = DBObject(driver=self.driver, database=self.database)
         query = 'SELECT id, log FROM doubleTable'
         dtype = [('id',int),('log',float)]
         results = dbobj.execute_arbitrary(query, dtype = dtype)
@@ -216,7 +218,7 @@ class DBObjectTestCase(unittest.TestCase):
         """
         Test a join
         """
-        dbobj = DBObject(self.dbAddress)
+        dbobj = DBObject(driver=self.driver, database=self.database)
         query = 'SELECT doubleTable.id, intTable.id, doubleTable.log, intTable.thrice '
         query += 'FROM doubleTable, intTable WHERE doubleTable.id = intTable.id'
         results = dbobj.get_chunk_iterator(query, chunk_size=10)
@@ -257,7 +259,7 @@ class DBObjectTestCase(unittest.TestCase):
         """
         Test queries on SQL functions by using the MIN and MAX functions
         """
-        dbobj = DBObject(self.dbAddress)
+        dbobj = DBObject(driver=self.driver, database=self.database)
         query = 'SELECT MAX(thrice), MIN(thrice) FROM intTable'
         results = dbobj.execute_arbitrary(query)
         self.assertEqual(results[0][0],594)
@@ -265,6 +267,19 @@ class DBObjectTestCase(unittest.TestCase):
 
         dtype = [('MAXthrice',int),('MINthrice',int)]
         self.assertEqual(results.dtype,dtype)
+
+    def testValidationErrors(self):
+        """ Test that appropriate errors and warnings are thrown when connecting
+        """
+        #missing database
+        self.assertRaises(AttributeError, DBObject, driver=self.driver)
+        #missing driver
+        self.assertRaises(AttributeError, DBObject, database=self.database)
+        #missing host
+        self.assertRaises(AttributeError, DBObject, driver='mssql+pymssql')
+        #missing port
+        self.assertRaises(AttributeError, DBObject, driver='mssql+pymssql', host='localhost')
+
 
 def suite():
     """Returns a suite containing all the test cases in this module."""
