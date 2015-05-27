@@ -404,10 +404,12 @@ class CatalogDBObject(DBObject):
                           "been set.  Input files for phosim are not "
                           "possible.")
 
-
-        self._get_table()
         super(CatalogDBObject, self).__init__(database=database, driver=driver, host=host, port=port,
                                               username=username, password=password, verbose=verbose)
+        try:
+            self._get_table()
+        except sa_exc.OperationalError, e:
+            raise RuntimeError("Failed to connect to %s: sqlalchemy.%s" % (self.engine, e.message))
 
         #Need to do this after the table is instantiated so that
         #the default columns can be filled from the table object.
