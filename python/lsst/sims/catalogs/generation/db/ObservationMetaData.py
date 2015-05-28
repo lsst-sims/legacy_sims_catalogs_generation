@@ -205,7 +205,7 @@ class ObservationMetaData(object):
         Assign the dict metaData to be the associated phoSimMetaData dict of this object.
 
         In doing so, this method will copy unrefractedRA, unrefractedDec, rotSkyPos,
-        MJD, and bandpass from the phoSimMetaData (if present) to the corresponding
+        MJD, and bandpass from the metaData (if present) to the corresponding
         member variables.  If by doing so you try to overwrite a parameter that you
         have already set by hand, this method will raise an exception.
         """
