@@ -271,6 +271,12 @@ class DBObjectTestCase(unittest.TestCase):
     def testValidationErrors(self):
         """ Test that appropriate errors and warnings are thrown when connecting
         """
+
+        with warnings.catch_warnings(record=True) as w:
+            warnings.simplefilter("always")
+            DBObject('sqlite:///' + self.database)
+            assert len(w) == 1
+
         #missing database
         self.assertRaises(AttributeError, DBObject, driver=self.driver)
         #missing driver

@@ -108,9 +108,22 @@ class DBObject(object):
     def _validate_conn_params(self):
         """Validate connection parameters
 
+        - Check if user passed dbAddress instead of an database. Convert and warn.
         - Check that required connection paramters are present
         - Replace default host/port if driver is 'sqlite'
         """
+        if '//' in self.database:
+            warnings.warn("Database name '%s' is invalid but looks like a dbAddress. "
+                          "Attempting to convert to database, driver, host, "
+                          "and port parameters. Any usernames and passwords are ignored and must "
+                          "be in the db-auth.paf policy file. "%(self.database), FutureWarning)
+
+            dbUrl = url.make_url(self.database)
+            dialect = dbUrl.get_dialect()
+            self.driver = dialect.name + '+' + dialect.driver if dialect.driver else dialect.name
+            for key, value in dbUrl.translate_connect_args().iteritems():
+                if value is not None:
+                    setattr(self, key, value)
 
         errMessage = "Please supply a 'driver' kwarg to the constructor or in class definition. "
         errMessage += "'driver' is formatted as dialect+driver, such as 'sqlite' or 'mssql+pymssql'."
@@ -126,7 +139,7 @@ class DBObject(object):
         elif self.database is None:
             raise AttributeError("%s.database is None. "%(self.__class__.__name__) + errMessage)
 
-        if self.driver == 'sqlite':
+        if 'sqlite' in self.driver:
             #When passed sqlite database, override default host/port
             self.host = None
             self.port = None
