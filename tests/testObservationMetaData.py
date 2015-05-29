@@ -1,3 +1,5 @@
+from __future__ import with_statement
+
 import os
 import numpy
 import unittest
@@ -13,6 +15,38 @@ class ObservationMetaDataTest(unittest.TestCase):
 
     It will also test the behavior of the m5 member variable.
     """
+
+    def testExceptions(self):
+        """
+        Test that errors are produced whenever ObservationMetaData
+        parameters are overwritten in an unintentional way
+        """
+
+        metadata = {'Unrefracted_RA':[1.5], 'Unrefracted_Dec':[0.5],
+                    'Opsim_expmjd':[52000.0],
+                    'Opsim_rotskypos':[1.3],
+                    'Opsim_filter':[2]}
+
+        obs_metadata = ObservationMetaData(phoSimMetaData=metadata,
+                                           boundType='circle',
+                                           boundLength=0.1)
+
+        with self.assertRaises(RuntimeError):
+            obs_metadata.unrefractedRA=1.2
+
+        with self.assertRaises(RuntimeError):
+            obs_metadata.unrefractedDec=1.2
+
+        with self.assertRaises(RuntimeError):
+            obs_metadata.rotSkyPos=1.5
+
+        with self.assertRaises(RuntimeError):
+            obs_metadata.setBandpassAndM5()
+
+        obs_metadata = ObservationMetaData(unrefractedRA=1.5,
+                                           unrefractedDec=1.5)
+
+
     def testM5(self):
         """
         Test behavior of ObservationMetaData's m5 member variable
@@ -33,6 +67,31 @@ class ObservationMetaDataTest(unittest.TestCase):
         self.assertEqual(obsMD.m5['g'], 11)
         self.assertEqual(obsMD.m5['r'], 12)
 
+
+    def testM5Assignment(self):
+        """
+        Test assignment of M5 and bandpass in ObservationMetaData
+        """
+        obsMD = ObservationMetaData(bandpassName=['u','g'], m5=[12.0, 11.0])
+        self.assertAlmostEqual(obsMD.m5['u'], 12.0, 10)
+        self.assertAlmostEqual(obsMD.m5['g'], 11.0, 10)
+
+        obsMD.setBandpassAndM5(bandpassName=['i','z'], m5=[25.0, 22.0])
+        self.assertAlmostEqual(obsMD.m5['i'], 25.0, 10)
+        self.assertAlmostEqual(obsMD.m5['z'], 22.0, 10)
+
+        with self.assertRaises(KeyError):
+            obsMD.m5['u']
+
+        with self.assertRaises(KeyError):
+            obsMD.m5['g']
+
+        phoSimMD = {'Opsim_filter':[4]}
+        obsMD.phoSimMetaData = phoSimMD
+        self.assertEqual(obsMD.bandpass, 4)
+        self.assertTrue(obsMD.m5 is None)
+
+
     def testDefault(self):
         """
         Test that ObservationMetaData's default variables are properly set
@@ -42,7 +101,7 @@ class ObservationMetaDataTest(unittest.TestCase):
 
         self.assertEqual(testObsMD.unrefractedRA,None)
         self.assertEqual(testObsMD.unrefractedDec,None)
-        self.assertAlmostEqual(testObsMD.rotSkyPos,0.0,10)
+        self.assertEqual(testObsMD.rotSkyPos,None)
         self.assertEqual(testObsMD.bandpass,'r')
         self.assertAlmostEqual(testObsMD.site.longitude,-1.2320792,10)
         self.assertAlmostEqual(testObsMD.site.latitude,-0.517781017,10)
@@ -85,16 +144,41 @@ class ObservationMetaDataTest(unittest.TestCase):
         rotSkyPos = -10.0
         skyBrightness = 25.0
 
-        testObsMD = ObservationMetaData(mjd=mjd, unrefractedRA=RA,
-            unrefractedDec=Dec, rotSkyPos=rotSkyPos, bandpassName='z',
-            skyBrightness=skyBrightness)
+        testObsMD = ObservationMetaData()
+        testObsMD.unrefractedRA = RA
+        testObsMD.unrefractedDec = Dec
+        testObsMD.rotSkyPos = rotSkyPos
+        testObsMD.skyBrightness = skyBrightness
+        testObsMD.boundType = 'box'
+        testObsMD.boundLength = [1.2, 3.0]
+        testObsMD.mjd = mjd
 
-        self.assertAlmostEqual(testObsMD.mjd,5120.0,10)
-        self.assertAlmostEqual(numpy.degrees(testObsMD.unrefractedRA),1.5,10)
-        self.assertAlmostEqual(numpy.degrees(testObsMD.unrefractedDec),-1.1,10)
-        self.assertAlmostEqual(numpy.degrees(testObsMD.rotSkyPos),-10.0,10)
-        self.assertEqual(testObsMD.bandpass,'z')
+        self.assertAlmostEqual(testObsMD.unrefractedRA, RA, 10)
+        self.assertAlmostEqual(testObsMD.unrefractedDec, Dec, 10)
+        self.assertAlmostEqual(testObsMD.rotSkyPos, rotSkyPos, 10)
         self.assertAlmostEqual(testObsMD.skyBrightness, skyBrightness, 10)
+        self.assertEqual(testObsMD.boundType, 'box')
+        self.assertAlmostEqual(testObsMD.boundLength[0],1.2, 10)
+        self.assertAlmostEqual(testObsMD.boundLength[1], 3.0, 10)
+        self.assertAlmostEqual(testObsMD.mjd, mjd, 10)
+
+        #test reassignment
+
+        testObsMD.unrefractedRA = RA+1.0
+        testObsMD.unrefractedDec = Dec+1.0
+        testObsMD.rotSkyPos = rotSkyPos+1.0
+        testObsMD.skyBrightness = skyBrightness+1.0
+        testObsMD.boundLength = 2.2
+        testObsMD.boundType = 'circle'
+        testObsMD.mjd = mjd + 10.0
+
+        self.assertAlmostEqual(testObsMD.unrefractedRA, RA+1.0, 10)
+        self.assertAlmostEqual(testObsMD.unrefractedDec, Dec+1.0, 10)
+        self.assertAlmostEqual(testObsMD.rotSkyPos, rotSkyPos+1.0, 10)
+        self.assertAlmostEqual(testObsMD.skyBrightness, skyBrightness+1.0, 10)
+        self.assertEqual(testObsMD.boundType, 'circle')
+        self.assertAlmostEqual(testObsMD.boundLength,2.2, 10)
+        self.assertAlmostEqual(testObsMD.mjd, mjd+10.0, 10)
 
         phosimMD = OrderedDict([('Unrefracted_RA', (-2.0,float)),
                                 ('Unrefracted_Dec', (0.9,float)),
@@ -102,31 +186,53 @@ class ObservationMetaDataTest(unittest.TestCase):
                                 ('Opsim_expmjd',(4000.0,float)),
                                 ('Opsim_filter',('g',str))])
 
-        testObsMD.assignPhoSimMetaData(phosimMD)
+
+        testObsMD.phoSimMetaData = phosimMD
+        self.assertAlmostEqual(testObsMD.unrefractedRA, numpy.degrees(-2.0), 10)
+        self.assertAlmostEqual(testObsMD.unrefractedDec, numpy.degrees(0.9), 10)
+        self.assertAlmostEqual(testObsMD.rotSkyPos, numpy.degrees(1.1))
+        self.assertAlmostEqual(testObsMD.mjd, 4000.0, 10)
+        self.assertAlmostEqual(testObsMD.bandpass, 'g')
+
+        testObsMD = ObservationMetaData(mjd=mjd, unrefractedRA=RA,
+            unrefractedDec=Dec, rotSkyPos=rotSkyPos, bandpassName='z',
+            skyBrightness=skyBrightness)
+
+        self.assertAlmostEqual(testObsMD.mjd,5120.0,10)
+        self.assertAlmostEqual(testObsMD.unrefractedRA,1.5,10)
+        self.assertAlmostEqual(testObsMD.unrefractedDec,-1.1,10)
+        self.assertAlmostEqual(testObsMD.rotSkyPos,-10.0,10)
+        self.assertEqual(testObsMD.bandpass,'z')
+        self.assertAlmostEqual(testObsMD.skyBrightness, skyBrightness, 10)
+
+        testObsMD = ObservationMetaData()
+        testObsMD.phoSimMetaData = phosimMD
 
         self.assertAlmostEqual(testObsMD.mjd,4000.0,10)
 
         #recall that Unrefracted_RA/Dec are stored as radians in phoSim metadata
-        self.assertAlmostEqual(testObsMD.unrefractedRA,-2.0,10)
-        self.assertAlmostEqual(testObsMD.unrefractedDec,0.9,10)
-        self.assertAlmostEqual(testObsMD.rotSkyPos,1.1,10)
+        self.assertAlmostEqual(testObsMD.unrefractedRA,numpy.degrees(-2.0),10)
+        self.assertAlmostEqual(testObsMD.unrefractedDec,numpy.degrees(0.9),10)
+        self.assertAlmostEqual(testObsMD.rotSkyPos,numpy.degrees(1.1),10)
         self.assertEqual(testObsMD.bandpass,'g')
 
-    def testBoundExceptions(self):
+        testObsMD = ObservationMetaData()
+        testObsMD.phoSimMetaData = phosimMD
+
+        self.assertAlmostEqual(testObsMD.mjd,4000.0,10)
+
+        #recall that Unrefracted_RA/Dec are stored as radians in phoSim metadata
+        self.assertAlmostEqual(testObsMD.unrefractedRA,numpy.degrees(-2.0),10)
+        self.assertAlmostEqual(testObsMD.unrefractedDec,numpy.degrees(0.9),10)
+        self.assertAlmostEqual(testObsMD.rotSkyPos,numpy.degrees(1.1),10)
+        self.assertEqual(testObsMD.bandpass,'g')
+
+
+    def testBoundBuilding(self):
         """
-        Make sure ObservationMetaData throws an error when you incorrectly set Bounds
+        Make sure ObservationMetaData can build bounds
         """
-
-        self.assertRaises(RuntimeError,ObservationMetaData,boundType='hex',
-                          boundLength=1.0,unrefractedRA=0.0,unrefractedDec=0.0)
-        self.assertRaises(RuntimeError,ObservationMetaData,boundType='box',unrefractedRA=0.0,unrefractedDec=0.0)
-        self.assertRaises(RuntimeError,ObservationMetaData,boundType='box',unrefractedRA=0.0,boundLength=1.0)
-        self.assertRaises(RuntimeError,ObservationMetaData,boundType='box',unrefractedDec=0.0,boundLength=1.0)
-
-        boxBounds = numpy.array([1.0,2.0])
-        self.assertRaises(RuntimeError,ObservationMetaData,boundType='box',unrefractedRA=0.0,boundLength=boxBounds)
-        self.assertRaises(RuntimeError,ObservationMetaData,boundType='box',unrefractedDec=0.0,boundLength=boxBounds)
-
+        boxBounds = [0.1, 0.3]
         circObs = ObservationMetaData(boundType='circle',unrefractedRA=0.0, unrefractedDec=0.0, boundLength=1.0)
         squareObs = ObservationMetaData(boundType = 'box',unrefractedRA=0.0, unrefractedDec=0.0, boundLength=1.0)
         boxObs = ObservationMetaData(boundType = 'box', unrefractedRA=0.0, unrefractedDec=0.0, boundLength=boxBounds)
@@ -147,13 +253,13 @@ class ObservationMetaDataTest(unittest.TestCase):
 
         testObsMD = ObservationMetaData(boundType='circle',
                      unrefractedRA = circRA, unrefractedDec=circDec, boundLength = radius)
-        self.assertAlmostEqual(numpy.degrees(testObsMD.unrefractedRA),25.0,10)
-        self.assertAlmostEqual(numpy.degrees(testObsMD.unrefractedDec),50.0,10)
+        self.assertAlmostEqual(testObsMD.unrefractedRA,25.0,10)
+        self.assertAlmostEqual(testObsMD.unrefractedDec,50.0,10)
 
         testObsMD = ObservationMetaData(boundType = 'box',
                                         unrefractedRA = boxRA, unrefractedDec = boxDec, boundLength=boxLength)
-        self.assertAlmostEqual(numpy.degrees(testObsMD.unrefractedRA),15.0,10)
-        self.assertAlmostEqual(numpy.degrees(testObsMD.unrefractedDec),0.0,10)
+        self.assertAlmostEqual(testObsMD.unrefractedRA,15.0,10)
+        self.assertAlmostEqual(testObsMD.unrefractedDec,0.0,10)
 
 def suite():
     """Returns a suite containing all the test cases in this module."""

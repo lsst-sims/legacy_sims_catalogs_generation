@@ -104,6 +104,26 @@ class CircleBounds(SpatialBounds):
         @param[in] length is the radius of the field of view in radians
         """
 
+
+
+        if not (isinstance(ra, float) or isinstance(ra, np.float)):
+            try:
+                ra = np.float(ra)
+            except:
+                raise RuntimeError('in CircleBounds, ra must be a float; you have %s' % type(ra))
+
+        if not (isinstance(dec, float) or isinstance(dec, np.float)):
+            try:
+                dec = np.float(dec)
+            except:
+                raise RuntimeError('in CircleBounds, dec must be a float; you hve %s' % type(dec))
+
+        if not (isinstance(radius, float) or isinstance(radius, np.float)):
+            try:
+                radius = np.float(radius)
+            except:
+                raise RuntimeError('in CircleBounds, radius must be a float; you have %s' % type(radius))
+
         self.RA = ra
         self.DEC = dec
         self.radius = radius
@@ -160,24 +180,40 @@ class BoxBounds(SpatialBounds):
         If it is a list/tuple/array, the field of view will be a rectangle with side lengths
         RA = 2 x length[0] and Dec = 2 x length[1]
         """
+
+        if not (isinstance(ra, float) or isinstance(ra, np.float)):
+            try:
+                ra = np.float(ra)
+            except:
+                raise RuntimeError('in BoxBounds ra must be a float; you have %s' % type(ra))
+
+        if not (isinstance(dec, float) or isinstance(dec, np.float)):
+            try:
+                dec = np.float(dec)
+            except:
+                raise RuntimeError('in BoxBounds dec must be a float; you have %s' % type(dec))
+
         self.RA = ra
         self.DEC = dec
 
         self.RAdeg = np.degrees(ra)
         self.DECdeg = np.degrees(dec)
 
-        if isinstance(length, float):
-            lengthRAdeg = np.degrees(length)
-            lengthDECdeg = np.degrees(length)
-        elif len(length)==1:
-            lengthRAdeg = np.degrees(length[0])
-            lengthDECdeg = np.degrees(length[0])
-        else:
-            try:
-                lengthRAdeg = np.degrees(length[0])
-                lengthDECdeg = np.degrees(length[1])
-            except:
-                raise RuntimeError("BoxBounds is unsure how to handle length %s " % str(length))
+        try:
+            if hasattr(length, '__len__'):
+                if len(length) == 1:
+                    lengthRAdeg = np.degrees(length[0])
+                    lengthDECdeg = np.degrees(length[0])
+                else:
+                    lengthRAdeg = np.degrees(length[0])
+                    lengthDECdeg = np.degrees(length[1])
+            else:
+                length = np.float(length)
+                lengthRAdeg = np.degrees(length)
+                lengthDECdeg = np.degrees(length)
+
+        except:
+            raise RuntimeError("BoxBounds is unsure how to handle length %s type: %s" % (str(length),type(length)))
 
         self.RAminDeg = self.RAdeg - lengthRAdeg
         self.RAmaxDeg = self.RAdeg + lengthRAdeg
