@@ -138,41 +138,41 @@ class ObservationMetaDataTest(unittest.TestCase):
 
         testObsMD = ObservationMetaData()
 
-        self.assertEqual(testObsMD.unrefractedRA,None)
-        self.assertEqual(testObsMD.unrefractedDec,None)
-        self.assertEqual(testObsMD.rotSkyPos,None)
-        self.assertEqual(testObsMD.bandpass,'r')
+        self.assertEqual(testObsMD.unrefractedRA, None)
+        self.assertEqual(testObsMD.unrefractedDec, None)
+        self.assertEqual(testObsMD.rotSkyPos, None)
+        self.assertEqual(testObsMD.bandpass, 'r')
         self.assertEqual(testObsMD.m5, None)
         self.assertEqual(testObsMD.seeing, None)
-        self.assertAlmostEqual(testObsMD.site.longitude,-1.2320792,10)
-        self.assertAlmostEqual(testObsMD.site.latitude,-0.517781017,10)
-        self.assertAlmostEqual(testObsMD.site.height,2650,10)
-        self.assertAlmostEqual(testObsMD.site.xPolar,0,10)
-        self.assertAlmostEqual(testObsMD.site.yPolar,0,10)
-        self.assertAlmostEqual(testObsMD.site.meanTemperature,284.655,10)
-        self.assertAlmostEqual(testObsMD.site.meanPressure,749.3,10)
-        self.assertAlmostEqual(testObsMD.site.meanHumidity,0.4,10)
-        self.assertAlmostEqual(testObsMD.site.lapseRate,0.0065,10)
+        self.assertAlmostEqual(testObsMD.site.longitude, -1.2320792,10)
+        self.assertAlmostEqual(testObsMD.site.latitude, -0.517781017,10)
+        self.assertAlmostEqual(testObsMD.site.height, 2650, 10)
+        self.assertAlmostEqual(testObsMD.site.xPolar, 0, 10)
+        self.assertAlmostEqual(testObsMD.site.yPolar, 0, 10)
+        self.assertAlmostEqual(testObsMD.site.meanTemperature, 284.655, 10)
+        self.assertAlmostEqual(testObsMD.site.meanPressure, 749.3, 10)
+        self.assertAlmostEqual(testObsMD.site.meanHumidity, 0.4, 10)
+        self.assertAlmostEqual(testObsMD.site.lapseRate, 0.0065, 10)
 
     def testSite(self):
         """
         Test that site data gets passed correctly when it is not default
         """
-        testSite = Site(longitude = 2.0, latitude = -1.0, height = 4.0,
-            xPolar = 0.5, yPolar = -0.5, meanTemperature = 100.0,
-            meanPressure = 500.0, meanHumidity = 0.1, lapseRate = 0.1)
+        testSite = Site(longitude=2.0, latitude=-1.0, height=4.0,
+            xPolar=0.5, yPolar=-0.5, meanTemperature=100.0,
+            meanPressure=500.0, meanHumidity=0.1, lapseRate=0.1)
 
         testObsMD = ObservationMetaData(site=testSite)
 
-        self.assertAlmostEqual(testObsMD.site.longitude,2.0,10)
-        self.assertAlmostEqual(testObsMD.site.latitude,-1.0,10)
-        self.assertAlmostEqual(testObsMD.site.height,4.0,10)
-        self.assertAlmostEqual(testObsMD.site.xPolar,0.5,10)
-        self.assertAlmostEqual(testObsMD.site.yPolar,-0.5,10)
-        self.assertAlmostEqual(testObsMD.site.meanTemperature,100.0,10)
-        self.assertAlmostEqual(testObsMD.site.meanPressure,500.0,10)
-        self.assertAlmostEqual(testObsMD.site.meanHumidity,0.1,10)
-        self.assertAlmostEqual(testObsMD.site.lapseRate,0.1,10)
+        self.assertAlmostEqual(testObsMD.site.longitude, 2.0, 10)
+        self.assertAlmostEqual(testObsMD.site.latitude, -1.0, 10)
+        self.assertAlmostEqual(testObsMD.site.height, 4.0, 10)
+        self.assertAlmostEqual(testObsMD.site.xPolar, 0.5, 10)
+        self.assertAlmostEqual(testObsMD.site.yPolar, -0.5, 10)
+        self.assertAlmostEqual(testObsMD.site.meanTemperature, 100.0, 10)
+        self.assertAlmostEqual(testObsMD.site.meanPressure, 500.0, 10)
+        self.assertAlmostEqual(testObsMD.site.meanHumidity, 0.1, 10)
+        self.assertAlmostEqual(testObsMD.site.lapseRate, 0.1, 10)
 
     def testAssignment(self):
         """
@@ -199,7 +199,7 @@ class ObservationMetaDataTest(unittest.TestCase):
         self.assertAlmostEqual(testObsMD.rotSkyPos, rotSkyPos, 10)
         self.assertAlmostEqual(testObsMD.skyBrightness, skyBrightness, 10)
         self.assertEqual(testObsMD.boundType, 'box')
-        self.assertAlmostEqual(testObsMD.boundLength[0],1.2, 10)
+        self.assertAlmostEqual(testObsMD.boundLength[0], 1.2, 10)
         self.assertAlmostEqual(testObsMD.boundLength[1], 3.0, 10)
         self.assertAlmostEqual(testObsMD.mjd, mjd, 10)
 
@@ -274,8 +274,8 @@ class ObservationMetaDataTest(unittest.TestCase):
         Make sure ObservationMetaData can build bounds
         """
         boxBounds = [0.1, 0.3]
-        circObs = ObservationMetaData(boundType='circle',unrefractedRA=0.0, unrefractedDec=0.0, boundLength=1.0)
-        squareObs = ObservationMetaData(boundType = 'box',unrefractedRA=0.0, unrefractedDec=0.0, boundLength=1.0)
+        circObs = ObservationMetaData(boundType='circle', unrefractedRA=0.0, unrefractedDec=0.0, boundLength=1.0)
+        squareObs = ObservationMetaData(boundType = 'box', unrefractedRA=0.0, unrefractedDec=0.0, boundLength=1.0)
         boxObs = ObservationMetaData(boundType = 'box', unrefractedRA=0.0, unrefractedDec=0.0, boundLength=boxBounds)
 
     def testBounds(self):
@@ -294,13 +294,13 @@ class ObservationMetaDataTest(unittest.TestCase):
 
         testObsMD = ObservationMetaData(boundType='circle',
                      unrefractedRA = circRA, unrefractedDec=circDec, boundLength = radius)
-        self.assertAlmostEqual(testObsMD.unrefractedRA,25.0,10)
-        self.assertAlmostEqual(testObsMD.unrefractedDec,50.0,10)
+        self.assertAlmostEqual(testObsMD.unrefractedRA, 25.0, 10)
+        self.assertAlmostEqual(testObsMD.unrefractedDec, 50.0, 10)
 
-        testObsMD = ObservationMetaData(boundType = 'box',
-                                        unrefractedRA = boxRA, unrefractedDec = boxDec, boundLength=boxLength)
-        self.assertAlmostEqual(testObsMD.unrefractedRA,15.0,10)
-        self.assertAlmostEqual(testObsMD.unrefractedDec,0.0,10)
+        testObsMD = ObservationMetaData(boundType='box',
+                                        unrefractedRA=boxRA, unrefractedDec=boxDec, boundLength=boxLength)
+        self.assertAlmostEqual(testObsMD.unrefractedRA, 15.0, 10)
+        self.assertAlmostEqual(testObsMD.unrefractedDec, 0.0, 10)
 
 def suite():
     """Returns a suite containing all the test cases in this module."""
