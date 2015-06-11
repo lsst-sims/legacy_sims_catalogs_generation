@@ -41,7 +41,7 @@ class ObservationMetaDataTest(unittest.TestCase):
             obs_metadata.rotSkyPos=1.5
 
         with self.assertRaises(RuntimeError):
-            obs_metadata.setBandpassAndM5()
+            obs_metadata.setBandpassM5andSeeing()
 
         obs_metadata = ObservationMetaData(unrefractedRA=1.5,
                                            unrefractedDec=1.5)
@@ -76,7 +76,7 @@ class ObservationMetaDataTest(unittest.TestCase):
         self.assertAlmostEqual(obsMD.m5['u'], 12.0, 10)
         self.assertAlmostEqual(obsMD.m5['g'], 11.0, 10)
 
-        obsMD.setBandpassAndM5(bandpassName=['i','z'], m5=[25.0, 22.0])
+        obsMD.setBandpassM5andSeeing(bandpassName=['i','z'], m5=[25.0, 22.0])
         self.assertAlmostEqual(obsMD.m5['i'], 25.0, 10)
         self.assertAlmostEqual(obsMD.m5['z'], 22.0, 10)
 
