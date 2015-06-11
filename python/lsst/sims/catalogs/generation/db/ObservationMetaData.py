@@ -259,6 +259,11 @@ class ObservationMetaData(object):
 
             self._bandpass = self._phoSimMetaData['Opsim_filter'][0]
 
+        if self._phoSimMetaData is not None and 'Opsim_raseeing' in self._phoSimMetaData:
+            if self._seeing is not None:
+                raise RuntimeError('WARNING in ObservationMetaDAta trying to overwrite seeing ' +
+                                   'with phoSimMetaData')
+
         self._buildBounds()
 
     @property
@@ -452,6 +457,11 @@ class ObservationMetaData(object):
                 raise RuntimeError('WARNING overwriting bandpass ' +
                                    'which was set by phoSimMetaData')
 
+            if 'Opsim_rawseeing' in self._phoSimMetaData:
+                raise RuntimeError('WARNING overwriting seeing ' +
+                                   'which was set by phoSimMetaData')
+
+
         self._bandpass = bandpassName
         self._m5 = self._assignDictKeyedToBandpass(m5, 'm5')
         self._seeing = self._assignDictKeyedToBandpass(seeing, 'seeing')
@@ -496,5 +506,6 @@ class ObservationMetaData(object):
         if 'Opsim_filter' in value:
             self._bandpass = None
             self._m5 = None
+            self._seeing = None
 
         self._assignPhoSimMetaData(value)
