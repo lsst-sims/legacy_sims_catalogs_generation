@@ -115,6 +115,13 @@ class ObservationMetaDataTest(unittest.TestCase):
         with self.assertRaises(KeyError):
             obsMD.m5['g']
 
+        obsMD.m5 = [13.0, 14.0]
+        obsMD.seeing = [0.2, 0.3]
+        self.assertAlmostEqual(obsMD.m5['i'], 13.0, 10)
+        self.assertAlmostEqual(obsMD.m5['z'], 14.0, 10)
+        self.assertAlmostEqual(obsMD.seeing['i'], 0.2, 10)
+        self.assertAlmostEqual(obsMD.seeing['z'], 0.3, 10)
+
         obsMD.setBandpassM5andSeeing(bandpassName=['k', 'j'], m5=[21.0, 23.0])
         self.assertAlmostEqual(obsMD.m5['k'], 21.0, 10)
         self.assertAlmostEqual(obsMD.m5['j'], 23.0, 10)
