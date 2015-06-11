@@ -25,7 +25,8 @@ class ObservationMetaDataTest(unittest.TestCase):
         metadata = {'Unrefracted_RA':[1.5], 'Unrefracted_Dec':[0.5],
                     'Opsim_expmjd':[52000.0],
                     'Opsim_rotskypos':[1.3],
-                    'Opsim_filter':[2]}
+                    'Opsim_filter':[2],
+                    'Opsim_rawseeing':[0.7]}
 
         obs_metadata = ObservationMetaData(phoSimMetaData=metadata,
                                            boundType='circle',
@@ -39,6 +40,9 @@ class ObservationMetaDataTest(unittest.TestCase):
 
         with self.assertRaises(RuntimeError):
             obs_metadata.rotSkyPos=1.5
+
+        with self.assertRaises(RuntimeError):
+            obs_metadata.seeing=0.5
 
         with self.assertRaises(RuntimeError):
             obs_metadata.setBandpassM5andSeeing()
@@ -68,17 +72,42 @@ class ObservationMetaDataTest(unittest.TestCase):
         self.assertEqual(obsMD.m5['r'], 12)
 
 
-    def testM5Assignment(self):
+    def testSeeing(self):
         """
-        Test assignment of M5 and bandpass in ObservationMetaData
+        Test behavior of ObservationMetaData's seeing member variable
         """
-        obsMD = ObservationMetaData(bandpassName=['u','g'], m5=[12.0, 11.0])
-        self.assertAlmostEqual(obsMD.m5['u'], 12.0, 10)
-        self.assertAlmostEqual(obsMD.m5['g'], 11.0, 10)
 
-        obsMD.setBandpassM5andSeeing(bandpassName=['i','z'], m5=[25.0, 22.0])
+        self.assertRaises(RuntimeError, ObservationMetaData, bandpassName='u', seeing=[0.7, 0.6])
+        self.assertRaises(RuntimeError, ObservationMetaData, bandpassName=['u', 'g'], seeing=0.7)
+        self.assertRaises(RuntimeError, ObservationMetaData, bandpassName=['u', 'g'], seeing=[0.8, 0.7, 0.6])
+
+        obsMD = ObservationMetaData()
+        self.assertIsNone(obsMD.seeing)
+
+        obsMD = ObservationMetaData(bandpassName='g', seeing=0.7)
+        self.assertAlmostEqual(obsMD.seeing['g'], 0.7, 10)
+
+        obsMD = ObservationMetaData(bandpassName=['u','g','r'], seeing=[0.7,0.6,0.5])
+        self.assertEqual(obsMD.seeing['u'], 0.7)
+        self.assertEqual(obsMD.seeing['g'], 0.6)
+        self.assertEqual(obsMD.seeing['r'], 0.5)
+
+
+    def testM5andSeeingAssignment(self):
+        """
+        Test assignment of m5 and seeing seeing and bandpass in ObservationMetaData
+        """
+        obsMD = ObservationMetaData(bandpassName=['u','g'], m5=[15.0, 16.0], seeing=[0.7, 0.6])
+        self.assertAlmostEqual(obsMD.m5['u'], 15.0, 10)
+        self.assertAlmostEqual(obsMD.m5['g'], 16.0, 10)
+        self.assertAlmostEqual(obsMD.seeing['u'], 0.7, 10)
+        self.assertAlmostEqual(obsMD.seeing['g'], 0.6, 10)
+
+        obsMD.setBandpassM5andSeeing(bandpassName=['i','z'], m5=[25.0, 22.0], seeing=[0.5, 0.4])
         self.assertAlmostEqual(obsMD.m5['i'], 25.0, 10)
         self.assertAlmostEqual(obsMD.m5['z'], 22.0, 10)
+        self.assertAlmostEqual(obsMD.seeing['i'], 0.5, 10)
+        self.assertAlmostEqual(obsMD.seeing['z'], 0.4, 10)
 
         with self.assertRaises(KeyError):
             obsMD.m5['u']
@@ -86,10 +115,20 @@ class ObservationMetaDataTest(unittest.TestCase):
         with self.assertRaises(KeyError):
             obsMD.m5['g']
 
+        obsMD.setBandpassM5andSeeing(bandpassName=['k', 'j'], m5=[21.0, 23.0])
+        self.assertAlmostEqual(obsMD.m5['k'], 21.0, 10)
+        self.assertAlmostEqual(obsMD.m5['j'], 23.0, 10)
+        self.assertIsNone(obsMD.seeing)
+
+        obsMD.setBandpassM5andSeeing(bandpassName=['w', 'x'], seeing=[0.9, 1.1])
+        self.assertAlmostEqual(obsMD.seeing['w'], 0.9, 10)
+        self.assertAlmostEqual(obsMD.seeing['x'], 1.1, 10)
+
         phoSimMD = {'Opsim_filter':[4]}
         obsMD.phoSimMetaData = phoSimMD
         self.assertEqual(obsMD.bandpass, 4)
         self.assertTrue(obsMD.m5 is None)
+        self.assertTrue(obsMD.seeing is None)
 
 
     def testDefault(self):
@@ -103,6 +142,8 @@ class ObservationMetaDataTest(unittest.TestCase):
         self.assertEqual(testObsMD.unrefractedDec,None)
         self.assertEqual(testObsMD.rotSkyPos,None)
         self.assertEqual(testObsMD.bandpass,'r')
+        self.assertEqual(testObsMD.m5, None)
+        self.assertEqual(testObsMD.seeing, None)
         self.assertAlmostEqual(testObsMD.site.longitude,-1.2320792,10)
         self.assertAlmostEqual(testObsMD.site.latitude,-0.517781017,10)
         self.assertAlmostEqual(testObsMD.site.height,2650,10)
