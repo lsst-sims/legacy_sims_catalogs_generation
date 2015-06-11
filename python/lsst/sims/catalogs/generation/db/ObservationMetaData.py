@@ -347,8 +347,7 @@ class ObservationMetaData(object):
         if self._phoSimMetaData is not None:
             if 'Opsim_rotskypos' in self._phoSimMetaData:
                 raise RuntimeError('WARNING overwriting rotSkyPos ' +
-                                   'which was set by phoSimMetaData which was set ' +
-                                   'by phoSimMetaData')
+                                   'which was set by phoSimMetaData')
 
         self._rotSkyPos = numpy.radians(value)
 
@@ -390,8 +389,7 @@ class ObservationMetaData(object):
         if self._phoSimMetaData is not None:
             if 'Opsim_expmjd' in self._phoSimMetaData:
                 raise RuntimeError('WARNING overwriting mjd ' +
-                                   'which was set by phoSimMetaData which was set ' +
-                                   'by phoSimMetaData')
+                                   'which was set by phoSimMetaData')
 
         self._mjd = value
 
@@ -423,8 +421,7 @@ class ObservationMetaData(object):
         if self._phoSimMetaData is not None:
             if 'Opsim_filter' in self._phoSimMetaData:
                 raise RuntimeError('WARNING overwriting bandpass ' +
-                                   'which was set by phoSimMetaData which was set ' +
-                                   'by phoSimMetaData')
+                                   'which was set by phoSimMetaData')
 
         self._bandpass = bandpassName
         self._assignM5(m5)
