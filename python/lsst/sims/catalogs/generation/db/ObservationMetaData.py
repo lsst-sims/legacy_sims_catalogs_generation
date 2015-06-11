@@ -101,6 +101,14 @@ class ObservationMetaData(object):
             self._phoSimMetaData = None
 
         self._m5 = self._assignDictKeyedToBandpass(m5, 'm5')
+
+        # 11 June 2015
+        # I think it is okay to assign seeing after _phoSimMetaData has been
+        # assigned.  Technically, the _phoSimMetaData contains `rawseeing`, which
+        # is some idealized seeing at zenith at 500nm.  This will be different
+        # from seeing.  After instantiation, I don't think users should be
+        # allowed to set seeing (on the assumption that seeing and rawseeing are
+        # somehow in sync).
         self._seeing = self._assignDictKeyedToBandpass(seeing, 'seeing')
 
         #this should be done after phoSimMetaData is assigned, just in case
