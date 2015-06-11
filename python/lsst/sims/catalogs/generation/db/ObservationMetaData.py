@@ -393,6 +393,11 @@ class ObservationMetaData(object):
 
     @seeing.setter
     def seeing(self, value):
+        if self._phoSimMetaData is not None:
+            if 'Opsim_rawseeing' in self._phoSimMetaData:
+                raise RuntimeError('In ObservationMetaData trying to overwrite seeing ' +
+                                   'which was set by phoSimMetaData')
+
         self._seeing = self._assignDictKeyedToBandpass(value, 'seeing')
 
 
