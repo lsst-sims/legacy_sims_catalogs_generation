@@ -259,7 +259,8 @@ def makeStarTestDB(filename='testDatabase.db', size=1000, seedVal=None,
     conn.close()
 
 def makePhoSimTestDB(filename='PhoSimTestDatabase.db', size=1000, seedVal=32, radius=0.1,
-                     displacedRA=None, displacedDec=None, **kwargs):
+                     displacedRA=None, displacedDec=None,
+                     bandpass=None, m5=None, seeing=None, **kwargs):
     """
     Make a test database to storing cartoon information for the test phoSim input
     catalog to use.
@@ -274,6 +275,15 @@ def makePhoSimTestDB(filename='PhoSimTestDatabase.db', size=1000, seedVal=32, ra
     @param [in] seedVal is the seed passed to the random number generator
 
     @param [in] radius is the radius (in degrees) of the field of view to be returned
+
+    @param [in] bandpass is the bandpas(es) of the observation to be passed to
+    ObservationMetaData (optional)
+
+    @param [in] m5 is the m5 value(s) to be passed to ObservationMetaData
+    (optional)
+
+    @param [in] seeing is the seeing value(s) in arcseconds to be passed to
+    ObservationMetaData (optional)
 
     @param [in] displacedRA/Dec are numpy arrays that indicate where (in relation to the center
     of the field of view) objects should be placed.  These coordinates are in degrees.  Specifying
@@ -314,10 +324,12 @@ def makePhoSimTestDB(filename='PhoSimTestDatabase.db', size=1000, seedVal=32, ra
 
     obsDict['Opsim_expmjd'] = mjd
     phoSimMetaData = OrderedDict([
-                      (k, (obsDict[k],numpy.dtype(type(obsDict[k])))) for k in obsDict])
+                      (k, (obsDict[k],numpy.dtype(type(obsDict[k])))) for k in obsDict
+                                                                   if k!='Opsim_filter' or bandpass is None ])
 
     obs_metadata = ObservationMetaData(boundType = 'circle', boundLength = 2.0*radius,
-                                       phoSimMetaData=phoSimMetaData, site=testSite)
+                                       phoSimMetaData=phoSimMetaData, site=testSite,
+                                       bandpassName=bandpass, m5=m5, seeing=seeing)
 
     #Now begin building the database.
     #First create the tables.
