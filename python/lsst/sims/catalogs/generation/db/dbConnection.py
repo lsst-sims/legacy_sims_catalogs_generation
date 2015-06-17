@@ -604,7 +604,7 @@ class fileDBObject(CatalogDBObject):
     #Column names to index.  Specify compound indexes using tuples of column names
     indexCols = []
     def __init__(self, dataLocatorString, runtable=None, driver="sqlite", host=None, port=None, database=":memory:",
-                dtype=None, numGuess=1000, delimiter=None, verbose=False, **kwargs):
+                dtype=None, numGuess=1000, delimiter=None, verbose=False, idColKey=None, **kwargs):
         """
         Initialize an object for querying databases loaded from a file
 
@@ -618,8 +618,13 @@ class fileDBObject(CatalogDBObject):
         @param dtype: The numpy dtype to use when loading the file.  If None, it the dtype will be guessed.
         @param numGuess: The number of lines to use in guessing the dtype from the file.
         @param delimiter: The delimiter to use when parsing the file default is white space.
+        @param idColKey: The name of the column that uniquely identifies each row in the database
         """
         self.verbose = verbose
+
+        if idColKey is not None:
+            self.idColKey = idColKey
+
         if(self.objid is None) or (self.idColKey is None):
             raise ValueError("CatalogDBObject must be subclassed, and "
                              "define objid and tableid and idColKey.")
