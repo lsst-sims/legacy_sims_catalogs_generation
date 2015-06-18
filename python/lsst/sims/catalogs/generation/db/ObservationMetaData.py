@@ -54,6 +54,10 @@ class ObservationMetaData(object):
           The orientation of the telescope (see PhoSim documentation) in degrees.
           This is used by the Astrometry mixins in sims_coordUtils
 
+        * seeing float or list (optional)
+          Analogous to m5, corresponds to the seeing in arcseconds in the bandpasses in
+          bandpassName
+
     **Examples**::
         >>> data = ObservationMetaData(boundType='box', unrefractedRA=5.0, unrefractedDec=15.0,
                     boundLength=5.0)
@@ -61,7 +65,8 @@ class ObservationMetaData(object):
     """
     def __init__(self, boundType=None, boundLength=None,
                  mjd=None, unrefractedRA=None, unrefractedDec=None, rotSkyPos=None,
-                 bandpassName=None, phoSimMetaData=None, site=Site(), m5=None, skyBrightness=None):
+                 bandpassName=None, phoSimMetaData=None, site=Site(), m5=None, skyBrightness=None,
+                 seeing=None):
 
         self._bounds = None
         self._boundType = boundType
@@ -95,7 +100,16 @@ class ObservationMetaData(object):
         else:
             self._phoSimMetaData = None
 
-        self._assignM5(m5)
+        self._m5 = self._assignDictKeyedToBandpass(m5, 'm5')
+
+        # 11 June 2015
+        # I think it is okay to assign seeing after _phoSimMetaData has been
+        # assigned.  Technically, the _phoSimMetaData contains `rawseeing`, which
+        # is some idealized seeing at zenith at 500nm.  This will be different
+        # from seeing.  After instantiation, I don't think users should be
+        # allowed to set seeing (on the assumption that seeing and rawseeing are
+        # somehow in sync).
+        self._seeing = self._assignDictKeyedToBandpass(seeing, 'seeing')
 
         #this should be done after phoSimMetaData is assigned, just in case
         #self._assignPhoSimMetadata overwrites unrefractedRA/Dec
@@ -123,61 +137,67 @@ class ObservationMetaData(object):
 
         return mydict
 
-    def _assignM5(self, m5):
+    def _assignDictKeyedToBandpass(self, inputValue, inputName):
         """
-        This method sets up the dict self._m5.  It reads in a list of m5 values
-        and associates them with the list of bandpass names in self._bandpass.
+        This method sets up a dict of either m5 or seeing values (or any other quantity
+        keyed to bandpassName).  It reads in a list of values and associates them with
+        the list of bandpass names in self._bandpass.
 
         Note: this method assumes that self._bandpass has already been set.
         It will raise an exception of self._bandpass is None.
 
-        @param [in] m5 is a list of m5 values corresponding to the bandpasses
-        stored in self._bandpass
+        @param [in] inputValue is a single value or list of m5/seeing/etc. corresponding to
+        the bandpasses stored in self._bandpass
 
-        This method does not return anything.  It just sets the member variable
-        self._m5.
+        @param [in] inputName is the name of the paramter stored in inputValue
+        (for constructing helpful error message)
+
+        @param [out] returns a dict of inputValue values keed to self._bandpass
         """
 
-        if m5 is None:
-            self._m5 = None
+        if inputValue is None:
+            return None
         else:
             bandpassIsList = False
-            m5IsList = False
+            inputIsList = False
 
             if self._bandpass is None:
-                raise RuntimeError('You cannot set m5 if you have not set bandpass in ObservationMetaData')
+                raise RuntimeError('You cannot set %s if you have not set ' % inputName +
+                                   'bandpass in ObservationMetaData')
 
             if hasattr(self._bandpass, '__iter__'):
                 bandpassIsList = True
 
-            if hasattr(m5, '__iter__'):
-                m5IsList = True
+            if hasattr(inputValue, '__iter__'):
+                inputIsList = True
 
-            if bandpassIsList and not m5IsList:
+            if bandpassIsList and not inputIsList:
                 raise RuntimeError('You passed a list of bandpass names' + \
-                                   'but did not pass a list of m5s to ObservationMetaData')
+                                   'but did not pass a list of %s to ObservationMetaData' % inputName)
 
-            if m5IsList and not bandpassIsList:
-                raise RuntimeError('You passed a list of m5s ' + \
+            if inputIsList and not bandpassIsList:
+                raise RuntimeError('You passed a list of %s ' % inputName + \
                                     'but did not pass a list of bandpass names to ObservationMetaData')
 
 
-            if m5IsList:
-                if len(m5) != len(self._bandpass):
-                    raise RuntimeError('The list of m5s you passed to ObservationMetaData ' + \
+            if inputIsList:
+                if len(inputValue) != len(self._bandpass):
+                    raise RuntimeError('The list of %s you passed to ObservationMetaData ' % inputName + \
                                        'has a different length than the list of bandpass names you passed')
 
-            #now build the m5 dict
+            #now build the dict
             if bandpassIsList:
-                if len(m5) != len(self._bandpass):
+                if len(inputValue) != len(self._bandpass):
                     raise RuntimeError('In ObservationMetaData you tried to assign bandpass ' +
-                                       'and m5 with lists of different length')
+                                       'and %s with lists of different length' % inputName)
 
-                self._m5 = {}
-                for b, m in zip(self._bandpass, m5):
-                    self._m5[b] = m
+                outputDict = {}
+                for b, m in zip(self._bandpass, inputValue):
+                    outputDict[b] = m
             else:
-                self._m5 = {self._bandpass:m5}
+                outputDict = {self._bandpass:inputValue}
+
+            return outputDict
 
 
     def _buildBounds(self):
@@ -246,6 +266,11 @@ class ObservationMetaData(object):
                                    'with phoSimMetaData')
 
             self._bandpass = self._phoSimMetaData['Opsim_filter'][0]
+
+        if self._phoSimMetaData is not None and 'Opsim_raseeing' in self._phoSimMetaData:
+            if self._seeing is not None:
+                raise RuntimeError('WARNING in ObservationMetaDAta trying to overwrite seeing ' +
+                                   'with phoSimMetaData')
 
         self._buildBounds()
 
@@ -363,7 +388,26 @@ class ObservationMetaData(object):
 
     @m5.setter
     def m5(self, value):
-        self._assignM5(value)
+        self._m5 = self._assignDictKeyedToBandpass(value, 'm5')
+
+
+    @property
+    def seeing(self):
+        """
+        A dict of seeing values in arcseconds associated
+        with the bandpasses represetned by this ObservationMetaData
+        """
+        return self._seeing
+
+    @seeing.setter
+    def seeing(self, value):
+        if self._phoSimMetaData is not None:
+            if 'Opsim_rawseeing' in self._phoSimMetaData:
+                raise RuntimeError('In ObservationMetaData trying to overwrite seeing ' +
+                                   'which was set by phoSimMetaData')
+
+        self._seeing = self._assignDictKeyedToBandpass(value, 'seeing')
+
 
     @property
     def site(self):
@@ -404,15 +448,18 @@ class ObservationMetaData(object):
         else:
             return 'r'
 
-    def setBandpassAndM5(self, bandpassName=None, m5=None):
+    def setBandpassM5andSeeing(self, bandpassName=None, m5=None, seeing=None):
         """
         Set the bandpasses and associated 5-sigma limiting magnitudes
-        for this ObservationMetaData.
+        and seeing values for this ObservationMetaData.
 
         @param [in] bandpassName is either a char or a list of chars denoting
         the name of the bandpass associated with this ObservationMetaData.
 
         @param [in] m5 is the 5-sigma-limiting magnitude(s) associated
+        with bandpassName
+
+        @param [in] seeing is the seeing(s) in arcseconds associated
         with bandpassName
 
         Nothing is returned.  This method just sets member variables of
@@ -423,8 +470,14 @@ class ObservationMetaData(object):
                 raise RuntimeError('WARNING overwriting bandpass ' +
                                    'which was set by phoSimMetaData')
 
+            if 'Opsim_rawseeing' in self._phoSimMetaData:
+                raise RuntimeError('WARNING overwriting seeing ' +
+                                   'which was set by phoSimMetaData')
+
+
         self._bandpass = bandpassName
-        self._assignM5(m5)
+        self._m5 = self._assignDictKeyedToBandpass(m5, 'm5')
+        self._seeing = self._assignDictKeyedToBandpass(seeing, 'seeing')
 
     @property
     def skyBrightness(self):
@@ -466,5 +519,6 @@ class ObservationMetaData(object):
         if 'Opsim_filter' in value:
             self._bandpass = None
             self._m5 = None
+            self._seeing = None
 
         self._assignPhoSimMetaData(value)
