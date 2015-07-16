@@ -3,7 +3,8 @@ import sqlite3
 
 import unittest, numpy
 import lsst.utils.tests as utilsTests
-from lsst.sims.catalogs.generation.db import CatalogDBObject, fileDBObject,ObservationMetaData
+from lsst.sims.utils import ObservationMetaData
+from lsst.sims.catalogs.generation.db import CatalogDBObject, fileDBObject
 import lsst.sims.catalogs.generation.utils.testUtils as tu
 from lsst.sims.catalogs.generation.utils.testUtils import myTestStars, myTestGals
 from lsst.sims.utils import haversine
