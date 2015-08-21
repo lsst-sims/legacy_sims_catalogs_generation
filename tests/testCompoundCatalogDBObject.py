@@ -40,6 +40,18 @@ class dbClass3(CatalogDBObject):
     dbDefaultValues = {'ee': -3}
 
 
+class dbClass4(CatalogDBObject):
+    objid = 4
+    idColKey = 'id'
+    tableid = 'otherTest'
+    columns = [('aa', 'c-3.0'),
+               ('bb', 'a'),
+               ('cc', '3.0*b')]
+
+    dbDefaultValues = {'ee': -3}
+
+
+
 class CompoundCatalogDBObjectTestCase(unittest.TestCase):
 
     @classmethod
@@ -87,6 +99,10 @@ class CompoundCatalogDBObjectTestCase(unittest.TestCase):
         if os.path.exists(cls.dbName):
             os.unlink(cls.dbName)
 
+        cls.otherDbName = os.path.join(baseDir, 'otherDb.db')
+        if os.path.exists(cls.otherDbName):
+            os.unlink(cls.otherDbName)
+
         dtype = numpy.dtype([
                             ('id', numpy.int),
                             ('a', numpy.float),
@@ -99,12 +115,51 @@ class CompoundCatalogDBObjectTestCase(unittest.TestCase):
                             database=cls.dbName, dtype=dtype,
                             idColKey='id')
 
+        fdbo = fileDBObject(cls.textFileName, runtable='test',
+                            database=cls.otherDbName, dtype=dtype,
+                            idColKey='id')
+
+        fdbo = fileDBObject(cls.textFileName, runtable='otherTest',
+                            database=cls.dbName, dtype=dtype,
+                            idColKey='id')
+
     @classmethod
     def tearDownClass(cls):
         if os.path.exists(cls.textFileName):
             os.unlink(cls.textFileName)
         if os.path.exists(cls.dbName):
             os.unlink(cls.dbName)
+        if os.path.exists(cls.otherDbName):
+            os.unlink(cls.otherDbName)
+
+
+    def testExceptions(self):
+        """
+        Verify that CompoundCatalogDBObject raises an exception
+        when you pass it CatalogDBObjects that do not query the
+        same table of the same database
+        """
+
+        #test case where they are querying the same database, but different
+        #tables
+        db1 = dbClass1(database=self.otherDbName, driver='sqlite')
+        db2 = dbClass2(database=self.dbName, driver='sqlite')
+
+        with self.assertRaises(RuntimeError) as context:
+            compound = CompoundCatalogDBObject([db1, db2])
+
+        self.assertTrue("['%s', '%s']" % (self.otherDbName, self.dbName) \
+                        in context.exception.message)
+
+        #test case where they are querying the same table, but different
+        #databases
+        db1 = dbClass4(database=self.dbName, driver='sqlite')
+        db2 = dbClass2(database=self.dbName, driver='sqlite')
+
+        with self.assertRaises(RuntimeError) as context:
+            compound = CompoundCatalogDBObject([db1, db2])
+
+        self.assertTrue("['otherTest', 'test']" in context.exception.message)
 
 
     def testCompoundCatalogDBObject(self):

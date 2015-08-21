@@ -110,7 +110,6 @@ class CompoundCatalogDBObject(CatalogDBObject):
             if dbo.tableid not in tableList:
                 tableList.append(dbo.tableid)
 
-
         acceptable = True
         msg = ''
         if len(hostList)>1:
