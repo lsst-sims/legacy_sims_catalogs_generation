@@ -5,6 +5,24 @@ from lsst.sims.catalogs.generation.db import CatalogDBObject
 __all__ = ["CompoundCatalogDBObject"]
 
 class CompoundCatalogDBObject(CatalogDBObject):
+    """
+    This is a class for taking several CatalogDBObjects that are querying
+    the same table of the same database for the same rows (but different columns; note
+    that the columns can be transformed by the CatalogDBObjects' self.columns member),
+    and combining their queries into one.
+
+    You feed the constructor a list of CatalogDBObjects.  The CompoundCatalogDBObject
+    verifies that they all do, indeed, query the same table of the same database.  It
+    then constructs its own self.columns member (note that CompoundCatalogDBObject is
+    a daughter class of CatalogDBobject) which combines all of the requested data.
+
+    When you call query_columns, a recarray will be returned as in a CatalogDBObject.
+    Note, however, that the names of the columns of the recarray will be modified.
+    If the first CatalogDBObject in the list of CatalogDBObjects passed to the constructor
+    asks for a column named 'col1', that will be mapped to 'db_0_col1'.  'col2' will be mapped
+    to 'db_0_col2'. If the second CatalogDBObject also asks for columns named 'col1', and
+    'col2', they will be mapped to 'db_1_col1' and 'db_1_col2', etc.
+    """
 
 
     def __init__(self, catalogDbObjectList):
@@ -34,6 +52,11 @@ class CompoundCatalogDBObject(CatalogDBObject):
 
 
     def _make_columns(self):
+        """
+        Construct the self.columns member by concatenating the self.columns
+        from the input CatalogDBObjects and modifying the names of the returned
+        columns to identify them with their specific CatalogDBObjects.
+        """
         self.columns= []
         for dbo, dbName in zip(self._dbObjectList, self._nameList):
             for row in dbo.columns:
@@ -43,6 +66,10 @@ class CompoundCatalogDBObject(CatalogDBObject):
 
 
     def _make_dbTypeMap(self):
+        """
+        Construct the self.dbTypeMap member by concatenating the self.dbTypeMaps
+        from the input CatalogDBObjects.
+        """
         self.dbTypeMap = {}
         for dbo in self._dbObjectList:
             for col in dbo.dbTypeMap:
@@ -51,6 +78,10 @@ class CompoundCatalogDBObject(CatalogDBObject):
 
 
     def _make_dbDefaultValues(self):
+        """
+        Construct the self.dbDefaultValues member by concatenating the
+        self.dbDefaultValues from the input CatalogDBObjects.
+        """
         self.dbDefaultValues = {}
         for dbo, dbName in zip(self._dbObjectList, self._nameList):
             for col in dbo.dbDefaultValues:
@@ -58,6 +89,10 @@ class CompoundCatalogDBObject(CatalogDBObject):
 
 
     def _validate_input(self):
+        """
+        Verify that the CatalogDBObjects passed to the constructor
+        do, indeed, query the same table of the same database.
+        """
         hostList = []
         databaseList = []
         portList = []

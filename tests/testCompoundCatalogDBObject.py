@@ -108,6 +108,10 @@ class CompoundCatalogDBObjectTestCase(unittest.TestCase):
 
 
     def testCompoundCatalogDBObject(self):
+        """
+        Verify that CompoundCatalogDBObject returns the expected
+        columns.
+        """
         db1 = dbClass1(database=self.dbName, driver='sqlite')
         db2 = dbClass2(database=self.dbName, driver='sqlite')
         db3 = dbClass3(database=self.dbName, driver='sqlite')
