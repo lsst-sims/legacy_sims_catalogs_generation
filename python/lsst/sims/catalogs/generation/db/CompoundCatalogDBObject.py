@@ -21,6 +21,8 @@ class CompoundCatalogDBObject(CatalogDBObject):
             self._nameList.append('db_%d' % ix)
 
         self._make_columns()
+        self._make_dbTypeMap()
+        self._make_dbDefaultValues()
 
         dbo = self._dbObjectList[0]
         self.tableid = dbo.tableid
@@ -31,13 +33,28 @@ class CompoundCatalogDBObject(CatalogDBObject):
                                                       host=dbo.host, port=dbo.port, verbose=dbo.verbose)
 
 
-    def _make_columns():
+    def _make_columns(self):
         self.columns= []
         for dbo, dbName in zip(self._dbObjectList, self._nameList):
             for row in dbo.columns:
                 new_row=[ww for ww in row]
-                new_row[0]='%s_%s' % dbName,row[0]
+                new_row[0]='%s_%s' % (dbName, row[0])
                 self.columns.append(tuple(new_row))
+
+
+    def _make_dbTypeMap(self):
+        self.dbTypeMap = {}
+        for dbo in self._dbObjectList:
+            for col in dbo.dbTypeMap:
+                if col not in self.dbTypeMap:
+                    self.dbTypeMap[col] = dbo.dbTypeMap[col]
+
+
+    def _make_dbDefaultValues(self):
+        self.dbDefaultValues = {}
+        for dbo, dbName in zip(self._dbObjectList, self._nameList):
+            for col in dbo.dbDefaultValues:
+                self.dbDefaultValues['%s_%s' % (dbName, col)] = dbo.dbDefaultValues[col]
 
 
     def _validate_input(self):
@@ -55,8 +72,9 @@ class CompoundCatalogDBObject(CatalogDBObject):
                 portList.append(dbo.port)
             if dbo.driver not in driverList:
                 driverList.append(dbo.driver)
-            if dbo.table not in tableList:
-                tableList.append(dbo.table)
+            if dbo.tableid not in tableList:
+                tableList.append(dbo.tableid)
+
 
         acceptable = True
         msg = ''
