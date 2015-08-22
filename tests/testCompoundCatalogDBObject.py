@@ -10,7 +10,7 @@ from lsst.sims.catalogs.generation.db import fileDBObject, \
                                       CatalogDBObject
 
 class dbClass1(CatalogDBObject):
-    objid = 1
+    objid = 'class1'
     idColKey = 'id'
     tableid = 'test'
     columns = [('aa', 'a'),
@@ -20,7 +20,7 @@ class dbClass1(CatalogDBObject):
 
 
 class dbClass2(CatalogDBObject):
-    objid = 2
+    objid = 'class2'
     idColKey = 'id'
     tableid = 'test'
     columns = [('aa', '2.0*b'),
@@ -30,7 +30,7 @@ class dbClass2(CatalogDBObject):
 
 
 class dbClass3(CatalogDBObject):
-    objid = 3
+    objid = 'class3'
     idColKey = 'id'
     tableid = 'test'
     columns = [('aa', 'c-3.0'),
@@ -41,7 +41,7 @@ class dbClass3(CatalogDBObject):
 
 
 class dbClass4(CatalogDBObject):
-    objid = 4
+    objid = 'class4'
     idColKey = 'id'
     tableid = 'otherTest'
     columns = [('aa', 'c-3.0'),
@@ -173,39 +173,39 @@ class CompoundCatalogDBObjectTestCase(unittest.TestCase):
         dbList = [db1, db2, db3]
         compoundDb = CompoundCatalogDBObject(dbList)
 
-        colNames = ['db_0_aa', 'db_0_bb',
-                    'db_1_aa', 'db_1_bb',
-                    'db_2_aa', 'db_2_bb', 'db_2_cc']
+        colNames = ['class1_aa', 'class1_bb',
+                    'class2_aa', 'class2_bb',
+                    'class3_aa', 'class3_bb', 'class3_cc']
 
         results = compoundDb.query_columns(colnames=colNames)
 
         for chunk in results:
-            numpy.testing.assert_array_almost_equal(chunk['db_0_aa'],
+            numpy.testing.assert_array_almost_equal(chunk['class1_aa'],
                                                     self.controlArray['a'],
                                                     decimal=6)
 
-            numpy.testing.assert_array_equal(chunk['db_0_bb'],
+            numpy.testing.assert_array_equal(chunk['class1_bb'],
                                              self.controlArray['d'])
 
-            numpy.testing.assert_array_almost_equal(chunk['db_1_aa'],
+            numpy.testing.assert_array_almost_equal(chunk['class2_aa'],
                                                     2.0*self.controlArray['b'],
                                                     decimal=6)
 
-            numpy.testing.assert_array_almost_equal(chunk['db_1_bb'],
+            numpy.testing.assert_array_almost_equal(chunk['class2_bb'],
                                                     self.controlArray['a'],
                                                     decimal=6)
 
 
-            numpy.testing.assert_array_almost_equal(chunk['db_2_aa'],
+            numpy.testing.assert_array_almost_equal(chunk['class3_aa'],
                                                     self.controlArray['c']-3.0,
                                                     decimal=6)
 
 
-            numpy.testing.assert_array_almost_equal(chunk['db_2_bb'],
+            numpy.testing.assert_array_almost_equal(chunk['class3_bb'],
                                                     self.controlArray['a'],
                                                     decimal=6)
 
-            numpy.testing.assert_array_almost_equal(chunk['db_2_cc'],
+            numpy.testing.assert_array_almost_equal(chunk['class3_cc'],
                                                     3.0*self.controlArray['b'],
                                                     decimal=6)
 

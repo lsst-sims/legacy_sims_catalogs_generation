@@ -19,9 +19,8 @@ class CompoundCatalogDBObject(CatalogDBObject):
     When you call query_columns, a recarray will be returned as in a CatalogDBObject.
     Note, however, that the names of the columns of the recarray will be modified.
     If the first CatalogDBObject in the list of CatalogDBObjects passed to the constructor
-    asks for a column named 'col1', that will be mapped to 'db_0_col1'.  'col2' will be mapped
-    to 'db_0_col2'. If the second CatalogDBObject also asks for columns named 'col1', and
-    'col2', they will be mapped to 'db_1_col1' and 'db_1_col2', etc.
+    asks for a column named 'col1', that will be mapped to 'catName_col1' where 'catName'
+    is the CatalogDBObject's objid member.  'col2' will be mapped to 'catName_col2', etc.
     """
 
 
@@ -36,7 +35,7 @@ class CompoundCatalogDBObject(CatalogDBObject):
 
         self._nameList = []
         for ix in range(len(self._dbObjectList)):
-            self._nameList.append('db_%d' % ix)
+            self._nameList.append(self._dbObjectList[ix].objid)
 
         self._make_columns()
         self._make_dbTypeMap()
