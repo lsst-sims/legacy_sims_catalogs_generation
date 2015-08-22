@@ -60,7 +60,9 @@ class CompoundCatalogDBObject(CatalogDBObject):
         for dbo, dbName in zip(self._dbObjectList, self._nameList):
             for row in dbo.columns:
                 new_row=[ww for ww in row]
-                new_row[0]='%s_%s' % (dbName, row[0])
+                new_row[0]=str('%s_%s' % (dbName, row[0]))
+                if new_row[1] is None:
+                    new_row[1] = row[0]
                 self.columns.append(tuple(new_row))
 
 
