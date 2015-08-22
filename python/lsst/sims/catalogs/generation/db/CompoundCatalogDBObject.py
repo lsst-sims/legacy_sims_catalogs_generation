@@ -97,6 +97,7 @@ class CompoundCatalogDBObject(CatalogDBObject):
         portList = []
         driverList = []
         tableList = []
+        objidList = []
         for dbo in self._dbObjectList:
             if dbo.host not in hostList:
                 hostList.append(dbo.host)
@@ -108,6 +109,15 @@ class CompoundCatalogDBObject(CatalogDBObject):
                 driverList.append(dbo.driver)
             if dbo.tableid not in tableList:
                 tableList.append(dbo.tableid)
+
+            if dbo.objid not in objidList:
+                objidList.append(dbo.objid)
+            else:
+                raise RuntimeWarning('WARNING the objid %s ' % dbo.objid \
+                                     + 'is duplicated in your list of ' \
+                                     + 'CatalogDBObjects\n' \
+                                     + 'CompoundCatalogDBObject requires each' \
+                                     + ' CatalogDBObject have a unique objid\n')
 
         acceptable = True
         msg = ''
