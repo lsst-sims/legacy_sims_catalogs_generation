@@ -436,6 +436,7 @@ class CompoundWithObsMetaData(unittest.TestCase):
         self.assertFalse(True in in_bounds)
         self.assertTrue(len(good_rows)>0)
         self.assertTrue(len(bad_rows)>0)
+        self.assertEqual(len(good_rows)+len(bad_rows), self.controlArray.shape[0])
 
 
     def testObsMetadataAndConstraint(self):
@@ -488,6 +489,7 @@ class CompoundWithObsMetaData(unittest.TestCase):
         self.assertFalse(True in in_bounds)
         self.assertTrue(len(good_rows)>0)
         self.assertTrue(len(bad_rows)>0)
+        self.assertEqual(len(good_rows)+len(bad_rows), self.controlArray.shape[0])
 
 
 
