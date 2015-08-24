@@ -481,7 +481,7 @@ class CompoundWithObsMetaData(unittest.TestCase):
 
         bad_rows = [ix for ix in range(self.controlArray.shape[0]) if ix not in good_rows]
 
-        in_bounds = [rr>100.0 and rr<260.0 and dd>-25.0 and dd<25.0 and mm>150 \
+        in_bounds = [rr>100.0 and rr<260.0 and dd>-25.0 and dd<25.0 and mm>150.0 \
                       for (rr, dd, mm) in \
                       zip(self.controlArray['ra'][bad_rows], self.controlArray['dec'][bad_rows], \
                           self.controlArray['mag'][bad_rows])]
