@@ -399,6 +399,98 @@ class CompoundWithObsMetaData(unittest.TestCase):
         self.assertTrue(len(bad_rows)>0)
 
 
+    def testContraint(self):
+        """
+        Test that CompoundCatalogDBObject runs correctly with a constraint
+        """
+        db1 = testStarDB1(database=self.dbName, driver='sqlite')
+        db2 = testStarDB2(database=self.dbName, driver='sqlite')
+
+        compoundDb = CompoundCatalogDBObject([db1, db2])
+
+        colnames = ['testStar1_id',
+                    'testStar1_raJ2000', 'testStar1_decJ2000', 'testStar1_magMod',
+                    'testStar2_raJ2000', 'testStar2_decJ2000', 'testStar2_magMod']
+
+        results = compoundDb.query_columns(colnames=colnames,
+                                           constraint='mag<11.0')
+
+        good_rows = []
+        for chunk in results:
+            for line in chunk:
+                ix = line['id']
+                good_rows.append(ix)
+                self.assertAlmostEqual(line['testStar1_raJ2000'], self.controlArray['ra'][ix], 10)
+                self.assertAlmostEqual(line['testStar1_decJ2000'], self.controlArray['dec'][ix], 10)
+                self.assertAlmostEqual(line['testStar1_magMod'], self.controlArray['mag'][ix], 10)
+                self.assertAlmostEqual(line['testStar2_raJ2000'], 2.0*self.controlArray['ra'][ix], 10)
+                self.assertAlmostEqual(line['testStar2_decJ2000'], 2.0*self.controlArray['dec'][ix], 10)
+                self.assertAlmostEqual(line['testStar2_magMod'], 2.0*self.controlArray['mag'][ix], 10)
+                self.assertTrue(self.controlArray['mag'][ix]<11.0)
+
+
+        bad_rows = [ix for ix in range(self.controlArray.shape[0]) if ix not in good_rows]
+
+        in_bounds = [mm<11.0 for mm in self.controlArray['mag'][bad_rows]]
+
+        self.assertFalse(True in in_bounds)
+        self.assertTrue(len(good_rows)>0)
+        self.assertTrue(len(bad_rows)>0)
+
+
+    def testObsMetadataAndConstraint(self):
+        """
+        Test that CompoundCatalogDBObject correctly handles an ObservationMetaData
+        and a constraint at the same time
+        """
+        obs = ObservationMetaData(unrefractedRA = 180.0,
+                                  unrefractedDec = 0.0,
+                                  boundType = 'box',
+                                  boundLength = (80.0, 25.0))
+
+        db1 = testStarDB1(database=self.dbName, driver='sqlite')
+        db2 = testStarDB2(database=self.dbName, driver='sqlite')
+
+        compoundDb = CompoundCatalogDBObject([db1, db2])
+
+        colnames = ['testStar1_id',
+                    'testStar1_raJ2000', 'testStar1_decJ2000', 'testStar1_magMod',
+                    'testStar2_raJ2000', 'testStar2_decJ2000', 'testStar2_magMod']
+
+        results = compoundDb.query_columns(colnames=colnames,
+                                           obs_metadata=obs,
+                                           constraint='mag>15.0')
+
+        good_rows = []
+        for chunk in results:
+            for line in chunk:
+                ix = line['id']
+                good_rows.append(ix)
+                self.assertAlmostEqual(line['testStar1_raJ2000'], self.controlArray['ra'][ix], 10)
+                self.assertAlmostEqual(line['testStar1_decJ2000'], self.controlArray['dec'][ix], 10)
+                self.assertAlmostEqual(line['testStar1_magMod'], self.controlArray['mag'][ix], 10)
+                self.assertAlmostEqual(line['testStar2_raJ2000'], 2.0*self.controlArray['ra'][ix], 10)
+                self.assertAlmostEqual(line['testStar2_decJ2000'], 2.0*self.controlArray['dec'][ix], 10)
+                self.assertAlmostEqual(line['testStar2_magMod'], 2.0*self.controlArray['mag'][ix], 10)
+                self.assertTrue(self.controlArray['ra'][ix]>100.0)
+                self.assertTrue(self.controlArray['ra'][ix]<260.0)
+                self.assertTrue(self.controlArray['dec'][ix]>-25.0)
+                self.assertTrue(self.controlArray['dec'][ix]<25.0)
+                self.assertTrue(self.controlArray['mag'][ix]>15.0)
+
+        bad_rows = [ix for ix in range(self.controlArray.shape[0]) if ix not in good_rows]
+
+        in_bounds = [rr>100.0 and rr<260.0 and dd>-25.0 and dd<25.0 and mm>150 \
+                      for (rr, dd, mm) in \
+                      zip(self.controlArray['ra'][bad_rows], self.controlArray['dec'][bad_rows], \
+                          self.controlArray['mag'][bad_rows])]
+
+        self.assertFalse(True in in_bounds)
+        self.assertTrue(len(good_rows)>0)
+        self.assertTrue(len(bad_rows)>0)
+
+
+
 def suite():
     """Returns a suite containing all the test cases in this module."""
     utilsTests.init()
