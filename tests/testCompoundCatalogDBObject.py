@@ -340,6 +340,14 @@ class CompoundWithObsMetaData(unittest.TestCase):
                             database=cls.dbName, dtype=dbDtype,
                             idColKey='id')
 
+    @classmethod
+    def tearDownClass(cls):
+        if os.path.exists(cls.textFileName):
+            os.unlink(cls.textFileName)
+
+        if os.path.exists(cls.dbName):
+            os.unlink(cls.dbName)
+
 
     def testObsMetaData(self):
         """
