@@ -62,6 +62,14 @@ class dbClass5(CatalogDBObject):
     dbDefaultValues = {'ee': -3}
 
 
+class dbClass6(CatalogDBObject):
+    objid = 'class6'
+    idColKey = 'id'
+    tableid = 'test'
+    columns = [('a', None),
+               ('b',None)]
+
+
 
 class CompoundCatalogDBObjectTestCase(unittest.TestCase):
 
@@ -226,6 +234,35 @@ class CompoundCatalogDBObjectTestCase(unittest.TestCase):
             numpy.testing.assert_array_almost_equal(chunk['class3_cc'],
                                                     3.0*self.controlArray['b'],
                                                     decimal=6)
+
+
+    def testNoneMapping(self):
+        """
+        Test that Nones are handled correctly in the CatalogDBObject
+        column mappings
+        """
+        db1 = dbClass1(database=self.dbName, driver='sqlite')
+        db2 = dbClass6(database=self.dbName, driver='sqlite')
+        colNames = ['class1_aa', 'class1_bb', 'class6_a', 'class6_b']
+        compoundDb = CompoundCatalogDBObject([db1, db2])
+        results = compoundDb.query_columns(colnames=colNames)
+        for chunk in results:
+            numpy.testing.assert_array_almost_equal(chunk['class1_aa'],
+                                                    self.controlArray['a'],
+                                                    decimal=6)
+
+            numpy.testing.assert_array_equal(chunk['class1_bb'],
+                                             self.controlArray['d'])
+
+            numpy.testing.assert_array_almost_equal(chunk['class6_a'],
+                                                    self.controlArray['a'],
+                                                    decimal=6)
+
+            numpy.testing.assert_array_almost_equal(chunk['class6_b'],
+                                                    self.controlArray['b'],
+                                                    decimal=6)
+
+
 
 def suite():
     """Returns a suite containing all the test cases in this module."""
