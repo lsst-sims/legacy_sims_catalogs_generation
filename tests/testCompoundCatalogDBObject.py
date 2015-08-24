@@ -51,6 +51,17 @@ class dbClass4(CatalogDBObject):
     dbDefaultValues = {'ee': -3}
 
 
+class dbClass5(CatalogDBObject):
+    objid = 'class4'
+    idColKey = 'id'
+    tableid = 'otherTest'
+    columns = [('aa', 'c-3.0'),
+               ('bb', 'a'),
+               ('cc', '3.0*b')]
+
+    dbDefaultValues = {'ee': -3}
+
+
 
 class CompoundCatalogDBObjectTestCase(unittest.TestCase):
 
@@ -160,6 +171,13 @@ class CompoundCatalogDBObjectTestCase(unittest.TestCase):
             compound = CompoundCatalogDBObject([db1, db2])
 
         self.assertTrue("['otherTest', 'test']" in context.exception.message)
+
+        db1 = dbClass4(database=self.dbName, driver='sqlite')
+        db2 = dbClass5(database=self.dbName, driver='sqlite')
+        with self.assertRaises(RuntimeError) as context:
+            compound = CompoundCatalogDBObject([db1, db2])
+
+        self.assertTrue("objid class4 is duplicated" in context.exception.message)
 
 
     def testCompoundCatalogDBObject(self):

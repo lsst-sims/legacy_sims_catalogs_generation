@@ -115,7 +115,7 @@ class CompoundCatalogDBObject(CatalogDBObject):
             if dbo.objid not in objidList:
                 objidList.append(dbo.objid)
             else:
-                raise RuntimeWarning('WARNING the objid %s ' % dbo.objid \
+                raise RuntimeError('WARNING the objid %s ' % dbo.objid \
                                      + 'is duplicated in your list of ' \
                                      + 'CatalogDBObjects\n' \
                                      + 'CompoundCatalogDBObject requires each' \
