@@ -66,7 +66,18 @@ class CompoundCatalogDBObject(CatalogDBObject):
                     new_row[1] = row[0]
                 self.columns.append(tuple(new_row))
                 column_names.append(new_row[0])
-                if row[0] not in column_names:
+
+                # 25 August 2015
+                # This is a modification that needs to be made in order for this
+                # class to work with GalaxyTileObj.  The column galaxytileid in
+                # GalaxyTileObj is removed from the query by query_columns, but
+                # somehow injected back in by the query procedure on fatboy. This
+                # leads to confusion if you try to query something like
+                # galaxyAgn_galaxytileid.  We deal with that by removing all column
+                # names like 'galaxytileid' in query_columns, but leaving 'galaxytileid'
+                # un-mangled in self.columns so that self.typeMap knows how to deal
+                # with it when it comes back.
+                if row[0] not in column_names and (row[1] is None or row[1]==row[0]):
                     self.columns.append(row)
                     column_names.append(row[0])
 
