@@ -72,15 +72,15 @@ class dbClass6(CatalogDBObject):
 
 
 class specificCompoundObj_otherTest(CompoundCatalogDBObject):
-    _allowed_tables = ['otherTest']
+    _table_restriction = ['otherTest']
 
 
 class specificCompoundObj_test(CompoundCatalogDBObject):
-    _allowed_tables = ['test']
+    _table_restriction = ['test']
 
 
 class universalCompoundObj(CompoundCatalogDBObject):
-    _allowed_tables = ['test', 'otherTest']
+    _table_restriction = ['test', 'otherTest']
 
 
 class CompoundCatalogDBObjectTestCase(unittest.TestCase):
@@ -256,9 +256,9 @@ class CompoundCatalogDBObjectTestCase(unittest.TestCase):
                                                     3.0*self.controlArray['b'],
                                                     decimal=6)
 
-    def testAllowedTables(self):
+    def testTableRestriction(self):
         """
-        Verify that _allowed_tables works the way it should in CompoundCatalogDBObject
+        Verify that _table_restriction works the way it should in CompoundCatalogDBObject
         """
         db1 = dbClass1(database=self.dbName, driver='sqlite')
         db2 = dbClass2(database=self.dbName, driver='sqlite')
@@ -287,9 +287,9 @@ class CompoundCatalogDBObjectTestCase(unittest.TestCase):
                                                     decimal=6)
 
 
-    def testUniversalAllowedTable(self):
+    def testUniversalTableRestriction(self):
         """
-        Verify that _allowed_tables with multiple tables also works
+        Verify that _table_restriction with multiple tables also works
         """
         db1 = dbClass1(database=self.dbName, driver='sqlite')
         db2 = dbClass2(database=self.dbName, driver='sqlite')
