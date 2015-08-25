@@ -287,6 +287,53 @@ class CompoundCatalogDBObjectTestCase(unittest.TestCase):
                                                     decimal=6)
 
 
+    def testUniversalAllowedTable(self):
+        """
+        Verify that _allowed_tables with multiple tables also works
+        """
+        db1 = dbClass1(database=self.dbName, driver='sqlite')
+        db2 = dbClass2(database=self.dbName, driver='sqlite')
+        db3 = dbClass3(database=self.dbName, driver='sqlite')
+        dbList = [db1, db2, db3]
+        compoundDb = universalCompoundObj(dbList)
+
+        colNames = ['class1_aa', 'class1_bb',
+                    'class2_aa', 'class2_bb',
+                    'class3_aa', 'class3_bb', 'class3_cc']
+
+        results = compoundDb.query_columns(colnames=colNames)
+
+        for chunk in results:
+            numpy.testing.assert_array_almost_equal(chunk['class1_aa'],
+                                                    self.controlArray['a'],
+                                                    decimal=6)
+
+            numpy.testing.assert_array_equal(chunk['class1_bb'],
+                                             self.controlArray['d'])
+
+            numpy.testing.assert_array_almost_equal(chunk['class2_aa'],
+                                                    2.0*self.controlArray['b'],
+                                                    decimal=6)
+
+            numpy.testing.assert_array_almost_equal(chunk['class2_bb'],
+                                                    self.controlArray['a'],
+                                                    decimal=6)
+
+
+            numpy.testing.assert_array_almost_equal(chunk['class3_aa'],
+                                                    self.controlArray['c']-3.0,
+                                                    decimal=6)
+
+
+            numpy.testing.assert_array_almost_equal(chunk['class3_bb'],
+                                                    self.controlArray['a'],
+                                                    decimal=6)
+
+            numpy.testing.assert_array_almost_equal(chunk['class3_cc'],
+                                                    3.0*self.controlArray['b'],
+                                                    decimal=6)
+
+
 
     def testChunks(self):
         """
