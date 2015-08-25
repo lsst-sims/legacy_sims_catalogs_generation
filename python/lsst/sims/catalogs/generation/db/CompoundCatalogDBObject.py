@@ -56,6 +56,7 @@ class CompoundCatalogDBObject(CatalogDBObject):
         from the input CatalogDBObjects and modifying the names of the returned
         columns to identify them with their specific CatalogDBObjects.
         """
+        column_names = []
         self.columns= []
         for dbo, dbName in zip(self._dbObjectList, self._nameList):
             for row in dbo.columns:
@@ -64,6 +65,10 @@ class CompoundCatalogDBObject(CatalogDBObject):
                 if new_row[1] is None:
                     new_row[1] = row[0]
                 self.columns.append(tuple(new_row))
+                column_names.append(new_row[0])
+                if row[0] not in column_names:
+                    self.columns.append(row)
+                    column_names.append(row[0])
 
 
     def _make_dbTypeMap(self):
