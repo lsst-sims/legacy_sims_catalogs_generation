@@ -75,6 +75,14 @@ class specificCompoundObj_otherTest(CompoundCatalogDBObject):
     _allowed_tables = ['otherTest']
 
 
+class specificCompoundObj_test(CompoundCatalogDBObject):
+    _allowed_tables = ['test']
+
+
+class universalCompoundObj(CompoundCatalogDBObject):
+    _allowed_tables = ['test', 'otherTest']
+
+
 class CompoundCatalogDBObjectTestCase(unittest.TestCase):
 
     @classmethod
@@ -247,6 +255,37 @@ class CompoundCatalogDBObjectTestCase(unittest.TestCase):
             numpy.testing.assert_array_almost_equal(chunk['class3_cc'],
                                                     3.0*self.controlArray['b'],
                                                     decimal=6)
+
+    def testAllowedTables(self):
+        """
+        Verify that _allowed_tables works the way it should in CompoundCatalogDBObject
+        """
+        db1 = dbClass1(database=self.dbName, driver='sqlite')
+        db2 = dbClass2(database=self.dbName, driver='sqlite')
+        dbList = [db1, db2]
+        compoundDb = specificCompoundObj_test(dbList)
+
+        colNames = ['class1_aa', 'class1_bb',
+                    'class2_aa', 'class2_bb']
+
+        results = compoundDb.query_columns(colnames=colNames)
+
+        for chunk in results:
+            numpy.testing.assert_array_almost_equal(chunk['class1_aa'],
+                                                    self.controlArray['a'],
+                                                    decimal=6)
+
+            numpy.testing.assert_array_equal(chunk['class1_bb'],
+                                             self.controlArray['d'])
+
+            numpy.testing.assert_array_almost_equal(chunk['class2_aa'],
+                                                    2.0*self.controlArray['b'],
+                                                    decimal=6)
+
+            numpy.testing.assert_array_almost_equal(chunk['class2_bb'],
+                                                    self.controlArray['a'],
+                                                    decimal=6)
+
 
 
     def testChunks(self):
