@@ -14,13 +14,23 @@ class CompoundCatalogDBObject(CatalogDBObject):
     You feed the constructor a list of CatalogDBObjects.  The CompoundCatalogDBObject
     verifies that they all do, indeed, query the same table of the same database.  It
     then constructs its own self.columns member (note that CompoundCatalogDBObject is
-    a daughter class of CatalogDBobject) which combines all of the requested data.
+    a daughter class of CatalogDBObject) which combines all of the requested data.
 
     When you call query_columns, a recarray will be returned as in a CatalogDBObject.
     Note, however, that the names of the columns of the recarray will be modified.
     If the first CatalogDBObject in the list of CatalogDBObjects passed to the constructor
     asks for a column named 'col1', that will be mapped to 'catName_col1' where 'catName'
     is the CatalogDBObject's objid member.  'col2' will be mapped to 'catName_col2', etc.
+    In cases where the CatalogDBObject does not change the name of the column, the column
+    will also be returned by its original, un-mangled name.
+
+    In cases where a custom query_columns method must be implemented, this class
+    can be sub-classed and the custom method added as a member method.  In that
+    case, the _table_restriction member variable should be set to a list of table
+    names corresponding to the tables for which this class was designed.  An
+    exception will be raised if the user tries to use the CompoundCatalogDBObject
+    class to query tables for which it was not written.  _table_restriction defaults
+    to None, which means that the class is for use with any table.
     """
 
     # This member variable is an optional list of tables supported
@@ -113,6 +123,10 @@ class CompoundCatalogDBObject(CatalogDBObject):
         """
         Verify that the CatalogDBObjects passed to the constructor
         do, indeed, query the same table of the same database.
+
+        Also verify that this class is designed to query the tables
+        it is being used on (in cases where a custom query_columns
+        has been implemented).
         """
         hostList = []
         databaseList = []
