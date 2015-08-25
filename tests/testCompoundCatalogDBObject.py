@@ -71,6 +71,9 @@ class dbClass6(CatalogDBObject):
                ('b',None)]
 
 
+class specificCompoundObj_otherTest(CompoundCatalogDBObject):
+    _allowed_tables = ['otherTest']
+
 
 class CompoundCatalogDBObjectTestCase(unittest.TestCase):
 
@@ -187,6 +190,15 @@ class CompoundCatalogDBObjectTestCase(unittest.TestCase):
             compound = CompoundCatalogDBObject([db1, db2])
 
         self.assertTrue("objid class4 is duplicated" in context.exception.message)
+
+        db1 = dbClass1(database=self.dbName, driver='sqlite')
+        db2 = dbClass2(database=self.dbName, driver='sqlite')
+        with self.assertRaises(RuntimeError) as context:
+            compound = specificCompoundObj_otherTest([db1, db2])
+
+        msg = "This CompoundCatalogDBObject does not support the table 'test'"
+        self.assertTrue(msg in context.exception.message)
+
 
 
     def testCompoundCatalogDBObject(self):

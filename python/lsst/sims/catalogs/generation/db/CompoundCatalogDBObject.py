@@ -170,4 +170,4 @@ class CompoundCatalogDBObject(CatalogDBObject):
         if self._allowed_tables is not None:
             if tableList[0] not in self._allowed_tables:
                 raise RuntimeError("This CompoundCatalogDBObject does not support " \
-                                   + "the table %s " % tableList[0])
+                                   + "the table '%s' " % tableList[0])
