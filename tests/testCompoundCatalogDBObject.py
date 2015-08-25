@@ -84,7 +84,7 @@ class CompoundCatalogDBObjectTestCase(unittest.TestCase):
                             ('d', str, 20)
                             ])
 
-        nSamples=5
+        nSamples=100
         aList = numpy.random.random_sample(nSamples)*10.0
         bList = numpy.random.random_sample(nSamples)*(-1.0)
         cList = numpy.random.random_sample(nSamples)*10.0-5.0
