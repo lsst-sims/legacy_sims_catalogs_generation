@@ -23,6 +23,12 @@ class CompoundCatalogDBObject(CatalogDBObject):
     is the CatalogDBObject's objid member.  'col2' will be mapped to 'catName_col2', etc.
     """
 
+    # This member variable is an optional list of tables supported
+    # by a specific CompoundCatalogDBObject sub-class.  If
+    # _allowed_tables==None, then any table is supported
+    # (I know that seems counter-intuitive, but I did not want
+    # to default a class member variable to [])
+    _allowed_tables = None
 
     def __init__(self, catalogDbObjectList):
         """
@@ -160,3 +166,8 @@ class CompoundCatalogDBObject(CatalogDBObject):
                                + 'CompoundCatalogDBObject do not all ' \
                                + 'query the same table:\n' \
                                + msg)
+
+        if self._allowed_tables is not None:
+            if tableList[0] not in self._allowed_tables:
+                raise RuntimeError("This CompoundCatalogDBObject does not support " \
+                                   + "the table %s " % tableList[0])
