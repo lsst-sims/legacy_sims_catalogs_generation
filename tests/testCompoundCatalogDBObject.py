@@ -237,6 +237,60 @@ class CompoundCatalogDBObjectTestCase(unittest.TestCase):
                                                     decimal=6)
 
 
+    def testChunks(self):
+        """
+        Verify that CompoundCatalogDBObject handles chunk_size correctly
+        """
+        db1 = dbClass1(database=self.dbName, driver='sqlite')
+        db2 = dbClass2(database=self.dbName, driver='sqlite')
+        db3 = dbClass3(database=self.dbName, driver='sqlite')
+        dbList = [db1, db2, db3]
+        compoundDb = CompoundCatalogDBObject(dbList)
+
+        colNames = ['id',
+                    'class1_aa', 'class1_bb',
+                    'class2_aa', 'class2_bb',
+                    'class3_aa', 'class3_bb', 'class3_cc']
+
+        results = compoundDb.query_columns(colnames=colNames, chunk_size=10)
+
+        ct = 0
+
+        for chunk in results:
+            ct += len(chunk['class1_aa'])
+            rows = chunk['id']
+            numpy.testing.assert_array_almost_equal(chunk['class1_aa'],
+                                                    self.controlArray['a'][rows],
+                                                    decimal=6)
+
+            numpy.testing.assert_array_equal(chunk['class1_bb'],
+                                             self.controlArray['d'][rows])
+
+            numpy.testing.assert_array_almost_equal(chunk['class2_aa'],
+                                                    2.0*self.controlArray['b'][rows],
+                                                    decimal=6)
+
+            numpy.testing.assert_array_almost_equal(chunk['class2_bb'],
+                                                    self.controlArray['a'][rows],
+                                                    decimal=6)
+
+
+            numpy.testing.assert_array_almost_equal(chunk['class3_aa'],
+                                                    self.controlArray['c'][rows]-3.0,
+                                                    decimal=6)
+
+
+            numpy.testing.assert_array_almost_equal(chunk['class3_bb'],
+                                                    self.controlArray['a'][rows],
+                                                    decimal=6)
+
+            numpy.testing.assert_array_almost_equal(chunk['class3_cc'],
+                                                    3.0*self.controlArray['b'][rows],
+                                                    decimal=6)
+
+        self.assertEqual(ct, 100)
+
+
     def testNoneMapping(self):
         """
         Test that Nones are handled correctly in the CatalogDBObject
