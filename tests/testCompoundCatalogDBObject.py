@@ -259,6 +259,8 @@ class CompoundCatalogDBObjectTestCase(unittest.TestCase):
         for chunk in results:
             ct += len(chunk['class1_aa'])
             rows = chunk['id']
+            self.assertTrue(len(rows)<=10)
+
             numpy.testing.assert_array_almost_equal(chunk['class1_aa'],
                                                     self.controlArray['a'][rows],
                                                     decimal=6)
