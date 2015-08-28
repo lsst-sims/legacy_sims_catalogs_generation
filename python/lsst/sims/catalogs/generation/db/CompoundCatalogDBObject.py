@@ -135,14 +135,19 @@ class CompoundCatalogDBObject(CatalogDBObject):
         tableList = []
         objidList = []
         for dbo in self._dbObjectList:
+
             if dbo.host not in hostList:
                 hostList.append(dbo.host)
+
             if dbo.database not in databaseList:
                 databaseList.append(dbo.database)
+
             if dbo.port not in portList:
                 portList.append(dbo.port)
+
             if dbo.driver not in driverList:
                 driverList.append(dbo.driver)
+
             if dbo.tableid not in tableList:
                 tableList.append(dbo.tableid)
 
@@ -160,15 +165,19 @@ class CompoundCatalogDBObject(CatalogDBObject):
         if len(hostList)>1:
             acceptable = False
             msg += ' hosts: ' + str(hostList) + '\n'
+
         if len(databaseList)>1:
             acceptable = False
             msg += ' databases: ' + str(databaseList) + '\n'
+
         if len(portList)>1:
             acceptable = False
             msg += ' ports: ' + str(portList) + '\n'
+
         if len(driverList)>1:
             acceptable = False
             msg += ' drivers: ' + str(driverList) + '\n'
+
         if len(tableList)>1:
             acceptable = False
             msg += ' tables: ' + str(tableList) + '\n'
