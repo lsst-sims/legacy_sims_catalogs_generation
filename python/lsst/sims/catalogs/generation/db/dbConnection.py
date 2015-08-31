@@ -330,7 +330,7 @@ class CatalogDBObjectMeta(type):
                 pass #Don't add typeIds that are None
             elif cls.objectTypeId in cls.objectTypeIdList:
                 warnings.warn('Duplicate object type id %s specified: '%cls.objectTypeId+\
-                              '\nOutput object ids may not be unique.\nThis may not be a problem if you do not'+\
+                              '\nOutput object ids may not be unique.\nThis may not be a problem if you do not '+\
                               'want globally unique id values')
             else:
                 cls.objectTypeIdList.append(cls.objectTypeId)
