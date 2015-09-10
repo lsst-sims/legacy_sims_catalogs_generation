@@ -6,7 +6,7 @@ import numpy, json
 
 from lsst.sims.utils import ObservationMetaData
 from lsst.sims.catalogs.generation.db import CatalogDBObject
-from lsst.sims.utils import raDecFromAltAz, calcObsDefaults, getRotTelPos, Site
+from lsst.sims.utils import _raDecFromAltAz, calcObsDefaults, _getRotTelPos, Site
 
 __all__ = ["getOneChunk", "writeResult", "sampleSphere", "myTestGals",
            "makeGalTestDB", "myTestStars", "makeStarTestDB", "makePhoSimTestDB"]
@@ -317,8 +317,8 @@ def makePhoSimTestDB(filename='PhoSimTestDatabase.db', size=1000, seedVal=32, ra
     az = 0.0
     band = 'r'
     testSite = Site()
-    centerRA, centerDec = raDecFromAltAz(alt,az,testSite.longitude,testSite.latitude,mjd)
-    rotTel = getRotTelPos(centerRA, centerDec, testSite.longitude, testSite.latitude, mjd, 0.0)
+    centerRA, centerDec = _raDecFromAltAz(alt,az,testSite.longitude,testSite.latitude,mjd)
+    rotTel = _getRotTelPos(centerRA, centerDec, testSite.longitude, testSite.latitude, mjd, 0.0)
 
     obsDict = calcObsDefaults(centerRA, centerDec, alt, az, rotTel, mjd, band,
                  testSite.longitude, testSite.latitude)
