@@ -65,6 +65,7 @@ class myTestGals(CatalogDBObject):
     idColKey = 'id'
     #Make this implausibly large?
     appendint = 1022
+    objectTypeId = 45
     driver = 'sqlite'
     database = 'testDatabase.db'
     raColName = 'ra'
@@ -173,6 +174,7 @@ class myTestStars(CatalogDBObject):
     idColKey = 'id'
     #Make this implausibly large?
     appendint = 1023
+    objectTypeId = 46
     driver = 'sqlite'
     database = 'testDatabase.db'
     raColName = 'ra'
