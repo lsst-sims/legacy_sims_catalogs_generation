@@ -574,7 +574,7 @@ class CatalogDBObject(DBObject):
         return self._final_pass(retresults)
 
     def query_columns(self, colnames=None, chunk_size=None,
-                      obs_metadata=None, constraint=None):
+                      obs_metadata=None, constraint=None, limit=None):
         """Execute a query
 
         **Parameters**
@@ -592,6 +592,8 @@ class CatalogDBObject(DBObject):
               will add a filter string to the query.
             * constraint : str (optional)
               a string which is interpreted as SQL and used as a predicate on the query
+            * limit : int (optional)
+              limits the number of rows returned by the query
 
         **Returns**
 
@@ -608,6 +610,10 @@ class CatalogDBObject(DBObject):
 
         if constraint is not None:
             query = query.filter(constraint)
+
+        if limit is not None:
+            query = query.limit(limit)
+
         return ChunkIterator(self, query, chunk_size)
 
 class fileDBObject(CatalogDBObject):
