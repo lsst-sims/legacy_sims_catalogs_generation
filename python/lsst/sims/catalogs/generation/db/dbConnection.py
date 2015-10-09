@@ -392,10 +392,18 @@ class CatalogDBObject(DBObject):
         cls = cls.registry.get(objid, CatalogDBObject)
         return cls(*args, **kwargs)
 
-    def __init__(self, database=None, driver=None, host=None, port=None, verbose=False):
+    def __init__(self, database=None, driver=None, host=None, port=None, verbose=False, table=None):
         if not verbose:
             with warnings.catch_warnings():
                 warnings.simplefilter("ignore", category=sa_exc.SAWarning)
+
+        if self.tableid is not None and table is not None:
+            raise ValueError("Double-specified tableid in CatalogDBObject:"
+                             " once in class definition, once in __init__")
+
+        if table is not None:
+            self.tableid = table
+
         if self.idColKey is None:
             self.idColKey = self.getIdColKey()
         if (self.objid is None) or (self.tableid is None) or (self.idColKey is None):
