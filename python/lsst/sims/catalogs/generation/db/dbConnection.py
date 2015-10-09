@@ -34,10 +34,10 @@ def declareTrigFunctions(conn,connection_rec,connection_proxy):
     which will define the math functions necessary for evaluating the
     Haversine function in sqlite databases (where they are not otherwise
     defined)
-    
+
     see:    http://docs.sqlalchemy.org/en/latest/core/events.html
     """
-    
+
     conn.create_function("COS",1,numpy.cos)
     conn.create_function("SIN",1,numpy.sin)
     conn.create_function("ASIN",1,numpy.arcsin)
@@ -353,7 +353,7 @@ class CatalogDBObject(DBObject):
 
     """
     __metaclass__ = CatalogDBObjectMeta
-    
+
     epoch = 2000.0
     skipRegistration = False
     objid = None
@@ -532,7 +532,7 @@ class CatalogDBObject(DBObject):
     def _postprocess_results(self, results):
         """Post-process the query results to put them
         in a structured array.
-  
+
         **Parameters**
 
             * results : a result set as returned by execution of the query
