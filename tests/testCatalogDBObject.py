@@ -3,6 +3,7 @@ import sqlite3
 
 import unittest, numpy
 import lsst.utils.tests as utilsTests
+from lsst.utils import getPackageDir
 from lsst.sims.utils import ObservationMetaData
 from lsst.sims.catalogs.generation.db import CatalogDBObject, fileDBObject
 import lsst.sims.catalogs.generation.utils.testUtils as tu
@@ -35,7 +36,7 @@ def createNonsenseDB():
     except:
         raise RuntimeError("Error creating database table test2.")
 
-    filepath = os.path.join(os.getenv('SIMS_CATALOGS_GENERATION_DIR'), 'tests/testData/CatalogsGenerationTestData.txt')
+    filepath = os.path.join(getPackageDir('sims_catalogs_generation'), 'tests', 'testData', 'CatalogsGenerationTestData.txt')
     inFile = open(filepath,'r')
     for line in inFile:
         values = line.split()
@@ -106,7 +107,7 @@ class CatalogDBObjectTestCase(unittest.TestCase):
         self.obsMd = ObservationMetaData(unrefractedRA=210.0, unrefractedDec=-60.0, boundLength=1.75,
                                          boundType='circle', mjd=52000., bandpassName='r')
 
-        self.filepath = os.path.join(os.getenv('SIMS_CATALOGS_GENERATION_DIR'), 'tests/testData/CatalogsGenerationTestData.txt')
+        self.filepath = os.path.join(getPackageDir('sims_catalogs_generation'), 'tests', 'testData', 'CatalogsGenerationTestData.txt')
 
         """
         baselineData will store another copy of the data that should be stored in
@@ -471,9 +472,9 @@ class fileDBObjectTestCase(unittest.TestCase):
 
     def setUp(self):
         self.testDataFile = os.path.join(
-            os.getenv('SIMS_CATALOGS_GENERATION_DIR'), 'tests/testData/CatalogsGenerationTestData.txt')
+            getPackageDir('sims_catalogs_generation'), 'tests', 'testData', 'CatalogsGenerationTestData.txt')
         self.testHeaderFile = os.path.join(
-            os.getenv('SIMS_CATALOGS_GENERATION_DIR'), 'tests/testData/CatalogsGenerationTestDataHeader.txt')
+            getPackageDir('sims_catalogs_generation'), 'tests', 'testData', 'CatalogsGenerationTestDataHeader.txt')
 
         self.myNonsense = fileDBObject.from_objid('fileNonsense',self.testDataFile,
                        dtype = numpy.dtype([('id',int),('ra',float),('dec',float),('mag',float)]),
