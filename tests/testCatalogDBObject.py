@@ -36,17 +36,16 @@ def createNonsenseDB():
     except:
         raise RuntimeError("Error creating database table test2.")
 
-    filepath = os.path.join(dataDir, 'CatalogsGenerationTestData.txt')
-    inFile = open(filepath,'r')
-    for line in inFile:
-        values = line.split()
-        cmd = '''INSERT INTO test VALUES (%s, %s, %s, %s)''' % (values[0],values[1],values[2],values[3])
-        c.execute(cmd)
-        if int(values[0])%2 == 0:
-            cmd = '''INSERT INTO test2 VALUES (%s, %s)''' % (values[0],str(2.0*float(values[3])))
+    with open(os.path.join(dataDir, 'CatalogsGenerationTestData.txt'), 'r') as inFile:
+        for line in inFile:
+            values = line.split()
+            cmd = '''INSERT INTO test VALUES (%s, %s, %s, %s)''' % (values[0],values[1],values[2],values[3])
             c.execute(cmd)
+            if int(values[0])%2 == 0:
+                cmd = '''INSERT INTO test2 VALUES (%s, %s)''' % (values[0],str(2.0*float(values[3])))
+                c.execute(cmd)
 
-    conn.commit()
+        conn.commit()
 
     try:
         c.execute('''CREATE TABLE queryColumnsTest (i1 int, i2 int, i3 int)''')
