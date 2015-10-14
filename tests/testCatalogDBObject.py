@@ -1,3 +1,4 @@
+from __future__ import with_statement
 import os
 import sqlite3
 
@@ -17,6 +18,7 @@ def createNonsenseDB():
     This will be used to make sure that circle and box spatial bounds yield the points
     they are supposed to.
     """
+    dataDir = os.path.join(getPackageDir('sims_catalogs_generation'), 'tests', 'testData')
     if os.path.exists('testCatalogDBObjectNonsenseDB.db'):
         os.unlink('testCatalogDBObjectNonsenseDB.db')
 
@@ -34,7 +36,7 @@ def createNonsenseDB():
     except:
         raise RuntimeError("Error creating database table test2.")
 
-    filepath = os.path.join(getPackageDir('sims_catalogs_generation'), 'tests', 'testData', 'CatalogsGenerationTestData.txt')
+    filepath = os.path.join(dataDir, 'CatalogsGenerationTestData.txt')
     inFile = open(filepath,'r')
     for line in inFile:
         values = line.split()
@@ -45,8 +47,29 @@ def createNonsenseDB():
             c.execute(cmd)
 
     conn.commit()
+
+    try:
+        c.execute('''CREATE TABLE queryColumnsTest (i1 int, i2 int, i3 int)''')
+        conn.commit()
+    except:
+        raise RuntimeError("Error creating database table queryColumnsTest.")
+
+    with open(os.path.join(dataDir, 'QueryColumnsTestData.txt'), 'r') as inputFile:
+        for line in inputFile:
+            vv = line.split()
+            cmd = '''INSERT INTO queryColumnsTest VALUES (%s, %s, %s)''' % (vv[0], vv[1], vv[2])
+            c.execute(cmd)
+
+    conn.commit()
     conn.close()
     inFile.close()
+
+class dbForQueryColumnsTest(CatalogDBObject):
+    objid = 'queryColumnsNonsense'
+    tableid = 'queryColumnsTest'
+    database = 'testCatalogDBObjectNonsenseDB.db'
+    idColKey = 'i1'
+    dbDefaultValues = {'i2':-1, 'i3':-2}
 
 class myNonsenseDB(CatalogDBObject):
     objid = 'Nonsense'
@@ -459,6 +482,23 @@ class CatalogDBObjectTestCase(unittest.TestCase):
 
         for (col,coltest) in zip(mygalaxies.columns,colsShouldBe):
             self.assertEqual(col,coltest)
+
+
+    def testQueryColumnsDefaults(self):
+        """
+        Test that dbDefaultValues get properly applied when query_columns is called
+        """
+        db = dbForQueryColumnsTest(driver='sqlite')
+        colnames = ['i1', 'i2', 'i3']
+        results = db.query_columns(colnames)
+        controlArr = [(1,-1,2), (3,4,-2), (5,6,7)]
+
+        for chunk in results:
+            for ix, line in enumerate(chunk):
+                self.assertEqual(line[0], controlArr[ix][0])
+                self.assertEqual(line[1], controlArr[ix][1])
+                self.assertEqual(line[2], controlArr[ix][2])
+
 
 class fileDBObjectTestCase(unittest.TestCase):
     """
