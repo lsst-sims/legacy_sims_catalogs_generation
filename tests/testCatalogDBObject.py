@@ -10,8 +10,6 @@ import lsst.sims.catalogs.generation.utils.testUtils as tu
 from lsst.sims.catalogs.generation.utils.testUtils import myTestStars, myTestGals
 from lsst.sims.utils import haversine
 
-# This test should be expanded to cover more of the framework
-# I have filed CATSIM-90 for this.
 
 def createNonsenseDB():
     """
