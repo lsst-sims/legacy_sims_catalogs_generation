@@ -552,10 +552,6 @@ class CatalogDBObject(DBObject):
 
         if len(set(cols)&set(self.dbDefaultValues)) > 0:
 
-            for colName in cols:
-                if colName not in results[0].keys() and colName not in self.dbDefaultValues:
-                    raise TypeError("Couldn't convert column %s"%(colName))
-
             results_array = []
 
             for result in results:
