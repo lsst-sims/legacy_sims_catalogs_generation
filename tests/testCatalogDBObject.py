@@ -61,7 +61,7 @@ def createNonsenseDB():
 
     conn.commit()
     conn.close()
-    inFile.close()
+
 
 class dbForQueryColumnsTest(CatalogDBObject):
     objid = 'queryColumnsNonsense'
