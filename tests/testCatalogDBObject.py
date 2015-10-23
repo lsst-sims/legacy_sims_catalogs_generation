@@ -1,16 +1,16 @@
+from __future__ import with_statement
 import os
 import sqlite3
 
 import unittest, numpy
 import lsst.utils.tests as utilsTests
+from lsst.utils import getPackageDir
 from lsst.sims.utils import ObservationMetaData
 from lsst.sims.catalogs.generation.db import CatalogDBObject, fileDBObject
 import lsst.sims.catalogs.generation.utils.testUtils as tu
 from lsst.sims.catalogs.generation.utils.testUtils import myTestStars, myTestGals
 from lsst.sims.utils import haversine
 
-# This test should be expanded to cover more of the framework
-# I have filed CATSIM-90 for this.
 
 def createNonsenseDB():
     """
@@ -18,6 +18,7 @@ def createNonsenseDB():
     This will be used to make sure that circle and box spatial bounds yield the points
     they are supposed to.
     """
+    dataDir = os.path.join(getPackageDir('sims_catalogs_generation'), 'tests', 'testData')
     if os.path.exists('testCatalogDBObjectNonsenseDB.db'):
         os.unlink('testCatalogDBObjectNonsenseDB.db')
 
@@ -35,19 +36,39 @@ def createNonsenseDB():
     except:
         raise RuntimeError("Error creating database table test2.")
 
-    filepath = os.path.join(os.getenv('SIMS_CATALOGS_GENERATION_DIR'), 'tests/testData/CatalogsGenerationTestData.txt')
-    inFile = open(filepath,'r')
-    for line in inFile:
-        values = line.split()
-        cmd = '''INSERT INTO test VALUES (%s, %s, %s, %s)''' % (values[0],values[1],values[2],values[3])
-        c.execute(cmd)
-        if int(values[0])%2 == 0:
-            cmd = '''INSERT INTO test2 VALUES (%s, %s)''' % (values[0],str(2.0*float(values[3])))
+    with open(os.path.join(dataDir, 'CatalogsGenerationTestData.txt'), 'r') as inFile:
+        for line in inFile:
+            values = line.split()
+            cmd = '''INSERT INTO test VALUES (%s, %s, %s, %s)''' % (values[0],values[1],values[2],values[3])
+            c.execute(cmd)
+            if int(values[0])%2 == 0:
+                cmd = '''INSERT INTO test2 VALUES (%s, %s)''' % (values[0],str(2.0*float(values[3])))
+                c.execute(cmd)
+
+        conn.commit()
+
+    try:
+        c.execute('''CREATE TABLE queryColumnsTest (i1 int, i2 int, i3 int)''')
+        conn.commit()
+    except:
+        raise RuntimeError("Error creating database table queryColumnsTest.")
+
+    with open(os.path.join(dataDir, 'QueryColumnsTestData.txt'), 'r') as inputFile:
+        for line in inputFile:
+            vv = line.split()
+            cmd = '''INSERT INTO queryColumnsTest VALUES (%s, %s, %s)''' % (vv[0], vv[1], vv[2])
             c.execute(cmd)
 
     conn.commit()
     conn.close()
-    inFile.close()
+
+
+class dbForQueryColumnsTest(CatalogDBObject):
+    objid = 'queryColumnsNonsense'
+    tableid = 'queryColumnsTest'
+    database = 'testCatalogDBObjectNonsenseDB.db'
+    idColKey = 'i1'
+    dbDefaultValues = {'i2':-1, 'i3':-2}
 
 class myNonsenseDB(CatalogDBObject):
     objid = 'Nonsense'
@@ -106,7 +127,7 @@ class CatalogDBObjectTestCase(unittest.TestCase):
         self.obsMd = ObservationMetaData(unrefractedRA=210.0, unrefractedDec=-60.0, boundLength=1.75,
                                          boundType='circle', mjd=52000., bandpassName='r')
 
-        self.filepath = os.path.join(os.getenv('SIMS_CATALOGS_GENERATION_DIR'), 'tests/testData/CatalogsGenerationTestData.txt')
+        self.filepath = os.path.join(getPackageDir('sims_catalogs_generation'), 'tests', 'testData', 'CatalogsGenerationTestData.txt')
 
         """
         baselineData will store another copy of the data that should be stored in
@@ -461,6 +482,23 @@ class CatalogDBObjectTestCase(unittest.TestCase):
         for (col,coltest) in zip(mygalaxies.columns,colsShouldBe):
             self.assertEqual(col,coltest)
 
+
+    def testQueryColumnsDefaults(self):
+        """
+        Test that dbDefaultValues get properly applied when query_columns is called
+        """
+        db = dbForQueryColumnsTest(driver='sqlite')
+        colnames = ['i1', 'i2', 'i3']
+        results = db.query_columns(colnames)
+        controlArr = [(1,-1,2), (3,4,-2), (5,6,7)]
+
+        for chunk in results:
+            for ix, line in enumerate(chunk):
+                self.assertEqual(line[0], controlArr[ix][0])
+                self.assertEqual(line[1], controlArr[ix][1])
+                self.assertEqual(line[2], controlArr[ix][2])
+
+
 class fileDBObjectTestCase(unittest.TestCase):
     """
     This class will re-implement the tests from CatalogDBObjectTestCase,
@@ -471,9 +509,9 @@ class fileDBObjectTestCase(unittest.TestCase):
 
     def setUp(self):
         self.testDataFile = os.path.join(
-            os.getenv('SIMS_CATALOGS_GENERATION_DIR'), 'tests/testData/CatalogsGenerationTestData.txt')
+            getPackageDir('sims_catalogs_generation'), 'tests', 'testData', 'CatalogsGenerationTestData.txt')
         self.testHeaderFile = os.path.join(
-            os.getenv('SIMS_CATALOGS_GENERATION_DIR'), 'tests/testData/CatalogsGenerationTestDataHeader.txt')
+            getPackageDir('sims_catalogs_generation'), 'tests', 'testData', 'CatalogsGenerationTestDataHeader.txt')
 
         self.myNonsense = fileDBObject.from_objid('fileNonsense',self.testDataFile,
                        dtype = numpy.dtype([('id',int),('ra',float),('dec',float),('mag',float)]),

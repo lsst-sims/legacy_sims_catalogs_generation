@@ -565,24 +565,27 @@ class CatalogDBObject(DBObject):
             * _final_pass(retresults) : the result of calling the _final_pass method on a
               structured array constructed from the query data.
         """
+
         if len(results) > 0:
             cols = [str(k) for k in results[0].keys()]
         else:
             return results
+
         dtype = numpy.dtype([(k,)+self.typeMap[k] for k in cols])
+
         if len(set(cols)&set(self.dbDefaultValues)) > 0:
-            retresults = numpy.empty((len(results),), dtype=dtype)
-            for i, result in enumerate(results):
-                for k in cols:
-                    if k in self.dbDefaultValues and not result[k]:
-                        retresults[i][k] = self.dbDefaultValues[k]
-                    else:
-                        try:
-                            retresults[i][k] = result[k]
-                        except TypeError:
-                            raise TypeError("Couldn't convert column %s"%(k))
+
+            results_array = []
+
+            for result in results:
+                results_array.append([
+                                      result[colName] if result[colName] or colName not in self.dbDefaultValues
+                                      else self.dbDefaultValues[colName] for colName in cols
+                                     ])
+
         else:
-            retresults = numpy.rec.fromrecords(results, dtype=dtype)
+            results_array = results
+        retresults = numpy.rec.fromrecords(results_array, dtype=dtype)
         return self._final_pass(retresults)
 
     def query_columns(self, colnames=None, chunk_size=None,
