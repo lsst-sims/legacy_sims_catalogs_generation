@@ -392,10 +392,33 @@ class CatalogDBObject(DBObject):
         cls = cls.registry.get(objid, CatalogDBObject)
         return cls(*args, **kwargs)
 
-    def __init__(self, database=None, driver=None, host=None, port=None, verbose=False):
+    def __init__(self, database=None, driver=None, host=None, port=None, verbose=False,
+                 table=None, objid=None, idColKey=None):
         if not verbose:
             with warnings.catch_warnings():
                 warnings.simplefilter("ignore", category=sa_exc.SAWarning)
+
+        if self.tableid is not None and table is not None:
+            raise ValueError("Double-specified tableid in CatalogDBObject:"
+                             " once in class definition, once in __init__")
+
+        if table is not None:
+            self.tableid = table
+
+        if self.objid is not None and objid is not None:
+            raise ValueError("Double-specified objid in CatalogDBObject:"
+                             " once in class definition, once in __init__")
+
+        if objid is not None:
+            self.objid = objid
+
+        if self.idColKey is not None and idColKey is not None:
+            raise ValueError("Double-specified idColKey in CatalogDBObject:"
+                             " once in class definition, once in __init__")
+
+        if idColKey is not None:
+            self.idColKey = idColKey
+
         if self.idColKey is None:
             self.idColKey = self.getIdColKey()
         if (self.objid is None) or (self.tableid is None) or (self.idColKey is None):
@@ -566,7 +589,7 @@ class CatalogDBObject(DBObject):
         return self._final_pass(retresults)
 
     def query_columns(self, colnames=None, chunk_size=None,
-                      obs_metadata=None, constraint=None):
+                      obs_metadata=None, constraint=None, limit=None):
         """Execute a query
 
         **Parameters**
@@ -584,6 +607,8 @@ class CatalogDBObject(DBObject):
               will add a filter string to the query.
             * constraint : str (optional)
               a string which is interpreted as SQL and used as a predicate on the query
+            * limit : int (optional)
+              limits the number of rows returned by the query
 
         **Returns**
 
@@ -600,6 +625,10 @@ class CatalogDBObject(DBObject):
 
         if constraint is not None:
             query = query.filter(constraint)
+
+        if limit is not None:
+            query = query.limit(limit)
+
         return ChunkIterator(self, query, chunk_size)
 
 class fileDBObject(CatalogDBObject):
