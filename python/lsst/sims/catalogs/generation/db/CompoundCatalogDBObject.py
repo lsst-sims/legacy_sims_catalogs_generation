@@ -203,7 +203,7 @@ class CompoundCatalogDBObject(CatalogDBObject):
             acceptable = False
             msg += ' hosts: ' + str(hostList) + '\n'
 
-        if len(databaseList)>1:
+        if len(databaseList)!=1:
             acceptable = False
             msg += ' databases: ' + str(databaseList) + '\n'
 
@@ -215,7 +215,7 @@ class CompoundCatalogDBObject(CatalogDBObject):
             acceptable = False
             msg += ' drivers: ' + str(driverList) + '\n'
 
-        if len(tableList)>1:
+        if len(tableList)!=1:
             acceptable = False
             msg += ' tables: ' + str(tableList) + '\n'
 
