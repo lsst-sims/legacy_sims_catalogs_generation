@@ -617,14 +617,26 @@ class CompoundWithObsMetaData(unittest.TestCase):
                                   boundLength = (80.0, 25.0),
                                   mjd=53580.0)
 
-        db1 = testStarDB1(database=self.dbName, driver='sqlite')
-        db2 = testStarDB2(database=self.dbName, driver='sqlite')
+
+        class testDbClass22(testStarDB1):
+            database = self.dbName
+            driver = 'sqlite'
+
+        class testDbClass23(testStarDB2):
+            database = self.dbName
+            driver = 'sqlite'
+
+
+        db1 = testDbClass22()
+        db2 = testDbClass23()
 
         compoundDb = CompoundCatalogDBObject([db1, db2])
 
-        colnames = ['testStar1_id',
-                    'testStar1_raJ2000', 'testStar1_decJ2000', 'testStar1_magMod',
-                    'testStar2_raJ2000', 'testStar2_decJ2000', 'testStar2_magMod']
+        colnames = ['%s_id' % db1.objid,
+                    '%s_raJ2000' % db1.objid, '%s_decJ2000' % db1.objid,
+                    '%s_magMod' % db1.objid,
+                    '%s_raJ2000' % db2.objid, '%s_decJ2000' % db2.objid,
+                    '%s_magMod' % db2.objid]
 
         results = compoundDb.query_columns(colnames=colnames,
                                            obs_metadata=obs)
@@ -634,12 +646,12 @@ class CompoundWithObsMetaData(unittest.TestCase):
             for line in chunk:
                 ix = line['id']
                 good_rows.append(ix)
-                self.assertAlmostEqual(line['testStar1_raJ2000'], self.controlArray['ra'][ix], 10)
-                self.assertAlmostEqual(line['testStar1_decJ2000'], self.controlArray['dec'][ix], 10)
-                self.assertAlmostEqual(line['testStar1_magMod'], self.controlArray['mag'][ix], 10)
-                self.assertAlmostEqual(line['testStar2_raJ2000'], 2.0*self.controlArray['ra'][ix], 10)
-                self.assertAlmostEqual(line['testStar2_decJ2000'], 2.0*self.controlArray['dec'][ix], 10)
-                self.assertAlmostEqual(line['testStar2_magMod'], 2.0*self.controlArray['mag'][ix], 10)
+                self.assertAlmostEqual(line['%s_raJ2000' % db1.objid], self.controlArray['ra'][ix], 10)
+                self.assertAlmostEqual(line['%s_decJ2000' % db1.objid], self.controlArray['dec'][ix], 10)
+                self.assertAlmostEqual(line['%s_magMod' % db1.objid], self.controlArray['mag'][ix], 10)
+                self.assertAlmostEqual(line['%s_raJ2000' % db2.objid], 2.0*self.controlArray['ra'][ix], 10)
+                self.assertAlmostEqual(line['%s_decJ2000' % db2.objid], 2.0*self.controlArray['dec'][ix], 10)
+                self.assertAlmostEqual(line['%s_magMod' % db2.objid], 2.0*self.controlArray['mag'][ix], 10)
                 self.assertTrue(self.controlArray['ra'][ix]>100.0)
                 self.assertTrue(self.controlArray['ra'][ix]<260.0)
                 self.assertTrue(self.controlArray['dec'][ix]>-25.0)
