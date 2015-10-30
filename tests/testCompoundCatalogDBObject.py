@@ -486,24 +486,36 @@ class CompoundCatalogDBObjectTestCase(unittest.TestCase):
         Test that Nones are handled correctly in the CatalogDBObject
         column mappings
         """
-        db1 = dbClass1(database=self.dbName, driver='sqlite')
-        db2 = dbClass6(database=self.dbName, driver='sqlite')
-        colNames = ['class1_aa', 'class1_bb', 'class6_a', 'class6_b']
+
+        class testDbClass20(dbClass1):
+            database = self.dbName
+            driver = 'sqlite'
+
+        class testDbClass21(dbClass6):
+            database = self.dbName
+            driver = 'sqlite'
+
+        db1 = testDbClass20()
+        db2 = testDbClass21()
+        colNames = ['%s_aa' % db1.objid, '%s_bb' % db1.objid,
+                    '%s_a' % db2.objid, '%s_b' % db2.objid]
+
         compoundDb = CompoundCatalogDBObject([db1, db2])
         results = compoundDb.query_columns(colnames=colNames)
+
         for chunk in results:
-            numpy.testing.assert_array_almost_equal(chunk['class1_aa'],
+            numpy.testing.assert_array_almost_equal(chunk['%s_aa' % db1.objid],
                                                     self.controlArray['a'],
                                                     decimal=6)
 
-            numpy.testing.assert_array_equal(chunk['class1_bb'],
+            numpy.testing.assert_array_equal(chunk['%s_bb' % db1.objid],
                                              self.controlArray['d'])
 
-            numpy.testing.assert_array_almost_equal(chunk['class6_a'],
+            numpy.testing.assert_array_almost_equal(chunk['%s_a' % db2.objid],
                                                     self.controlArray['a'],
                                                     decimal=6)
 
-            numpy.testing.assert_array_almost_equal(chunk['class6_b'],
+            numpy.testing.assert_array_almost_equal(chunk['%s_b' % db2.objid],
                                                     self.controlArray['b'],
                                                     decimal=6)
 
