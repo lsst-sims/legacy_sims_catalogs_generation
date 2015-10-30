@@ -172,16 +172,16 @@ class CompoundCatalogDBObjectTestCase(unittest.TestCase):
 
         # test case where they are querying the same table, but different
         # databases
-        class dummyDbClass1(dbClass1):
+        class testDbClass1(dbClass1):
             database = self.otherDbName
             driver = 'sqlite'
 
-        class dummyDbClass2(dbClass2):
+        class testDbClass2(dbClass2):
             database = self.dbName
             driver = 'sqlite'
 
-        db1 = dummyDbClass1()
-        db2 = dummyDbClass2()
+        db1 = testDbClass1()
+        db2 = testDbClass2()
 
         with self.assertRaises(RuntimeError) as context:
             compound = CompoundCatalogDBObject([db1, db2])
@@ -192,16 +192,16 @@ class CompoundCatalogDBObjectTestCase(unittest.TestCase):
         # test case where they are querying the same database, but different
         # tables
 
-        class dummyDbClass3(dbClass4):
+        class testDbClass3(dbClass4):
             database = self.dbName
             driver = 'sqlite'
 
-        class dummyDbClass4(dbClass2):
+        class testDbClass4(dbClass2):
             database = self.dbName
             driver = 'sqlite'
 
-        db1 = dummyDbClass3()
-        db2 = dummyDbClass4()
+        db1 = testDbClass3()
+        db2 = testDbClass4()
 
         with self.assertRaises(RuntimeError) as context:
             compound = CompoundCatalogDBObject([db1, db2])
@@ -209,18 +209,18 @@ class CompoundCatalogDBObjectTestCase(unittest.TestCase):
         self.assertTrue("['otherTest', 'test']" in context.exception.message)
 
         # test case where the CatalogDBObjects have the same objid
-        class dummyDbClass5(dbClass4):
+        class testDbClass5(dbClass4):
             database = self.dbName
             driver = 'sqlite'
             objid = 'dummy'
 
-        class dummyDbClass6(dbClass5):
+        class testDbClass6(dbClass5):
             database = self.dbName
             driver = 'sqlite'
             objid = 'dummy'
 
-        db1 = dummyDbClass5()
-        db2 = dummyDbClass6()
+        db1 = testDbClass5()
+        db2 = testDbClass6()
 
         with self.assertRaises(RuntimeError) as context:
             compound = CompoundCatalogDBObject([db1, db2])
@@ -229,16 +229,16 @@ class CompoundCatalogDBObjectTestCase(unittest.TestCase):
 
         # test case where CompoundCatalogDBObject does not support the
         # tables being queried
-        class dummyDbClass7(dbClass1):
+        class testDbClass7(dbClass1):
             database = self.dbName
             driver = 'sqlite'
 
-        class dummyDbClass8(dbClass2):
+        class testDbClass8(dbClass2):
             database = self.dbName
             driver ='sqlite'
 
-        db1 = dummyDbClass7()
-        db2 = dummyDbClass8()
+        db1 = testDbClass7()
+        db2 = testDbClass8()
 
         with self.assertRaises(RuntimeError) as context:
             compound = specificCompoundObj_otherTest([db1, db2])
