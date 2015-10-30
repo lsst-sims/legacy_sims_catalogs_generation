@@ -200,11 +200,8 @@ class CompoundCatalogDBObjectTestCase(unittest.TestCase):
             database = self.dbName
             driver = 'sqlite'
 
-        db1 = testDbClass3()
-        db2 = testDbClass4()
-
         with self.assertRaises(RuntimeError) as context:
-            compound = CompoundCatalogDBObject([db1, db2])
+            compound = CompoundCatalogDBObject([testDbClass3, testDbClass4])
 
         self.assertTrue("['otherTest', 'test']" in context.exception.message)
 
@@ -219,11 +216,8 @@ class CompoundCatalogDBObjectTestCase(unittest.TestCase):
             driver = 'sqlite'
             objid = 'dummy'
 
-        db1 = testDbClass5()
-        db2 = testDbClass6()
-
         with self.assertRaises(RuntimeError) as context:
-            compound = CompoundCatalogDBObject([db1, db2])
+            compound = CompoundCatalogDBObject([testDbClass5, testDbClass6])
 
         self.assertTrue("objid dummy is duplicated" in context.exception.message)
 
@@ -237,11 +231,8 @@ class CompoundCatalogDBObjectTestCase(unittest.TestCase):
             database = self.dbName
             driver ='sqlite'
 
-        db1 = testDbClass7()
-        db2 = testDbClass8()
-
         with self.assertRaises(RuntimeError) as context:
-            compound = specificCompoundObj_otherTest([db1, db2])
+            compound = specificCompoundObj_otherTest([testDbClass7, testDbClass8])
 
         msg = "This CompoundCatalogDBObject does not support the table 'test'"
         self.assertTrue(msg in context.exception.message)
@@ -266,9 +257,10 @@ class CompoundCatalogDBObjectTestCase(unittest.TestCase):
             database = self.dbName
             driver = 'sqlite'
 
-        db1 = testDbClass9()
-        db2 = testDbClass10()
-        db3 = testDbClass11()
+        db1 = testDbClass9
+        db2 = testDbClass10
+        db3 = testDbClass11
+
         dbList = [db1, db2, db3]
         compoundDb = CompoundCatalogDBObject(dbList)
 
@@ -322,8 +314,8 @@ class CompoundCatalogDBObjectTestCase(unittest.TestCase):
             database = self.dbName
             driver = 'sqlite'
 
-        db1 = testDbClass12()
-        db2 = testDbClass13()
+        db1 = testDbClass12
+        db2 = testDbClass13
         dbList = [db1, db2]
         compoundDb = specificCompoundObj_test(dbList)
 
@@ -366,9 +358,9 @@ class CompoundCatalogDBObjectTestCase(unittest.TestCase):
             database = self.dbName
             driver = 'sqlite'
 
-        db1 = testDbClass14()
-        db2 = testDbClass15()
-        db3 = testDbClass16()
+        db1 = testDbClass14
+        db2 = testDbClass15
+        db3 = testDbClass16
         dbList = [db1, db2, db3]
         compoundDb = universalCompoundObj(dbList)
 
@@ -428,9 +420,9 @@ class CompoundCatalogDBObjectTestCase(unittest.TestCase):
             database = self.dbName
             driver = 'sqlite'
 
-        db1 = testDbClass17()
-        db2 = testDbClass18()
-        db3 = testDbClass19()
+        db1 = testDbClass17
+        db2 = testDbClass18
+        db3 = testDbClass19
         dbList = [db1, db2, db3]
         compoundDb = CompoundCatalogDBObject(dbList)
 
@@ -495,8 +487,8 @@ class CompoundCatalogDBObjectTestCase(unittest.TestCase):
             database = self.dbName
             driver = 'sqlite'
 
-        db1 = testDbClass20()
-        db2 = testDbClass21()
+        db1 = testDbClass20
+        db2 = testDbClass21
         colNames = ['%s_aa' % db1.objid, '%s_bb' % db1.objid,
                     '%s_a' % db2.objid, '%s_b' % db2.objid]
 
@@ -626,9 +618,8 @@ class CompoundWithObsMetaData(unittest.TestCase):
             database = self.dbName
             driver = 'sqlite'
 
-
-        db1 = testDbClass22()
-        db2 = testDbClass23()
+        db1 = testDbClass22
+        db2 = testDbClass23
 
         compoundDb = CompoundCatalogDBObject([db1, db2])
 
@@ -681,8 +672,8 @@ class CompoundWithObsMetaData(unittest.TestCase):
             database = self.dbName
             driver = 'sqlite'
 
-        db1 = testDbClass24()
-        db2 = testDbClass25()
+        db1 = testDbClass24
+        db2 = testDbClass25
 
         compoundDb = CompoundCatalogDBObject([db1, db2])
 
@@ -738,8 +729,8 @@ class CompoundWithObsMetaData(unittest.TestCase):
             database = self.dbName
             driver = 'sqlite'
 
-        db1 = testDbClass26()
-        db2 = testDbClass27()
+        db1 = testDbClass26
+        db2 = testDbClass27
 
         compoundDb = CompoundCatalogDBObject([db1, db2])
 
