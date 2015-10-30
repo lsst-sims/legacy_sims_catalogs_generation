@@ -253,45 +253,59 @@ class CompoundCatalogDBObjectTestCase(unittest.TestCase):
         Verify that CompoundCatalogDBObject returns the expected
         columns.
         """
-        db1 = dbClass1(database=self.dbName, driver='sqlite')
-        db2 = dbClass2(database=self.dbName, driver='sqlite')
-        db3 = dbClass3(database=self.dbName, driver='sqlite')
+
+        class testDbClass9(dbClass1):
+            database = self.dbName
+            driver = 'sqlite'
+
+        class testDbClass10(dbClass2):
+            database = self.dbName
+            driver = 'sqlite'
+
+        class testDbClass11(dbClass3):
+            database = self.dbName
+            driver = 'sqlite'
+
+        db1 = testDbClass9()
+        db2 = testDbClass10()
+        db3 = testDbClass11()
         dbList = [db1, db2, db3]
         compoundDb = CompoundCatalogDBObject(dbList)
 
-        colNames = ['class1_aa', 'class1_bb',
-                    'class2_aa', 'class2_bb',
-                    'class3_aa', 'class3_bb', 'class3_cc']
+        colNames = ['%s_aa' % db1.objid, '%s_bb' % db1.objid,
+                    '%s_aa' % db2.objid, '%s_bb' % db2.objid,
+                    '%s_aa' % db3.objid, '%s_bb' % db3.objid,
+                    '%s_cc' % db3.objid]
 
         results = compoundDb.query_columns(colnames=colNames)
 
         for chunk in results:
-            numpy.testing.assert_array_almost_equal(chunk['class1_aa'],
+            numpy.testing.assert_array_almost_equal(chunk['%s_aa' % db1.objid],
                                                     self.controlArray['a'],
                                                     decimal=6)
 
-            numpy.testing.assert_array_equal(chunk['class1_bb'],
+            numpy.testing.assert_array_equal(chunk['%s_bb' % db1.objid],
                                              self.controlArray['d'])
 
-            numpy.testing.assert_array_almost_equal(chunk['class2_aa'],
+            numpy.testing.assert_array_almost_equal(chunk['%s_aa' % db2.objid],
                                                     2.0*self.controlArray['b'],
                                                     decimal=6)
 
-            numpy.testing.assert_array_almost_equal(chunk['class2_bb'],
+            numpy.testing.assert_array_almost_equal(chunk['%s_bb' % db2.objid],
                                                     self.controlArray['a'],
                                                     decimal=6)
 
 
-            numpy.testing.assert_array_almost_equal(chunk['class3_aa'],
+            numpy.testing.assert_array_almost_equal(chunk['%s_aa' % db3.objid],
                                                     self.controlArray['c']-3.0,
                                                     decimal=6)
 
 
-            numpy.testing.assert_array_almost_equal(chunk['class3_bb'],
+            numpy.testing.assert_array_almost_equal(chunk['%s_bb' % db3.objid],
                                                     self.controlArray['a'],
                                                     decimal=6)
 
-            numpy.testing.assert_array_almost_equal(chunk['class3_cc'],
+            numpy.testing.assert_array_almost_equal(chunk['%s_cc' % db3.objid],
                                                     3.0*self.controlArray['b'],
                                                     decimal=6)
 
