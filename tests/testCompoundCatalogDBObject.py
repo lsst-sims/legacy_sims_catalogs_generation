@@ -170,8 +170,8 @@ class CompoundCatalogDBObjectTestCase(unittest.TestCase):
         when you violate its API
         """
 
-        # test case where they are querying the same database, but different
-        # tables
+        # test case where they are querying the same table, but different
+        # databases
         db1 = dbClass1(database=self.otherDbName, driver='sqlite')
         db2 = dbClass2(database=self.dbName, driver='sqlite')
 
@@ -181,8 +181,8 @@ class CompoundCatalogDBObjectTestCase(unittest.TestCase):
         self.assertTrue("['%s', '%s']" % (self.otherDbName, self.dbName) \
                         in context.exception.message)
 
-        # test case where they are querying the same table, but different
-        # databases
+        # test case where they are querying the same database, but different
+        # tables
         db1 = dbClass4(database=self.dbName, driver='sqlite')
         db2 = dbClass2(database=self.dbName, driver='sqlite')
 
