@@ -115,7 +115,7 @@ class CompoundCatalogDBObjectTestCase(unittest.TestCase):
         baseDir = os.path.join(getPackageDir('sims_catalogs_generation'),
                                'tests', 'scratchSpace')
 
-        cls.textFileName = os.path.join(baseDir,'compound_test_data.txt')
+        cls.textFileName = os.path.join(baseDir, 'compound_test_data.txt')
         if os.path.exists(cls.textFileName):
             os.unlink(cls.textFileName)
 
@@ -482,12 +482,12 @@ class CompoundWithObsMetaData(unittest.TestCase):
         if os.path.exists(cls.textFileName):
             os.unlink(cls.textFileName)
 
-        with open(cls.textFileName,'w') as output:
+        with open(cls.textFileName, 'w') as output:
             output.write('# id ra dec mag\n')
             for ix, (r, d, m) in enumerate(zip(raList, decList, magList)):
                 output.write('%d %.20f %.20f %.20f\n' % (ix, r, d, m))
 
-        cls.dbName = os.path.join(cls.baseDir,'compound_obs_metadata_db.db')
+        cls.dbName = os.path.join(cls.baseDir, 'compound_obs_metadata_db.db')
 
         if os.path.exists(cls.dbName):
             os.unlink(cls.dbName)
