@@ -511,10 +511,11 @@ class CompoundWithObsMetaData(unittest.TestCase):
         properly
         """
 
-        obs = ObservationMetaData(unrefractedRA = 180.0,
-                                  unrefractedDec = 0.0,
+        obs = ObservationMetaData(pointingRA = 180.0,
+                                  pointingDec = 0.0,
                                   boundType = 'box',
-                                  boundLength = (80.0, 25.0))
+                                  boundLength = (80.0, 25.0),
+                                  mjd=53580.0)
 
         db1 = testStarDB1(database=self.dbName, driver='sqlite')
         db2 = testStarDB2(database=self.dbName, driver='sqlite')
@@ -600,10 +601,11 @@ class CompoundWithObsMetaData(unittest.TestCase):
         Test that CompoundCatalogDBObject correctly handles an ObservationMetaData
         and a constraint at the same time
         """
-        obs = ObservationMetaData(unrefractedRA = 180.0,
-                                  unrefractedDec = 0.0,
+        obs = ObservationMetaData(pointingRA = 180.0,
+                                  pointingDec = 0.0,
                                   boundType = 'box',
-                                  boundLength = (80.0, 25.0))
+                                  boundLength = (80.0, 25.0),
+                                  mjd=53580.0)
 
         db1 = testStarDB1(database=self.dbName, driver='sqlite')
         db2 = testStarDB2(database=self.dbName, driver='sqlite')

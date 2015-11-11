@@ -124,7 +124,7 @@ class CatalogDBObjectTestCase(unittest.TestCase):
             os.unlink('testCatalogDBObjectNonsenseDB.db')
 
     def setUp(self):
-        self.obsMd = ObservationMetaData(unrefractedRA=210.0, unrefractedDec=-60.0, boundLength=1.75,
+        self.obsMd = ObservationMetaData(pointingRA=210.0, pointingDec=-60.0, boundLength=1.75,
                                          boundType='circle', mjd=52000., bandpassName='r')
 
         self.filepath = os.path.join(getPackageDir('sims_catalogs_generation'), 'tests', 'testData', 'CatalogsGenerationTestData.txt')
@@ -184,7 +184,7 @@ class CatalogDBObjectTestCase(unittest.TestCase):
 
         mycolumns = ['NonsenseId','NonsenseRaJ2000','NonsenseDecJ2000','NonsenseMag']
 
-        circObsMd = ObservationMetaData(boundType='circle', unrefractedRA=raCenter,unrefractedDec=decCenter,
+        circObsMd = ObservationMetaData(boundType='circle', pointingRA=raCenter,pointingDec=decCenter,
                                         boundLength=radius, mjd=52000., bandpassName='r')
 
         circQuery = myNonsense.query_columns(colnames = mycolumns, obs_metadata=circObsMd, chunk_size=100)
@@ -263,7 +263,7 @@ class CatalogDBObjectTestCase(unittest.TestCase):
 
         mycolumns = ['NonsenseId','NonsenseRaJ2000','NonsenseDecJ2000','NonsenseMag']
 
-        boxObsMd = ObservationMetaData(boundType='box',unrefractedDec=decCenter, unrefractedRA=raCenter,
+        boxObsMd = ObservationMetaData(boundType='box',pointingDec=decCenter, pointingRA=raCenter,
                    boundLength=numpy.array([0.5*(raMax-raMin),0.5*(decMax-decMin)]),mjd=52000.,bandpassName='r')
 
         boxQuery = myNonsense.query_columns(obs_metadata=boxObsMd, chunk_size=100, colnames=mycolumns)
@@ -314,7 +314,7 @@ class CatalogDBObjectTestCase(unittest.TestCase):
 
         mycolumns = ['NonsenseId','NonsenseRaJ2000','NonsenseDecJ2000','NonsenseMag']
 
-        boxObsMd = ObservationMetaData(boundType='box',unrefractedRA=raCenter,unrefractedDec=decCenter,
+        boxObsMd = ObservationMetaData(boundType='box',pointingRA=raCenter,pointingDec=decCenter,
                     boundLength=numpy.array([0.5*(raMax-raMin),0.5*(decMax-decMin)]), mjd=52000.,bandpassName='r')
 
         boxQuery = myNonsense.query_columns(colnames = mycolumns,
@@ -555,7 +555,7 @@ class fileDBObjectTestCase(unittest.TestCase):
 
         mycolumns = ['NonsenseId','NonsenseRaJ2000','NonsenseDecJ2000','NonsenseMag']
 
-        circObsMd = ObservationMetaData(boundType='circle',unrefractedRA=raCenter,unrefractedDec=decCenter,
+        circObsMd = ObservationMetaData(boundType='circle',pointingRA=raCenter,pointingDec=decCenter,
                                        boundLength=radius, mjd=52000., bandpassName='r')
 
         circQuery = self.myNonsense.query_columns(colnames = mycolumns, obs_metadata=circObsMd, chunk_size=100)
@@ -657,7 +657,7 @@ class fileDBObjectTestCase(unittest.TestCase):
 
         mycolumns = ['NonsenseId','NonsenseRaJ2000','NonsenseDecJ2000','NonsenseMag']
 
-        boxObsMd = ObservationMetaData(boundType='box',unrefractedRA=raCenter,unrefractedDec=decCenter,
+        boxObsMd = ObservationMetaData(boundType='box',pointingRA=raCenter,pointingDec=decCenter,
                    boundLength=numpy.array([0.5*(raMax-raMin),0.5*(decMax-decMin)]),mjd=52000.,bandpassName='r')
 
         boxQuery = self.myNonsense.query_columns(obs_metadata=boxObsMd, chunk_size=100, colnames=mycolumns)
@@ -720,7 +720,7 @@ class fileDBObjectTestCase(unittest.TestCase):
 
         mycolumns = ['NonsenseId','NonsenseRaJ2000','NonsenseDecJ2000','NonsenseMag']
 
-        boxObsMd = ObservationMetaData(boundType='box',unrefractedRA=raCenter,unrefractedDec=decCenter,
+        boxObsMd = ObservationMetaData(boundType='box',pointingRA=raCenter,pointingDec=decCenter,
                    boundLength=numpy.array([0.5*(raMax-raMin),0.5*(decMax-decMin)]),mjd=52000.,bandpassName='r')
 
         boxQuery = self.myNonsense.query_columns(colnames = mycolumns,
