@@ -167,8 +167,8 @@ class CatalogDBObjectTestCase(unittest.TestCase):
         tol=1.0e-3
         for chunk in myquery:
             for star in chunk:
-                self.assertTrue(numpy.degrees(star[1])<90.0+tol)
-                self.assertTrue(numpy.degrees(star[1])>45.0-tol)
+                self.assertLess(numpy.degrees(star[1]), 90.0+tol)
+                self.assertGreater(numpy.degrees(star[1]), 45.0-tol)
 
     def testNonsenseCircularConstraints(self):
         """
@@ -199,7 +199,7 @@ class CatalogDBObjectTestCase(unittest.TestCase):
             for row in chunk:
                 distance = haversine(raCenter, decCenter, row[1], row[2])
 
-                self.assertTrue(distance<radius)
+                self.assertLess(distance, radius)
 
                 dex = numpy.where(self.baselineData['id'] == row[0])[0][0]
 
@@ -215,7 +215,7 @@ class CatalogDBObjectTestCase(unittest.TestCase):
             #make sure that all of the points not returned by the query were, in fact, outside of
             #the circle bound
             distance = haversine(raCenter, decCenter, numpy.radians(entry[1]), numpy.radians(entry[2]))
-            self.assertTrue(distance>radius)
+            self.assertGreater(distance, radius)
 
 
     def testNonsenseSelectOnlySomeColumns(self):
@@ -232,7 +232,7 @@ class CatalogDBObjectTestCase(unittest.TestCase):
 
         for chunk in query:
             for row in chunk:
-                self.assertTrue(row[1]<45.0)
+                self.assertLess(row[1], 45.0)
 
                 dex = numpy.where(self.baselineData['id'] == row[0])[0][0]
 
@@ -243,7 +243,7 @@ class CatalogDBObjectTestCase(unittest.TestCase):
 
 
         for entry in [xx for xx in self.baselineData if xx[0] not in goodPoints]:
-            self.assertTrue(entry[1]>45.0)
+            self.assertGreater(entry[1], 45.0)
 
     def testNonsenseBoxConstraints(self):
         """
@@ -277,10 +277,10 @@ class CatalogDBObjectTestCase(unittest.TestCase):
 
         for chunk in boxQuery:
             for row in chunk:
-                self.assertTrue(row[1]<raMax)
-                self.assertTrue(row[1]>raMin)
-                self.assertTrue(row[2]<decMax)
-                self.assertTrue(row[2]>decMin)
+                self.assertLess(row[1], raMax)
+                self.assertGreater(row[1], raMin)
+                self.assertLess(row[2], decMax)
+                self.assertGreater(row[2], decMin)
 
                 dex = numpy.where(self.baselineData['id'] == row[0])[0][0]
 
@@ -330,11 +330,11 @@ class CatalogDBObjectTestCase(unittest.TestCase):
         for chunk in boxQuery:
             for row in chunk:
 
-                self.assertTrue(row[1]<raMax)
-                self.assertTrue(row[1]>raMin)
-                self.assertTrue(row[2]<decMax)
-                self.assertTrue(row[2]>decMin)
-                self.assertTrue(row[3]>11.0)
+                self.assertLess(row[1], raMax)
+                self.assertGreater(row[1], raMin)
+                self.assertLess(row[2], decMax)
+                self.assertGreater(row[2], decMin)
+                self.assertGreater(row[3], 11.0)
 
                 dex = numpy.where(self.baselineData['id'] == row[0])[0][0]
 
@@ -392,7 +392,7 @@ class CatalogDBObjectTestCase(unittest.TestCase):
         for chunk in myquery:
             self.assertEqual(chunk.size, 1000)
             for row in chunk:
-                self.assertTrue(len(row), 5)
+                self.assertEqual(len(row), 5)
 
     def testClassVariables(self):
         """
@@ -570,7 +570,7 @@ class fileDBObjectTestCase(unittest.TestCase):
             for row in chunk:
                 distance = haversine(raCenter, decCenter, row[1], row[2])
 
-                self.assertTrue(distance<radius)
+                self.assertLess(distance, radius)
 
                 dex = numpy.where(self.baselineData['id'] == row[0])[0][0]
 
@@ -586,7 +586,7 @@ class fileDBObjectTestCase(unittest.TestCase):
             #make sure that all of the points not returned by the query were, in fact, outside of
             #the circle bound
             distance = haversine(raCenter, decCenter, numpy.radians(entry[1]), numpy.radians(entry[2]))
-            self.assertTrue(distance>radius)
+            self.assertGreater(distance, radius)
 
         #make sure that the CatalogDBObject which used a header gets the same result
         headerQuery = self.myNonsenseHeader.query_columns(colnames = mycolumns, obs_metadata=circObsMd, chunk_size=100)
@@ -617,7 +617,7 @@ class fileDBObjectTestCase(unittest.TestCase):
 
         for chunk in query:
             for row in chunk:
-                self.assertTrue(row[1]<45.0)
+                self.assertLess(row[1], 45.0)
 
                 dex = numpy.where(self.baselineData['id'] == row[0])[0][0]
 
@@ -627,7 +627,7 @@ class fileDBObjectTestCase(unittest.TestCase):
                 self.assertAlmostEqual(self.baselineData['mag'][dex], row[2], 3)
 
         for entry in [xx for xx in self.baselineData if xx[0] not in goodPoints]:
-            self.assertTrue(entry[1]>45.0)
+            self.assertGreater(entry[1], 45.0)
 
         headerQuery = self.myNonsenseHeader.query_columns(colnames=mycolumns, constraint = 'ra < 45.', chunk_size=100)
         goodPointsHeader = []
@@ -671,10 +671,10 @@ class fileDBObjectTestCase(unittest.TestCase):
 
         for chunk in boxQuery:
             for row in chunk:
-                self.assertTrue(row[1]<raMax)
-                self.assertTrue(row[1]>raMin)
-                self.assertTrue(row[2]<decMax)
-                self.assertTrue(row[2]>decMin)
+                self.assertLess(row[1], raMax)
+                self.assertGreater(row[1], raMin)
+                self.assertLess(row[2], decMax)
+                self.assertGreater(row[2], decMin)
 
                 dex = numpy.where(self.baselineData['id'] == row[0])[0][0]
 
@@ -736,11 +736,11 @@ class fileDBObjectTestCase(unittest.TestCase):
         for chunk in boxQuery:
             for row in chunk:
 
-                self.assertTrue(row[1]<raMax)
-                self.assertTrue(row[1]>raMin)
-                self.assertTrue(row[2]<decMax)
-                self.assertTrue(row[2]>decMin)
-                self.assertTrue(row[3]>11.0)
+                self.assertLess(row[1], raMax)
+                self.assertGreater(row[1], raMin)
+                self.assertLess(row[2], decMax)
+                self.assertGreater(row[2], decMin)
+                self.assertGreater(row[3], 11.0)
 
                 dex = numpy.where(self.baselineData['id'] == row[0])[0][0]
 
@@ -784,7 +784,7 @@ class fileDBObjectTestCase(unittest.TestCase):
         for chunk in myquery:
             self.assertEqual(chunk.size, 100)
             for row in chunk:
-                self.assertTrue(len(row), 4)
+                self.assertEqual(len(row), 4)
 
 def suite():
     """Returns a suite containing all the test cases in this module."""
