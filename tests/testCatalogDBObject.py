@@ -438,11 +438,11 @@ class CatalogDBObjectTestCase(unittest.TestCase):
         self.assertFalse(hasattr(myNonsense, 'spatialModel'))
         self.assertEqual(myNonsense.objid, 'Nonsense')
 
-        self.assertTrue('teststars' in CatalogDBObject.registry)
-        self.assertTrue('testgals' in CatalogDBObject.registry)
-        self.assertTrue('testCatalogDBObjectTeststars' in CatalogDBObject.registry)
-        self.assertTrue('testCatalogDBObjectTestgals' in CatalogDBObject.registry)
-        self.assertTrue('Nonsense' in CatalogDBObject.registry)
+        self.assertIn('teststars', CatalogDBObject.registry)
+        self.assertIn('testgals', CatalogDBObject.registry)
+        self.assertIn('testCatalogDBObjectTeststars', CatalogDBObject.registry)
+        self.assertIn('testCatalogDBObjectTestgals', CatalogDBObject.registry)
+        self.assertIn('Nonsense', CatalogDBObject.registry)
 
         colsShouldBe = [('id', None, int), ('raJ2000', 'ra*%f'%(numpy.pi/180.)),
                         ('decJ2000', 'decl*%f'%(numpy.pi/180.)),
@@ -608,7 +608,7 @@ class fileDBObjectTestCase(unittest.TestCase):
 
         self.assertEqual(len(goodPoints), len(goodPointsHeader))
         for xx in goodPoints:
-            self.assertTrue(xx in goodPointsHeader)
+            self.assertIn(xx, goodPointsHeader)
 
     def testNonsenseSelectOnlySomeColumns(self):
         """
@@ -646,7 +646,7 @@ class fileDBObjectTestCase(unittest.TestCase):
 
         self.assertEqual(len(goodPoints), len(goodPointsHeader))
         for xx in goodPoints:
-            self.assertTrue(xx in goodPointsHeader)
+            self.assertIn(xx, goodPointsHeader)
 
     def testNonsenseBoxConstraints(self):
         """
@@ -710,7 +710,7 @@ class fileDBObjectTestCase(unittest.TestCase):
 
         self.assertEqual(len(goodPoints), len(goodPointsHeader))
         for xx in goodPoints:
-            self.assertTrue(xx in goodPointsHeader)
+            self.assertIn(xx, goodPointsHeader)
 
     def testNonsenseArbitraryConstraints(self):
         """
@@ -777,7 +777,7 @@ class fileDBObjectTestCase(unittest.TestCase):
 
         self.assertEqual(len(goodPoints), len(goodPointsHeader))
         for xx in goodPoints:
-            self.assertTrue(xx in goodPointsHeader)
+            self.assertIn(xx, goodPointsHeader)
 
     def testChunking(self):
         """
