@@ -115,7 +115,7 @@ class CompoundCatalogDBObjectTestCase(unittest.TestCase):
         baseDir = os.path.join(getPackageDir('sims_catalogs_generation'),
                                'tests', 'scratchSpace')
 
-        cls.textFileName = os.path.join(baseDir,'compound_test_data.txt')
+        cls.textFileName = os.path.join(baseDir, 'compound_test_data.txt')
         if os.path.exists(cls.textFileName):
             os.unlink(cls.textFileName)
 
@@ -482,12 +482,12 @@ class CompoundWithObsMetaData(unittest.TestCase):
         if os.path.exists(cls.textFileName):
             os.unlink(cls.textFileName)
 
-        with open(cls.textFileName,'w') as output:
+        with open(cls.textFileName, 'w') as output:
             output.write('# id ra dec mag\n')
             for ix, (r, d, m) in enumerate(zip(raList, decList, magList)):
                 output.write('%d %.20f %.20f %.20f\n' % (ix, r, d, m))
 
-        cls.dbName = os.path.join(cls.baseDir,'compound_obs_metadata_db.db')
+        cls.dbName = os.path.join(cls.baseDir, 'compound_obs_metadata_db.db')
 
         if os.path.exists(cls.dbName):
             os.unlink(cls.dbName)
@@ -511,10 +511,11 @@ class CompoundWithObsMetaData(unittest.TestCase):
         properly
         """
 
-        obs = ObservationMetaData(unrefractedRA = 180.0,
-                                  unrefractedDec = 0.0,
+        obs = ObservationMetaData(pointingRA = 180.0,
+                                  pointingDec = 0.0,
                                   boundType = 'box',
-                                  boundLength = (80.0, 25.0))
+                                  boundLength = (80.0, 25.0),
+                                  mjd=53580.0)
 
         db1 = testStarDB1(database=self.dbName, driver='sqlite')
         db2 = testStarDB2(database=self.dbName, driver='sqlite')
@@ -600,10 +601,11 @@ class CompoundWithObsMetaData(unittest.TestCase):
         Test that CompoundCatalogDBObject correctly handles an ObservationMetaData
         and a constraint at the same time
         """
-        obs = ObservationMetaData(unrefractedRA = 180.0,
-                                  unrefractedDec = 0.0,
+        obs = ObservationMetaData(pointingRA = 180.0,
+                                  pointingDec = 0.0,
                                   boundType = 'box',
-                                  boundLength = (80.0, 25.0))
+                                  boundLength = (80.0, 25.0),
+                                  mjd=53580.0)
 
         db1 = testStarDB1(database=self.dbName, driver='sqlite')
         db2 = testStarDB2(database=self.dbName, driver='sqlite')

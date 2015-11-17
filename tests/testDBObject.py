@@ -25,7 +25,7 @@ def createDB():
         ll=2*ii
         jj=2*ll
         kk=3*ll
-        cmd = '''INSERT INTO intTable VALUES (%s, %s, %s)''' % (ll,jj,kk)
+        cmd = '''INSERT INTO intTable VALUES (%s, %s, %s)''' % (ll, jj, kk)
         c.execute(cmd)
 
     conn.commit()
@@ -41,7 +41,7 @@ def createDB():
         nn = numpy.sqrt(float(ll))
         mm = numpy.log(float(ll))
 
-        cmd = '''INSERT INTO doubleTable VALUES (%s, %s, %s)''' % (ll,nn,mm)
+        cmd = '''INSERT INTO doubleTable VALUES (%s, %s, %s)''' % (ll, nn, mm)
         c.execute(cmd)
     conn.commit()
 
@@ -55,7 +55,7 @@ def createDB():
         nn = numpy.sqrt(float(ll))
         mm = numpy.log(float(ll))
 
-        cmd = '''INSERT INTO junkTable VALUES (%s, %s, %s)''' % (ll,nn,mm)
+        cmd = '''INSERT INTO junkTable VALUES (%s, %s, %s)''' % (ll, nn, mm)
         c.execute(cmd)
 
     conn.commit()
@@ -88,7 +88,7 @@ class DBObjectTestCase(unittest.TestCase):
         """
         dbobj = DBObject(driver=self.driver, database=self.database)
         names = dbobj.get_table_names()
-        self.assertEqual(len(names),3)
+        self.assertEqual(len(names), 3)
         self.assertTrue('doubleTable' in names)
         self.assertTrue('intTable' in names)
 
@@ -103,41 +103,41 @@ class DBObjectTestCase(unittest.TestCase):
         controlResults = dbobj.execute_arbitrary(controlQuery)
 
         #make sure that execute_arbitrary only accepts strings
-        query = ['a','list']
-        self.assertRaises(RuntimeError,dbobj.execute_arbitrary,query)
+        query = ['a', 'list']
+        self.assertRaises(RuntimeError, dbobj.execute_arbitrary, query)
 
         #check that our filter catches different capitalization permutations of the
         #verboten commands
         query = 'DROP TABLE junkTable'
-        self.assertRaises(RuntimeError,dbobj.execute_arbitrary,query)
-        self.assertRaises(RuntimeError,dbobj.execute_arbitrary,query.lower())
+        self.assertRaises(RuntimeError, dbobj.execute_arbitrary, query)
+        self.assertRaises(RuntimeError, dbobj.execute_arbitrary, query.lower())
         query = 'DELETE FROM junkTable WHERE id=4'
-        self.assertRaises(RuntimeError,dbobj.execute_arbitrary,query)
-        self.assertRaises(RuntimeError,dbobj.execute_arbitrary,query.lower())
+        self.assertRaises(RuntimeError, dbobj.execute_arbitrary, query)
+        self.assertRaises(RuntimeError, dbobj.execute_arbitrary, query.lower())
         query = 'UPDATE junkTable SET sqrt=0.0, log=0.0 WHERE id=4'
-        self.assertRaises(RuntimeError,dbobj.execute_arbitrary,query)
-        self.assertRaises(RuntimeError,dbobj.execute_arbitrary,query.lower())
-        query = 'INSERT INTO junkTable VALUES (9999,1.0,1.0)'
-        self.assertRaises(RuntimeError,dbobj.execute_arbitrary,query)
-        self.assertRaises(RuntimeError,dbobj.execute_arbitrary,query.lower())
+        self.assertRaises(RuntimeError, dbobj.execute_arbitrary, query)
+        self.assertRaises(RuntimeError, dbobj.execute_arbitrary, query.lower())
+        query = 'INSERT INTO junkTable VALUES (9999, 1.0, 1.0)'
+        self.assertRaises(RuntimeError, dbobj.execute_arbitrary, query)
+        self.assertRaises(RuntimeError, dbobj.execute_arbitrary, query.lower())
 
         query = 'Drop Table junkTable'
-        self.assertRaises(RuntimeError,dbobj.execute_arbitrary,query)
+        self.assertRaises(RuntimeError, dbobj.execute_arbitrary, query)
         query = 'Delete FROM junkTable WHERE id=4'
-        self.assertRaises(RuntimeError,dbobj.execute_arbitrary,query)
+        self.assertRaises(RuntimeError, dbobj.execute_arbitrary, query)
         query = 'Update junkTable SET sqrt=0.0, log=0.0 WHERE id=4'
-        self.assertRaises(RuntimeError,dbobj.execute_arbitrary,query)
-        query = 'Insert INTO junkTable VALUES (9999,1.0,1.0)'
-        self.assertRaises(RuntimeError,dbobj.execute_arbitrary,query)
+        self.assertRaises(RuntimeError, dbobj.execute_arbitrary, query)
+        query = 'Insert INTO junkTable VALUES (9999, 1.0, 1.0)'
+        self.assertRaises(RuntimeError, dbobj.execute_arbitrary, query)
 
         query = 'dRoP TaBlE junkTable'
-        self.assertRaises(RuntimeError,dbobj.execute_arbitrary,query)
+        self.assertRaises(RuntimeError, dbobj.execute_arbitrary, query)
         query = 'dElEtE FROM junkTable WHERE id=4'
-        self.assertRaises(RuntimeError,dbobj.execute_arbitrary,query)
+        self.assertRaises(RuntimeError, dbobj.execute_arbitrary, query)
         query = 'uPdAtE junkTable SET sqrt=0.0, log=0.0 WHERE id=4'
-        self.assertRaises(RuntimeError,dbobj.execute_arbitrary,query)
-        query = 'iNsErT INTO junkTable VALUES (9999,1.0,1.0)'
-        self.assertRaises(RuntimeError,dbobj.execute_arbitrary,query)
+        self.assertRaises(RuntimeError, dbobj.execute_arbitrary, query)
+        query = 'iNsErT INTO junkTable VALUES (9999, 1.0, 1.0)'
+        self.assertRaises(RuntimeError, dbobj.execute_arbitrary, query)
 
     def testColumnNames(self):
         """
@@ -145,24 +145,24 @@ class DBObjectTestCase(unittest.TestCase):
         """
         dbobj = DBObject(driver=self.driver, database=self.database)
         names = dbobj.get_column_names('doubleTable')
-        self.assertEqual(len(names),3)
+        self.assertEqual(len(names), 3)
         self.assertTrue('id' in names)
         self.assertTrue('sqrt' in names)
         self.assertTrue('log' in names)
 
         names = dbobj.get_column_names('intTable')
-        self.assertEqual(len(names),3)
+        self.assertEqual(len(names), 3)
         self.assertTrue('id' in names)
         self.assertTrue('twice' in names)
         self.assertTrue('thrice' in names)
 
         names = dbobj.get_column_names()
-        keys = ['doubleTable','intTable','junkTable']
+        keys = ['doubleTable', 'intTable', 'junkTable']
         for kk in names:
             self.assertTrue(kk in keys)
 
-        self.assertEqual(len(names['doubleTable']),3)
-        self.assertEqual(len(names['intTable']),3)
+        self.assertEqual(len(names['doubleTable']), 3)
+        self.assertEqual(len(names['intTable']), 3)
         self.assertTrue('id' in names['doubleTable'])
         self.assertTrue('sqrt' in names['doubleTable'])
         self.assertTrue('log' in names['doubleTable'])
@@ -179,18 +179,18 @@ class DBObjectTestCase(unittest.TestCase):
         results = dbobj.get_chunk_iterator(query)
 
         dtype = [
-                ('id',int),
-                ('sqrt',float)]
+                ('id', int),
+                ('sqrt', float)]
 
         i = 1
         for chunk in results:
             for row in chunk:
-                self.assertEqual(row[0],i)
-                self.assertAlmostEqual(row[1],numpy.sqrt(i))
-                self.assertEqual(dtype,row.dtype)
+                self.assertEqual(row[0], i)
+                self.assertAlmostEqual(row[1], numpy.sqrt(i))
+                self.assertEqual(dtype, row.dtype)
                 i += 1
 
-        self.assertEqual(i,201)
+        self.assertEqual(i, 201)
 
     def testDtype(self):
         """
@@ -200,19 +200,19 @@ class DBObjectTestCase(unittest.TestCase):
         """
         dbobj = DBObject(driver=self.driver, database=self.database)
         query = 'SELECT id, log FROM doubleTable'
-        dtype = [('id',int),('log',float)]
+        dtype = [('id', int), ('log', float)]
         results = dbobj.execute_arbitrary(query, dtype = dtype)
 
-        self.assertEqual(results.dtype,dtype)
+        self.assertEqual(results.dtype, dtype)
         for xx in results:
-            self.assertAlmostEqual(numpy.log(xx[0]),xx[1],6)
+            self.assertAlmostEqual(numpy.log(xx[0]), xx[1], 6)
 
-        self.assertEqual(len(results),200)
+        self.assertEqual(len(results), 200)
 
         results = dbobj.get_chunk_iterator(query, chunk_size=10, dtype=dtype)
         results.next()
         for chunk in results:
-            self.assertEqual(chunk.dtype,dtype)
+            self.assertEqual(chunk.dtype, dtype)
 
     def testJoin(self):
         """
@@ -224,35 +224,35 @@ class DBObjectTestCase(unittest.TestCase):
         results = dbobj.get_chunk_iterator(query, chunk_size=10)
 
         dtype = [
-            ('id',int),
-            ('id_1',int),
-            ('log',float),
-            ('thrice',int)]
+            ('id', int),
+            ('id_1', int),
+            ('log', float),
+            ('thrice', int)]
 
         i = 0
         for chunk in results:
             if i<90:
-                self.assertEqual(len(chunk),10)
+                self.assertEqual(len(chunk), 10)
             for row in chunk:
-                self.assertEqual(2*(i+1),row[0])
-                self.assertEqual(row[0],row[1])
-                self.assertAlmostEqual(numpy.log(row[0]),row[2],6)
-                self.assertEqual(3*row[0],row[3])
-                self.assertEqual(dtype,row.dtype)
+                self.assertEqual(2*(i+1), row[0])
+                self.assertEqual(row[0], row[1])
+                self.assertAlmostEqual(numpy.log(row[0]), row[2], 6)
+                self.assertEqual(3*row[0], row[3])
+                self.assertEqual(dtype, row.dtype)
                 i += 1
-        self.assertEqual(i,99)
+        self.assertEqual(i, 99)
         #make sure that we found all the matches whe should have
 
         results = dbobj.execute_arbitrary(query)
-        self.assertEqual(dtype,results.dtype)
+        self.assertEqual(dtype, results.dtype)
         i = 0
         for row in results:
-            self.assertEqual(2*(i+1),row[0])
-            self.assertEqual(row[0],row[1])
-            self.assertAlmostEqual(numpy.log(row[0]),row[2],6)
-            self.assertEqual(3*row[0],row[3])
+            self.assertEqual(2*(i+1), row[0])
+            self.assertEqual(row[0], row[1])
+            self.assertAlmostEqual(numpy.log(row[0]), row[2], 6)
+            self.assertEqual(3*row[0], row[3])
             i += 1
-        self.assertEqual(i,99)
+        self.assertEqual(i, 99)
         #make sure we found all the matches we should have
 
     def testMinMax(self):
@@ -262,11 +262,11 @@ class DBObjectTestCase(unittest.TestCase):
         dbobj = DBObject(driver=self.driver, database=self.database)
         query = 'SELECT MAX(thrice), MIN(thrice) FROM intTable'
         results = dbobj.execute_arbitrary(query)
-        self.assertEqual(results[0][0],594)
-        self.assertEqual(results[0][1],0)
+        self.assertEqual(results[0][0], 594)
+        self.assertEqual(results[0][1], 0)
 
-        dtype = [('MAXthrice',int),('MINthrice',int)]
-        self.assertEqual(results.dtype,dtype)
+        dtype = [('MAXthrice', int), ('MINthrice', int)]
+        self.assertEqual(results.dtype, dtype)
 
     def testValidationErrors(self):
         """ Test that appropriate errors and warnings are thrown when connecting
