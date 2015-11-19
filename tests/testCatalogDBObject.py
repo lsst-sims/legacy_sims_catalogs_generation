@@ -146,7 +146,7 @@ class CatalogDBObjectTestCase(unittest.TestCase):
 
     def testObsMD(self):
         self.assertEqual(self.obsMd.bandpass, 'r')
-        self.assertAlmostEqual(self.obsMd.mjd, 52000., 6)
+        self.assertAlmostEqual(self.obsMd.mjd.TAI, 52000., 6)
 
     def testDbObj(self):
         mystars = CatalogDBObject.from_objid('testCatalogDBObjectTeststars')
