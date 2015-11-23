@@ -65,7 +65,11 @@ class CompoundCatalogDBObject(CatalogDBObject):
         self._make_dbTypeMap()
         self._make_dbDefaultValues()
 
-        dbo = self._dbObjectClassList[0]
+        dbo = self._dbObjectClassList[0]()
+        # need to instantiate the first one because sometimes
+        # idColKey is not defined until instantiation
+        # (see GalaxyTileObj in sims_catUtils/../baseCatalogModels/GalaxyModels.py
+
         self.tableid = dbo.tableid
         self.idColKey = dbo.idColKey
         self.raColName = dbo.raColName
@@ -91,8 +95,7 @@ class CompoundCatalogDBObject(CatalogDBObject):
         else:
             verbose = False
 
-        super(CompoundCatalogDBObject, self).__init__(database=dbo.database, driver=driver,
-                                                      host=host, port=port, verbose=verbose)
+        super(CompoundCatalogDBObject, self).__init__(connection=dbo.connection)
 
 
     def _make_columns(self):
