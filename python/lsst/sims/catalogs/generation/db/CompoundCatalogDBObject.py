@@ -39,7 +39,7 @@ class CompoundCatalogDBObject(CatalogDBObject):
     # _table_restriction==None, then any table is supported
     _table_restriction = None
 
-    def __init__(self, catalogDbObjectClassList):
+    def __init__(self, catalogDbObjectClassList, connection=None):
         """
         @param [in] catalogDbObjectList is a list of CatalogDBObject daughter
         classes that all query the same database table
@@ -52,6 +52,11 @@ class CompoundCatalogDBObject(CatalogDBObject):
         own connection in this constructor.  This means that all connection
         parameters must be specified in the class definitions of the classes
         passed into catalogDbObjectClassList.
+
+        @param [in] connection is an optional instantiation of DBConnection
+        representing an active connection to the database required by
+        this CompoundCatalogDBObject (prevents the CompoundCatalogDBObject
+        from opening a redundant connection)
         """
 
         self._dbObjectClassList = catalogDbObjectClassList
@@ -65,7 +70,7 @@ class CompoundCatalogDBObject(CatalogDBObject):
         self._make_dbTypeMap()
         self._make_dbDefaultValues()
 
-        dbo = self._dbObjectClassList[0]()
+        dbo = self._dbObjectClassList[0](connection=connection)
         # need to instantiate the first one because sometimes
         # idColKey is not defined until instantiation
         # (see GalaxyTileObj in sims_catUtils/../baseCatalogModels/GalaxyModels.py
