@@ -52,7 +52,7 @@ class ChunkIterator(object):
     """Iterator for query chunks"""
     def __init__(self, dbobj, query, chunk_size, arbitrarySQL = False):
         self.dbobj = dbobj
-        self.exec_query = dbobj.session.execute(query)
+        self.exec_query = dbobj.connection.session.execute(query)
         self.chunk_size = chunk_size
 
         #arbitrarySQL exists in case a CatalogDBObject calls
@@ -81,6 +81,47 @@ class ChunkIterator(object):
             return self.dbobj._postprocess_arbitrary_results(chunk)
         else:
             return self.dbobj._postprocess_results(chunk)
+
+
+class DBConnection(object):
+    """
+    This is a class that will hold the engine, session, and metadata for a
+    DBObject.  This will allow multiple DBObjects to share the same
+    sqlalchemy connection, when appropriate.
+    """
+
+    def __init__(self, dbUrl, verbose):
+        """
+        @param [in] dburl is the URL of the database being connected to
+
+        @param [in] verbose is a boolean controlling sqlalchemy's verbosity
+        """
+
+        self._engine = create_engine(dbUrl, echo=verbose)
+
+        if self._engine.dialect.name == 'sqlite':
+            event.listen(self._engine, 'checkout', declareTrigFunctions)
+
+        self._session = scoped_session(sessionmaker(autoflush=True,
+                                                    bind=self._engine))
+        self._metadata = MetaData(bind=self._engine)
+
+
+    @property
+    def engine(self):
+        return self._engine
+
+
+    @property
+    def session(self):
+        return self._session
+
+
+    @property
+    def metadata(self):
+        return self._metadata
+
+
 
 class DBObject(object):
 
@@ -169,18 +210,12 @@ class DBObject(object):
             dbUrl = url.URL(self.driver,
                             database=self.database)
 
-        self.engine = create_engine(dbUrl, echo=self.verbose)
+        self.connection = DBConnection(dbUrl, self.verbose)
 
-        if self.engine.dialect.name == 'sqlite':
-            event.listen(self.engine,'checkout',declareTrigFunctions)
-
-        self.session = scoped_session(sessionmaker(autoflush=True,
-                                                   bind=self.engine))
-        self.metadata = MetaData(bind=self.engine)
 
     def get_table_names(self):
         """Return a list of the names of the tables in the database"""
-        return [str(xx) for xx in reflection.Inspector.from_engine(self.engine).get_table_names()]
+        return [str(xx) for xx in reflection.Inspector.from_engine(self.connection.engine).get_table_names()]
 
     def get_column_names(self, tableName=None):
         """
@@ -193,11 +228,11 @@ class DBObject(object):
             if tableName not in tableNameList:
                 return []
             else:
-                return [str(xx['name']) for xx in reflection.Inspector.from_engine(self.engine).get_columns(tableName)]
+                return [str(xx['name']) for xx in reflection.Inspector.from_engine(self.connection.engine).get_columns(tableName)]
         else:
             columnDict = {}
             for name in tableNameList:
-                columnList = [str(xx['name']) for xx in reflection.Inspector.from_engine(self.engine).get_columns(name)]
+                columnList = [str(xx['name']) for xx in reflection.Inspector.from_engine(self.connection.engine).get_columns(name)]
                 columnDict[name] = columnList
             return columnDict
 
@@ -261,7 +296,7 @@ class DBObject(object):
                 raise RuntimeError("query made to DBObject execute contained %s " % badCommand)
 
         self.dtype = dtype
-        retresults = self._postprocess_arbitrary_results(self.session.execute(query).fetchall())
+        retresults = self._postprocess_arbitrary_results(self.connection.session.execute(query).fetchall())
         return retresults
 
     def get_arbitrary_chunk_iterator(self, query, chunk_size = None, dtype =None):
@@ -444,7 +479,7 @@ class CatalogDBObject(DBObject):
                 message += " https://confluence.lsstcorp.org/display/SIM/Accessing+the+UW+CATSIM+Database "
             else:
                 message = ''
-            raise RuntimeError("Failed to connect to %s: sqlalchemy.%s %s" % (self.engine, e.message, message))
+            raise RuntimeError("Failed to connect to %s: sqlalchemy.%s %s" % (self.connection.engine, e.message, message))
 
         #Need to do this after the table is instantiated so that
         #the default columns can be filled from the table object.
@@ -478,7 +513,7 @@ class CatalogDBObject(DBObject):
         return self.objectTypeId
 
     def _get_table(self):
-        self.table = Table(self.tableid, self.metadata,
+        self.table = Table(self.tableid, self.connection.metadata,
                            autoload=True)
 
     def _make_column_map(self):
@@ -530,7 +565,7 @@ class CatalogDBObject(DBObject):
         else:
             idLabel = idColName
 
-        query = self.session.query(self.table.c[idColName].label(idLabel))
+        query = self.connection.session.query(self.table.c[idColName].label(idLabel))
 
         for col, val in zip(colnames, vals):
             if val is idColName:
@@ -673,7 +708,8 @@ class fileDBObject(CatalogDBObject):
             self.database = database
             self._connect_to_engine()
             self.tableid = loadData(dataLocatorString, dtype, delimiter, runtable, self.idColKey,
-                                    self.engine, self.metadata, numGuess, indexCols=self.indexCols, **kwargs)
+                                    self.connection.engine, self.connection.metadata, numGuess,
+                                    indexCols=self.indexCols, **kwargs)
             self._get_table()
         else:
             raise ValueError("Could not locate file %s."%(dataLocatorString))
