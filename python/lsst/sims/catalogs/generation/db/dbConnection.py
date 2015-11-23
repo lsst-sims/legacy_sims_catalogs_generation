@@ -90,12 +90,40 @@ class DBConnection(object):
     sqlalchemy connection, when appropriate.
     """
 
-    def __init__(self, dbUrl, verbose):
+    def __init__(self, database, driver, host, port, verbose):
         """
-        @param [in] dburl is the URL of the database being connected to
+        @param [in] database is the name of the database file being connected to
+
+        @param [in] driver is the dialect of the database (e.g. 'sqlite', 'mssql', etc.)
+
+        @param [in] host is the URL of the remote host, if appropriate
+
+        @param [in] port is the port on the remote host to connect to, if appropriate
 
         @param [in] verbose is a boolean controlling sqlalchemy's verbosity
         """
+
+        #DbAuth will not look up hosts that are None, '' or 0
+        if host:
+            try:
+                authDict = {'username': DbAuth.username(host, str(port)),
+                            'password': DbAuth.password(host, str(port))}
+            except:
+                if driver == 'mssql+pymssql':
+                    print("\nFor more information on database authentication using the db-auth.paf"
+                          " policy file see: "
+                          "https://confluence.lsstcorp.org/display/SIM/Accessing+the+UW+CATSIM+Database\n")
+                raise
+
+            dbUrl = url.URL(driver,
+                            host=host,
+                            port=port,
+                            database=database,
+                            **authDict)
+        else:
+            dbUrl = url.URL(driver,
+                            database=database)
+
 
         self._engine = create_engine(dbUrl, echo=verbose)
 
@@ -160,7 +188,8 @@ class DBObject(object):
 
         if connection is None:
             self._validate_conn_params()
-            self.connection = self._connect_to_engine()
+            self.connection = DBConnection(database=self.database, driver=self.driver, host=self.host,
+                                           port=self.port, verbose=self.verbose)
         else:
             self.connection = connection
 
@@ -204,36 +233,6 @@ class DBObject(object):
             self.host = None
             self.port = None
 
-
-    def _connect_to_engine(self):
-        """
-        create and connect to a database engine
-
-        returns an instance of DBConnection which holds that engine
-        """
-
-        #DbAuth will not look up hosts that are None, '' or 0
-        if self.host:
-            try:
-                authDict = {'username': DbAuth.username(self.host, str(self.port)),
-                            'password': DbAuth.password(self.host, str(self.port))}
-            except:
-                if self.driver == 'mssql+pymssql':
-                    print("\nFor more information on database authentication using the db-auth.paf"
-                          " policy file see: "
-                          "https://confluence.lsstcorp.org/display/SIM/Accessing+the+UW+CATSIM+Database\n")
-                raise
-
-            dbUrl = url.URL(self.driver,
-                            host=self.host,
-                            port=self.port,
-                            database=self.database,
-                            **authDict)
-        else:
-            dbUrl = url.URL(self.driver,
-                            database=self.database)
-
-        return DBConnection(dbUrl, self.verbose)
 
 
     def get_table_names(self):
@@ -729,7 +728,8 @@ class fileDBObject(CatalogDBObject):
             self.host = host
             self.port = port
             self.database = database
-            self.connection = self._connect_to_engine()
+            self.connection = DBConnection(database=self.database, driver=self.driver, host=self.host,
+                                           port=self.port, verbose=verbose)
             self.tableid = loadData(dataLocatorString, dtype, delimiter, runtable, self.idColKey,
                                     self.connection.engine, self.connection.metadata, numGuess,
                                     indexCols=self.indexCols, **kwargs)
