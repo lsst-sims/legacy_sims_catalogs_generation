@@ -125,8 +125,24 @@ class DBConnection(object):
 
 class DBObject(object):
 
-    def __init__(self, database=None, driver=None, host=None, port=None, verbose=False):
-        """Initialize DBObject.
+    def __init__(self, database=None, driver=None, host=None, port=None, verbose=False,
+                 connection=None):
+        """
+        Initialize DBObject.
+
+        @param [in] database is the name of the database file being connected to
+
+        @param [in] driver is the dialect of the database (e.g. 'sqlite', 'mssql', etc.)
+
+        @param [in] host is the URL of the remote host, if appropriate
+
+        @param [in] port is the port on the remote host to connect to, if appropriate
+
+        @param [in] verbose is a boolean controlling sqlalchemy's verbosity (default False)
+
+        @param [in] connection is an optional instance of DBConnection, in the event that
+        this DBObject can share a database connection with another DBObject.  This is only
+        necessary or even possible in a few specialized cases and should be used carefully.
         """
         #Explicit constructor to DBObject preferred
         kwargDict = dict(database=database,
@@ -142,8 +158,11 @@ class DBObject(object):
         self.dtype = None
         #this is a cache for the query, so that any one query does not have to guess dtype multiple times
 
-        self._validate_conn_params()
-        self._connect_to_engine()
+        if connection is None:
+            self._validate_conn_params()
+            self.connection = self._connect_to_engine()
+        else:
+            self.connection = connection
 
 
     def _validate_conn_params(self):
@@ -187,7 +206,11 @@ class DBObject(object):
 
 
     def _connect_to_engine(self):
-        """create and connect to a database engine"""
+        """
+        create and connect to a database engine
+
+        returns an instance of DBConnection which holds that engine
+        """
 
         #DbAuth will not look up hosts that are None, '' or 0
         if self.host:
@@ -210,7 +233,7 @@ class DBObject(object):
             dbUrl = url.URL(self.driver,
                             database=self.database)
 
-        self.connection = DBConnection(dbUrl, self.verbose)
+        return DBConnection(dbUrl, self.verbose)
 
 
     def get_table_names(self):
@@ -428,7 +451,7 @@ class CatalogDBObject(DBObject):
         return cls(*args, **kwargs)
 
     def __init__(self, database=None, driver=None, host=None, port=None, verbose=False,
-                 table=None, objid=None, idColKey=None):
+                 table=None, objid=None, idColKey=None, connection=None):
         if not verbose:
             with warnings.catch_warnings():
                 warnings.simplefilter("ignore", category=sa_exc.SAWarning)
@@ -466,7 +489,7 @@ class CatalogDBObject(DBObject):
                           "possible.")
 
         super(CatalogDBObject, self).__init__(database=database, driver=driver, host=host, port=port,
-                                              verbose=verbose)
+                                              verbose=verbose, connection=connection)
 
         try:
             self._get_table()
@@ -706,7 +729,7 @@ class fileDBObject(CatalogDBObject):
             self.host = host
             self.port = port
             self.database = database
-            self._connect_to_engine()
+            self.connection = self._connect_to_engine()
             self.tableid = loadData(dataLocatorString, dtype, delimiter, runtable, self.idColKey,
                                     self.connection.engine, self.connection.metadata, numGuess,
                                     indexCols=self.indexCols, **kwargs)

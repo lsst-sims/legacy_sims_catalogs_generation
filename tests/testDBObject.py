@@ -268,6 +268,51 @@ class DBObjectTestCase(unittest.TestCase):
         dtype = [('MAXthrice', int), ('MINthrice', int)]
         self.assertEqual(results.dtype, dtype)
 
+
+    def testPassingConnection(self):
+        """
+        Repeat the test from testJoin, but with a DBObject whose connection was passed
+        directly from another DBObject, to make sure that passing a connection works
+        """
+        dbobj_base = DBObject(driver=self.driver, database=self.database)
+        dbobj = DBObject(connection=dbobj_base.connection)
+        query = 'SELECT doubleTable.id, intTable.id, doubleTable.log, intTable.thrice '
+        query += 'FROM doubleTable, intTable WHERE doubleTable.id = intTable.id'
+        results = dbobj.get_chunk_iterator(query, chunk_size=10)
+
+        dtype = [
+            ('id', int),
+            ('id_1', int),
+            ('log', float),
+            ('thrice', int)]
+
+        i = 0
+        for chunk in results:
+            if i<90:
+                self.assertEqual(len(chunk), 10)
+            for row in chunk:
+                self.assertEqual(2*(i+1), row[0])
+                self.assertEqual(row[0], row[1])
+                self.assertAlmostEqual(numpy.log(row[0]), row[2], 6)
+                self.assertEqual(3*row[0], row[3])
+                self.assertEqual(dtype, row.dtype)
+                i += 1
+        self.assertEqual(i, 99)
+        #make sure that we found all the matches whe should have
+
+        results = dbobj.execute_arbitrary(query)
+        self.assertEqual(dtype, results.dtype)
+        i = 0
+        for row in results:
+            self.assertEqual(2*(i+1), row[0])
+            self.assertEqual(row[0], row[1])
+            self.assertAlmostEqual(numpy.log(row[0]), row[2], 6)
+            self.assertEqual(3*row[0], row[3])
+            i += 1
+        self.assertEqual(i, 99)
+        #make sure we found all the matches we should have
+
+
     def testValidationErrors(self):
         """ Test that appropriate errors and warnings are thrown when connecting
         """

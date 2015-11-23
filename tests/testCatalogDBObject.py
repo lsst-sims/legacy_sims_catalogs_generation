@@ -83,6 +83,22 @@ class myNonsenseDB(CatalogDBObject):
                ('NonsenseDecJ2000', 'dec*%f'%(numpy.pi/180.)),
                ('NonsenseMag', 'mag', float)]
 
+class myNonsenseDB_noConnection(CatalogDBObject):
+    """
+    In order to test that we can pass a DBConnection in
+    through the constructor
+    """
+    objid = 'Nonsense_noConnection'
+    tableid = 'test'
+    idColKey = 'NonsenseId'
+    raColName = 'ra'
+    decColName = 'dec'
+    columns = [('NonsenseId', 'id', int),
+               ('NonsenseRaJ2000', 'ra*%f'%(numpy.pi/180.)),
+               ('NonsenseDecJ2000', 'dec*%f'%(numpy.pi/180.)),
+               ('NonsenseMag', 'mag', float)]
+
+
 class myNonsenseFileDB(fileDBObject):
     objid = 'fileNonsense'
     tableid = 'test'
@@ -367,6 +383,7 @@ class CatalogDBObjectTestCase(unittest.TestCase):
             self.assertEqual(row[0], row[2])
             self.assertAlmostEqual(row[1], 0.5*row[3], 6)
 
+
     def testArbitraryChunkIterator(self):
         """
         Test method to create a ChunkIterator from an arbitrary SQL query (inherited from DBObject class)
@@ -500,6 +517,243 @@ class CatalogDBObjectTestCase(unittest.TestCase):
                 self.assertEqual(line[0], controlArr[ix][0])
                 self.assertEqual(line[1], controlArr[ix][1])
                 self.assertEqual(line[2], controlArr[ix][2])
+
+
+    # The tests below all replicate tests above, except with CatalogDBObjects whose
+    # connection was passed directly in from the constructor, in order to make sure
+    # that passing a connection in works.
+
+    def testNonsenseCircularConstraints_passConnection(self):
+        """
+        Test that a query performed on a circle bound gets all of the objects (and only all
+        of the objects) within that circle.
+
+        Pass connection directly in to the constructor.
+        """
+
+        myNonsense_base = CatalogDBObject.from_objid('Nonsense')
+        myNonsense = myNonsenseDB_noConnection(connection=myNonsense_base.connection)
+
+        radius = 20.0
+        raCenter = 210.0
+        decCenter = -60.0
+
+        mycolumns = ['NonsenseId', 'NonsenseRaJ2000', 'NonsenseDecJ2000', 'NonsenseMag']
+
+        circObsMd = ObservationMetaData(boundType='circle', pointingRA=raCenter, pointingDec=decCenter,
+                                        boundLength=radius, mjd=52000., bandpassName='r')
+
+        circQuery = myNonsense.query_columns(colnames = mycolumns, obs_metadata=circObsMd, chunk_size=100)
+
+        raCenter = numpy.radians(raCenter)
+        decCenter = numpy.radians(decCenter)
+        radius = numpy.radians(radius)
+
+        goodPoints = []
+
+        for chunk in circQuery:
+            for row in chunk:
+                distance = haversine(raCenter, decCenter, row[1], row[2])
+
+                # the 0.01 degree offset is because ObservationMetaData may have had
+                # to adjust boundLength to account for the transformation from
+                # observed to ICRS coordinates
+                self.assertLess(distance, radius+numpy.radians(0.01))
+
+                dex = numpy.where(self.baselineData['id'] == row[0])[0][0]
+
+                #store a list of which objects fell within our circle bound
+                goodPoints.append(row[0])
+
+                self.assertAlmostEqual(numpy.radians(self.baselineData['ra'][dex]), row[1], 3)
+                self.assertAlmostEqual(numpy.radians(self.baselineData['dec'][dex]), row[2], 3)
+                self.assertAlmostEqual(self.baselineData['mag'][dex], row[3], 3)
+
+
+        for entry in [xx for xx in self.baselineData if xx[0] not in goodPoints]:
+            #make sure that all of the points not returned by the query were, in fact, outside of
+            #the circle bound
+            distance = haversine(raCenter, decCenter, numpy.radians(entry[1]), numpy.radians(entry[2]))
+            self.assertGreater(distance, radius)
+
+
+    def testNonsenseSelectOnlySomeColumns_passConnection(self):
+        """
+        Test a query performed only a subset of the available columns
+
+        Pass connection directly in to the constructor.
+        """
+        myNonsense_base = CatalogDBObject.from_objid('Nonsense')
+        myNonsense = myNonsenseDB_noConnection(connection=myNonsense_base.connection)
+
+        mycolumns = ['NonsenseId', 'NonsenseRaJ2000', 'NonsenseMag']
+
+        query = myNonsense.query_columns(colnames=mycolumns, constraint = 'ra < 45.', chunk_size=100)
+
+        goodPoints = []
+
+        for chunk in query:
+            for row in chunk:
+                self.assertLess(row[1], 45.0)
+
+                dex = numpy.where(self.baselineData['id'] == row[0])[0][0]
+
+                goodPoints.append(row[0])
+
+                self.assertAlmostEqual(numpy.radians(self.baselineData['ra'][dex]), row[1], 3)
+                self.assertAlmostEqual(self.baselineData['mag'][dex], row[2], 3)
+
+
+        for entry in [xx for xx in self.baselineData if xx[0] not in goodPoints]:
+            self.assertGreater(entry[1], 45.0)
+
+    def testNonsenseBoxConstraints_passConnection(self):
+        """
+        Test that a query performed on a box bound gets all of the points (and only all of the
+        points) inside that box bound.
+
+        Pass connection directly in to the constructor.
+        """
+
+        myNonsense_base = CatalogDBObject.from_objid('Nonsense')
+        myNonsense = myNonsenseDB_noConnection(connection=myNonsense_base.connection)
+
+        raMin = 50.0
+        raMax = 150.0
+        decMax = 30.0
+        decMin = -20.0
+
+        raCenter = 0.5*(raMin+raMax)
+        decCenter = 0.5*(decMin+decMax)
+
+        mycolumns = ['NonsenseId', 'NonsenseRaJ2000', 'NonsenseDecJ2000', 'NonsenseMag']
+
+        boxObsMd = ObservationMetaData(boundType='box', pointingDec=decCenter,  pointingRA=raCenter,
+                   boundLength=numpy.array([0.5*(raMax-raMin), 0.5*(decMax-decMin)]), mjd=52000., bandpassName='r')
+
+        boxQuery = myNonsense.query_columns(obs_metadata=boxObsMd, chunk_size=100, colnames=mycolumns)
+
+        raMin = numpy.radians(raMin)
+        raMax = numpy.radians(raMax)
+        decMin = numpy.radians(decMin)
+        decMax = numpy.radians(decMax)
+
+        goodPoints = []
+
+        for chunk in boxQuery:
+            for row in chunk:
+                self.assertLess(row[1], raMax)
+                self.assertGreater(row[1], raMin)
+                self.assertLess(row[2], decMax)
+                self.assertGreater(row[2], decMin)
+
+                dex = numpy.where(self.baselineData['id'] == row[0])[0][0]
+
+                #keep a list of which points were returned by teh query
+                goodPoints.append(row[0])
+
+                self.assertAlmostEqual(numpy.radians(self.baselineData['ra'][dex]), row[1], 3)
+                self.assertAlmostEqual(numpy.radians(self.baselineData['dec'][dex]), row[2], 3)
+                self.assertAlmostEqual(self.baselineData['mag'][dex], row[3], 3)
+
+        for entry in [xx for xx in self.baselineData if xx[0] not in goodPoints]:
+            #make sure that the points not returned by the query are, in fact, outside of the
+            #box bound
+
+            switch = (entry[1] > raMax or entry[1] < raMin or entry[2] >decMax or entry[2] < decMin)
+            self.assertTrue(switch)
+
+    def testNonsenseArbitraryConstraints_passConnection(self):
+        """
+        Test a query with a user-specified constraint on the magnitude column
+
+        Pass connection directly in to the constructor.
+        """
+
+        myNonsense_base = CatalogDBObject.from_objid('Nonsense')
+        myNonsense = myNonsenseDB_noConnection(connection=myNonsense_base.connection)
+
+        raMin = 50.0
+        raMax = 150.0
+        decMax = 30.0
+        decMin = -20.0
+        raCenter=0.5*(raMin+raMax)
+        decCenter=0.5*(decMin+decMax)
+
+        mycolumns = ['NonsenseId', 'NonsenseRaJ2000', 'NonsenseDecJ2000', 'NonsenseMag']
+
+        boxObsMd = ObservationMetaData(boundType='box', pointingRA=raCenter, pointingDec=decCenter,
+                    boundLength=numpy.array([0.5*(raMax-raMin), 0.5*(decMax-decMin)]), mjd=52000., bandpassName='r')
+
+        boxQuery = myNonsense.query_columns(colnames = mycolumns,
+                      obs_metadata=boxObsMd, chunk_size=100, constraint = 'mag > 11.0')
+
+        raMin = numpy.radians(raMin)
+        raMax = numpy.radians(raMax)
+        decMin = numpy.radians(decMin)
+        decMax = numpy.radians(decMax)
+
+        goodPoints = []
+
+        for chunk in boxQuery:
+            for row in chunk:
+
+                self.assertLess(row[1], raMax)
+                self.assertGreater(row[1], raMin)
+                self.assertLess(row[2], decMax)
+                self.assertGreater(row[2], decMin)
+                self.assertGreater(row[3], 11.0)
+
+                dex = numpy.where(self.baselineData['id'] == row[0])[0][0]
+
+                #keep a list of the points returned by the query
+                goodPoints.append(row[0])
+
+                self.assertAlmostEqual(numpy.radians(self.baselineData['ra'][dex]), row[1], 3)
+                self.assertAlmostEqual(numpy.radians(self.baselineData['dec'][dex]), row[2], 3)
+                self.assertAlmostEqual(self.baselineData['mag'][dex], row[3], 3)
+
+        for entry in [xx for xx in self.baselineData if xx[0] not in goodPoints]:
+            #make sure that the points not returned by the query did, in fact, violate one of the
+            #constraints of the query (either the box bound or the magnitude cut off)
+            switch = (entry[1] > raMax or entry[1] < raMin or entry[2] >decMax or entry[2] < decMin or entry[3]<11.0)
+
+            self.assertTrue(switch)
+
+    def testArbitraryQuery_passConnection(self):
+        """
+        Test method to directly execute an arbitrary SQL query (inherited from DBObject class)
+
+        Pass connection directly in to the constructor.
+        """
+        myNonsense_base = CatalogDBObject.from_objid('Nonsense')
+        myNonsense = myNonsenseDB_noConnection(connection=myNonsense_base.connection)
+        query = 'SELECT test.id, test.mag, test2.id, test2.mag FROM test, test2 WHERE test.id=test2.id'
+        results = myNonsense.execute_arbitrary(query)
+        self.assertEqual(len(results), 1250)
+        for row in results:
+            self.assertEqual(row[0], row[2])
+            self.assertAlmostEqual(row[1], 0.5*row[3], 6)
+
+
+    def testArbitraryChunkIterator_passConnection(self):
+        """
+        Test method to create a ChunkIterator from an arbitrary SQL query (inherited from DBObject class)
+
+        Pass connection directly in to the constructor.
+        """
+        myNonsense_base = CatalogDBObject.from_objid('Nonsense')
+        myNonsense = myNonsenseDB_noConnection(connection=myNonsense_base.connection)
+        query = 'SELECT test.id, test.mag, test2.id, test2.mag FROM test, test2 WHERE test.id=test2.id'
+        dtype = numpy.dtype([('id1', int), ('mag1', float), ('id2', int), ('mag2', float)])
+        results = myNonsense.get_chunk_iterator(query, chunk_size=100, dtype=dtype)
+        i = 0
+        for chunk in results:
+            for row in chunk:
+                self.assertEqual(row[0], row[2])
+                self.assertAlmostEqual(row[1], 0.5*row[3], 6)
+                i += 1
+        self.assertEqual(i, 1250)
 
 
 class fileDBObjectTestCase(unittest.TestCase):
