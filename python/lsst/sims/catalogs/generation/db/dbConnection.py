@@ -90,7 +90,7 @@ class DBConnection(object):
     sqlalchemy connection, when appropriate.
     """
 
-    def __init__(self, database, driver, host, port, verbose):
+    def __init__(self, database=None, driver=None, host=None, port=None, verbose=False):
         """
         @param [in] database is the name of the database file being connected to
 
@@ -103,11 +103,18 @@ class DBConnection(object):
         @param [in] verbose is a boolean controlling sqlalchemy's verbosity
         """
 
+        self._database = database
+        self._driver = driver
+        self._host = host
+        self._port = port
+        self._verbose = verbose
+
+
         #DbAuth will not look up hosts that are None, '' or 0
         if host:
             try:
-                authDict = {'username': DbAuth.username(host, str(port)),
-                            'password': DbAuth.password(host, str(port))}
+                authDict = {'username': DbAuth.username(self._host, str(self._port)),
+                            'password': DbAuth.password(self._host, str(self._port))}
             except:
                 if driver == 'mssql+pymssql':
                     print("\nFor more information on database authentication using the db-auth.paf"
@@ -115,17 +122,17 @@ class DBConnection(object):
                           "https://confluence.lsstcorp.org/display/SIM/Accessing+the+UW+CATSIM+Database\n")
                 raise
 
-            dbUrl = url.URL(driver,
-                            host=host,
-                            port=port,
-                            database=database,
+            dbUrl = url.URL(self._driver,
+                            host=self._host,
+                            port=self._port,
+                            database=self._database,
                             **authDict)
         else:
-            dbUrl = url.URL(driver,
-                            database=database)
+            dbUrl = url.URL(self._driver,
+                            database=self._database)
 
 
-        self._engine = create_engine(dbUrl, echo=verbose)
+        self._engine = create_engine(dbUrl, echo=self._verbose)
 
         if self._engine.dialect.name == 'sqlite':
             event.listen(self._engine, 'checkout', declareTrigFunctions)
@@ -135,10 +142,17 @@ class DBConnection(object):
         self._metadata = MetaData(bind=self._engine)
 
 
+    def __eq__(self, other):
+        return (self._database is other._database) and \
+               (self._driver is other._driver) and \
+               (self._host is other._host) and \
+               (self._port is other._port) and \
+               (self._verbose is other._verbose)
+
+
     @property
     def engine(self):
         return self._engine
-
 
     @property
     def session(self):
@@ -149,6 +163,25 @@ class DBConnection(object):
     def metadata(self):
         return self._metadata
 
+    @property
+    def database(self):
+        return self._database
+
+    @property
+    def driver(self):
+        return self._driver
+
+    @property
+    def host(self):
+        return self._host
+
+    @property
+    def port(self):
+        return self._port
+
+    @property
+    def verbose(self):
+        return self._verbose
 
 
 class DBObject(object):
