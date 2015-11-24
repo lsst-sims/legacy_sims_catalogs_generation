@@ -109,9 +109,13 @@ class DBConnection(object):
         self._port = port
         self._verbose = verbose
 
+        self._connect_to_engine()
+
+
+    def _connect_to_engine(self):
 
         #DbAuth will not look up hosts that are None, '' or 0
-        if host:
+        if self._host:
             try:
                 authDict = {'username': DbAuth.username(self._host, str(self._port)),
                             'password': DbAuth.password(self._host, str(self._port))}
