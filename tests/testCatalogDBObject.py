@@ -756,6 +756,30 @@ class CatalogDBObjectTestCase(unittest.TestCase):
         self.assertEqual(i, 1250)
 
 
+    def testPassingConnectionDifferentTables(self):
+        """
+        Test that we can pass a DBConnection between DBObjects that connect to different
+        tables on the same database
+        """
+
+        dbo1 = testCatalogDBObjectTestStars()
+        cols = ['raJ2000', 'decJ2000', 'umag']
+        results = dbo1.query_columns(cols)
+        ct = 0
+        for chunk in results:
+            for line in chunk:
+                ct += 1
+        self.assertGreater(ct, 0)
+
+        ct = 0
+        db02 = testCatalogDBObjectTestGalaxies(connection=dbo1.connection)
+        cols = ['raJ2000', 'decJ2000', 'redshift']
+        for chunk in results:
+            for line in chunk:
+                ct += 1
+        self.assertEqual(ct, 0)
+
+
 class fileDBObjectTestCase(unittest.TestCase):
     """
     This class will re-implement the tests from CatalogDBObjectTestCase,
