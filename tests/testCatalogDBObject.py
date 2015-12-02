@@ -128,8 +128,8 @@ class CatalogDBObjectTestCase(unittest.TestCase):
         if os.path.exists('testCatalogDBObjectDatabase.db'):
             print "deleting database"
             os.unlink('testCatalogDBObjectDatabase.db')
-        tu.makeStarTestDB(filename='testCatalogDBObjectDatabase.db', size=100000, seedVal=1)
-        tu.makeGalTestDB(filename='testCatalogDBObjectDatabase.db', size=100000, seedVal=1)
+        tu.makeStarTestDB(filename='testCatalogDBObjectDatabase.db', size=5000, seedVal=1)
+        tu.makeGalTestDB(filename='testCatalogDBObjectDatabase.db', size=5000, seedVal=1)
         createNonsenseDB()
 
     @classmethod
