@@ -41,8 +41,9 @@ class CompoundCatalogDBObject(CatalogDBObject):
 
     def __init__(self, catalogDbObjectClassList, connection=None):
         """
-        @param [in] catalogDbObjectList is a list of CatalogDBObject daughter
-        classes that all query the same database table
+        @param [in] catalogDbObjectClassList is a list of CatalogDBObject
+        daughter classes (not instantiations of those classes; the classes
+        themselves) that all query the same database table
 
         Note: this is a list of classes, not a list of instantiations of those
         classes.  The connection to the database is established as soon as
