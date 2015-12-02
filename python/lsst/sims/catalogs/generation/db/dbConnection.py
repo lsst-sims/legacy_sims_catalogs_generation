@@ -109,6 +109,7 @@ class DBConnection(object):
         self._port = port
         self._verbose = verbose
 
+        self._validate_conn_params()
         self._connect_to_engine()
 
 
@@ -144,6 +145,50 @@ class DBConnection(object):
         self._session = scoped_session(sessionmaker(autoflush=True,
                                                     bind=self._engine))
         self._metadata = MetaData(bind=self._engine)
+
+
+    def _validate_conn_params(self):
+        """Validate connection parameters
+
+        - Check if user passed dbAddress instead of an database. Convert and warn.
+        - Check that required connection paramters are present
+        - Replace default host/port if driver is 'sqlite'
+        """
+
+        if self._database is None:
+            raise AttributeError("Cannot instantiate DBConnection; database is 'None'")
+
+        if '//' in self._database:
+            warnings.warn("Database name '%s' is invalid but looks like a dbAddress. "
+                          "Attempting to convert to database, driver, host, "
+                          "and port parameters. Any usernames and passwords are ignored and must "
+                          "be in the db-auth.paf policy file. "%(self.database), FutureWarning)
+
+            dbUrl = url.make_url(self._database)
+            dialect = dbUrl.get_dialect()
+            self._driver = dialect.name + '+' + dialect.driver if dialect.driver else dialect.name
+            for key, value in dbUrl.translate_connect_args().iteritems():
+                if value is not None:
+                    setattr(self, '_'+key, value)
+
+        errMessage = "Please supply a 'driver' kwarg to the constructor or in class definition. "
+        errMessage += "'driver' is formatted as dialect+driver, such as 'sqlite' or 'mssql+pymssql'."
+        if not hasattr(self, '_driver'):
+            raise AttributeError("%s has no attribute 'driver'. "%(self.__class__.__name__) + errMessage)
+        elif self._driver is None:
+            raise AttributeError("%s.driver is None. "%(self.__class__.__name__) + errMessage)
+
+        errMessage = "Please supply a 'database' kwarg to the constructor or in class definition. "
+        errMessage += " 'database' is the database name or the filename path if driver is 'sqlite'. "
+        if not hasattr(self, '_database'):
+            raise AttributeError("%s has no attribute 'database'. "%(self.__class__.__name__) + errMessage)
+        elif self._database is None:
+            raise AttributeError("%s.database is None. "%(self.__class__.__name__) + errMessage)
+
+        if 'sqlite' in self._driver:
+            #When passed sqlite database, override default host/port
+            self._host = None
+            self._port = None
 
 
     def __eq__(self, other):
@@ -209,66 +254,31 @@ class DBObject(object):
         this DBObject can share a database connection with another DBObject.  This is only
         necessary or even possible in a few specialized cases and should be used carefully.
         """
-        #Explicit constructor to DBObject preferred
-        kwargDict = dict(database=database,
-                         driver=driver,
-                         host=host,
-                         port=port,
-                         verbose=verbose)
-
-        for key, value in kwargDict.iteritems():
-            if value is not None:
-                setattr(self, key, value)
 
         self.dtype = None
         #this is a cache for the query, so that any one query does not have to guess dtype multiple times
 
         if connection is None:
-            self._validate_conn_params()
+            #Explicit constructor to DBObject preferred
+            kwargDict = dict(database=database,
+                         driver=driver,
+                         host=host,
+                         port=port,
+                         verbose=verbose)
+
+            for key, value in kwargDict.iteritems():
+                if value is not None or not hasattr(self, key):
+                    setattr(self, key, value)
+
             self.connection = DBConnection(database=self.database, driver=self.driver, host=self.host,
                                            port=self.port, verbose=self.verbose)
         else:
             self.connection = connection
-
-
-    def _validate_conn_params(self):
-        """Validate connection parameters
-
-        - Check if user passed dbAddress instead of an database. Convert and warn.
-        - Check that required connection paramters are present
-        - Replace default host/port if driver is 'sqlite'
-        """
-        if '//' in self.database:
-            warnings.warn("Database name '%s' is invalid but looks like a dbAddress. "
-                          "Attempting to convert to database, driver, host, "
-                          "and port parameters. Any usernames and passwords are ignored and must "
-                          "be in the db-auth.paf policy file. "%(self.database), FutureWarning)
-
-            dbUrl = url.make_url(self.database)
-            dialect = dbUrl.get_dialect()
-            self.driver = dialect.name + '+' + dialect.driver if dialect.driver else dialect.name
-            for key, value in dbUrl.translate_connect_args().iteritems():
-                if value is not None:
-                    setattr(self, key, value)
-
-        errMessage = "Please supply a 'driver' kwarg to the constructor or in class definition. "
-        errMessage += "'driver' is formatted as dialect+driver, such as 'sqlite' or 'mssql+pymssql'."
-        if not hasattr(self, 'driver'):
-            raise AttributeError("%s has no attribute 'driver'. "%(self.__class__.__name__) + errMessage)
-        elif self.driver is None:
-            raise AttributeError("%s.driver is None. "%(self.__class__.__name__) + errMessage)
-
-        errMessage = "Please supply a 'database' kwarg to the constructor or in class definition. "
-        errMessage += " 'database' is the database name or the filename path if driver is 'sqlite'. "
-        if not hasattr(self, 'database'):
-            raise AttributeError("%s has no attribute 'database'. "%(self.__class__.__name__) + errMessage)
-        elif self.database is None:
-            raise AttributeError("%s.database is None. "%(self.__class__.__name__) + errMessage)
-
-        if 'sqlite' in self.driver:
-            #When passed sqlite database, override default host/port
-            self.host = None
-            self.port = None
+            self.database = connection.database
+            self.driver = connection.driver
+            self.host = connection.host
+            self.port = connection.port
+            self.verbose = connection.verbose
 
 
 
