@@ -170,10 +170,18 @@ class CompoundCatalogDBObjectTestCase(unittest.TestCase):
         when you violate its API
         """
 
-        # test case where they are querying the same database, but different
-        # tables
-        db1 = dbClass1(database=self.otherDbName, driver='sqlite')
-        db2 = dbClass2(database=self.dbName, driver='sqlite')
+        # test case where they are querying the same table, but different
+        # databases
+        class testDbClass1(dbClass1):
+            database = self.otherDbName
+            driver = 'sqlite'
+
+        class testDbClass2(dbClass2):
+            database = self.dbName
+            driver = 'sqlite'
+
+        db1 = testDbClass1()
+        db2 = testDbClass2()
 
         with self.assertRaises(RuntimeError) as context:
             compound = CompoundCatalogDBObject([db1, db2])
@@ -181,30 +189,50 @@ class CompoundCatalogDBObjectTestCase(unittest.TestCase):
         self.assertTrue("['%s', '%s']" % (self.otherDbName, self.dbName) \
                         in context.exception.message)
 
-        # test case where they are querying the same table, but different
-        # databases
-        db1 = dbClass4(database=self.dbName, driver='sqlite')
-        db2 = dbClass2(database=self.dbName, driver='sqlite')
+        # test case where they are querying the same database, but different
+        # tables
+
+        class testDbClass3(dbClass4):
+            database = self.dbName
+            driver = 'sqlite'
+
+        class testDbClass4(dbClass2):
+            database = self.dbName
+            driver = 'sqlite'
 
         with self.assertRaises(RuntimeError) as context:
-            compound = CompoundCatalogDBObject([db1, db2])
+            compound = CompoundCatalogDBObject([testDbClass3, testDbClass4])
 
         self.assertTrue("['otherTest', 'test']" in context.exception.message)
 
         # test case where the CatalogDBObjects have the same objid
-        db1 = dbClass4(database=self.dbName, driver='sqlite')
-        db2 = dbClass5(database=self.dbName, driver='sqlite')
-        with self.assertRaises(RuntimeError) as context:
-            compound = CompoundCatalogDBObject([db1, db2])
+        class testDbClass5(dbClass4):
+            database = self.dbName
+            driver = 'sqlite'
+            objid = 'dummy'
 
-        self.assertTrue("objid class4 is duplicated" in context.exception.message)
+        class testDbClass6(dbClass5):
+            database = self.dbName
+            driver = 'sqlite'
+            objid = 'dummy'
+
+        with self.assertRaises(RuntimeError) as context:
+            compound = CompoundCatalogDBObject([testDbClass5, testDbClass6])
+
+        self.assertTrue("objid dummy is duplicated" in context.exception.message)
 
         # test case where CompoundCatalogDBObject does not support the
         # tables being queried
-        db1 = dbClass1(database=self.dbName, driver='sqlite')
-        db2 = dbClass2(database=self.dbName, driver='sqlite')
+        class testDbClass7(dbClass1):
+            database = self.dbName
+            driver = 'sqlite'
+
+        class testDbClass8(dbClass2):
+            database = self.dbName
+            driver ='sqlite'
+
         with self.assertRaises(RuntimeError) as context:
-            compound = specificCompoundObj_otherTest([db1, db2])
+            compound = specificCompoundObj_otherTest([testDbClass7, testDbClass8])
 
         msg = "This CompoundCatalogDBObject does not support the table 'test'"
         self.assertTrue(msg in context.exception.message)
@@ -216,45 +244,60 @@ class CompoundCatalogDBObjectTestCase(unittest.TestCase):
         Verify that CompoundCatalogDBObject returns the expected
         columns.
         """
-        db1 = dbClass1(database=self.dbName, driver='sqlite')
-        db2 = dbClass2(database=self.dbName, driver='sqlite')
-        db3 = dbClass3(database=self.dbName, driver='sqlite')
+
+        class testDbClass9(dbClass1):
+            database = self.dbName
+            driver = 'sqlite'
+
+        class testDbClass10(dbClass2):
+            database = self.dbName
+            driver = 'sqlite'
+
+        class testDbClass11(dbClass3):
+            database = self.dbName
+            driver = 'sqlite'
+
+        db1 = testDbClass9
+        db2 = testDbClass10
+        db3 = testDbClass11
+
         dbList = [db1, db2, db3]
         compoundDb = CompoundCatalogDBObject(dbList)
 
-        colNames = ['class1_aa', 'class1_bb',
-                    'class2_aa', 'class2_bb',
-                    'class3_aa', 'class3_bb', 'class3_cc']
+        colNames = ['%s_aa' % db1.objid, '%s_bb' % db1.objid,
+                    '%s_aa' % db2.objid, '%s_bb' % db2.objid,
+                    '%s_aa' % db3.objid, '%s_bb' % db3.objid,
+                    '%s_cc' % db3.objid]
 
         results = compoundDb.query_columns(colnames=colNames)
 
         for chunk in results:
-            numpy.testing.assert_array_almost_equal(chunk['class1_aa'],
+            numpy.testing.assert_array_almost_equal(chunk['%s_aa' % db1.objid],
                                                     self.controlArray['a'],
                                                     decimal=6)
 
-            numpy.testing.assert_array_equal(chunk['class1_bb'],
+            numpy.testing.assert_array_equal(chunk['%s_bb' % db1.objid],
                                              self.controlArray['d'])
 
-            numpy.testing.assert_array_almost_equal(chunk['class2_aa'],
+            numpy.testing.assert_array_almost_equal(chunk['%s_aa' % db2.objid],
                                                     2.0*self.controlArray['b'],
                                                     decimal=6)
 
-            numpy.testing.assert_array_almost_equal(chunk['class2_bb'],
+            numpy.testing.assert_array_almost_equal(chunk['%s_bb' % db2.objid],
                                                     self.controlArray['a'],
                                                     decimal=6)
 
 
-            numpy.testing.assert_array_almost_equal(chunk['class3_aa'],
+            numpy.testing.assert_array_almost_equal(chunk['%s_aa' % db3.objid],
                                                     self.controlArray['c']-3.0,
                                                     decimal=6)
 
 
-            numpy.testing.assert_array_almost_equal(chunk['class3_bb'],
+            numpy.testing.assert_array_almost_equal(chunk['%s_bb' % db3.objid],
                                                     self.controlArray['a'],
                                                     decimal=6)
 
-            numpy.testing.assert_array_almost_equal(chunk['class3_cc'],
+            numpy.testing.assert_array_almost_equal(chunk['%s_cc' % db3.objid],
                                                     3.0*self.controlArray['b'],
                                                     decimal=6)
 
@@ -262,29 +305,38 @@ class CompoundCatalogDBObjectTestCase(unittest.TestCase):
         """
         Verify that _table_restriction works the way it should in CompoundCatalogDBObject
         """
-        db1 = dbClass1(database=self.dbName, driver='sqlite')
-        db2 = dbClass2(database=self.dbName, driver='sqlite')
+
+        class testDbClass12(dbClass1):
+            database = self.dbName
+            driver = 'sqlite'
+
+        class testDbClass13(dbClass2):
+            database = self.dbName
+            driver = 'sqlite'
+
+        db1 = testDbClass12
+        db2 = testDbClass13
         dbList = [db1, db2]
         compoundDb = specificCompoundObj_test(dbList)
 
-        colNames = ['class1_aa', 'class1_bb',
-                    'class2_aa', 'class2_bb']
+        colNames = ['%s_aa' % db1.objid, '%s_bb' % db1.objid,
+                    '%s_aa' % db2.objid, '%s_bb' % db2.objid]
 
         results = compoundDb.query_columns(colnames=colNames)
 
         for chunk in results:
-            numpy.testing.assert_array_almost_equal(chunk['class1_aa'],
+            numpy.testing.assert_array_almost_equal(chunk['%s_aa' % db1.objid],
                                                     self.controlArray['a'],
                                                     decimal=6)
 
-            numpy.testing.assert_array_equal(chunk['class1_bb'],
+            numpy.testing.assert_array_equal(chunk['%s_bb' % db1.objid],
                                              self.controlArray['d'])
 
-            numpy.testing.assert_array_almost_equal(chunk['class2_aa'],
+            numpy.testing.assert_array_almost_equal(chunk['%s_aa' % db2.objid],
                                                     2.0*self.controlArray['b'],
                                                     decimal=6)
 
-            numpy.testing.assert_array_almost_equal(chunk['class2_bb'],
+            numpy.testing.assert_array_almost_equal(chunk['%s_bb' % db2.objid],
                                                     self.controlArray['a'],
                                                     decimal=6)
 
@@ -293,45 +345,59 @@ class CompoundCatalogDBObjectTestCase(unittest.TestCase):
         """
         Verify that _table_restriction with multiple tables also works
         """
-        db1 = dbClass1(database=self.dbName, driver='sqlite')
-        db2 = dbClass2(database=self.dbName, driver='sqlite')
-        db3 = dbClass3(database=self.dbName, driver='sqlite')
+
+        class testDbClass14(dbClass1):
+            database = self.dbName
+            driver = 'sqlite'
+
+        class testDbClass15(dbClass2):
+            database = self.dbName
+            driver = 'sqlite'
+
+        class testDbClass16(dbClass3):
+            database = self.dbName
+            driver = 'sqlite'
+
+        db1 = testDbClass14
+        db2 = testDbClass15
+        db3 = testDbClass16
         dbList = [db1, db2, db3]
         compoundDb = universalCompoundObj(dbList)
 
-        colNames = ['class1_aa', 'class1_bb',
-                    'class2_aa', 'class2_bb',
-                    'class3_aa', 'class3_bb', 'class3_cc']
+        colNames = ['%s_aa' % db1.objid, '%s_bb' % db1.objid,
+                    '%s_aa' % db2.objid, '%s_bb' % db2.objid,
+                    '%s_aa' % db3.objid, '%s_bb' % db3.objid,
+                    '%s_cc' % db3.objid]
 
         results = compoundDb.query_columns(colnames=colNames)
 
         for chunk in results:
-            numpy.testing.assert_array_almost_equal(chunk['class1_aa'],
+            numpy.testing.assert_array_almost_equal(chunk['%s_aa' % db1.objid],
                                                     self.controlArray['a'],
                                                     decimal=6)
 
-            numpy.testing.assert_array_equal(chunk['class1_bb'],
+            numpy.testing.assert_array_equal(chunk['%s_bb' % db1.objid],
                                              self.controlArray['d'])
 
-            numpy.testing.assert_array_almost_equal(chunk['class2_aa'],
+            numpy.testing.assert_array_almost_equal(chunk['%s_aa' % db2.objid],
                                                     2.0*self.controlArray['b'],
                                                     decimal=6)
 
-            numpy.testing.assert_array_almost_equal(chunk['class2_bb'],
+            numpy.testing.assert_array_almost_equal(chunk['%s_bb' % db2.objid],
                                                     self.controlArray['a'],
                                                     decimal=6)
 
 
-            numpy.testing.assert_array_almost_equal(chunk['class3_aa'],
+            numpy.testing.assert_array_almost_equal(chunk['%s_aa' % db3.objid],
                                                     self.controlArray['c']-3.0,
                                                     decimal=6)
 
 
-            numpy.testing.assert_array_almost_equal(chunk['class3_bb'],
+            numpy.testing.assert_array_almost_equal(chunk['%s_bb' % db3.objid],
                                                     self.controlArray['a'],
                                                     decimal=6)
 
-            numpy.testing.assert_array_almost_equal(chunk['class3_cc'],
+            numpy.testing.assert_array_almost_equal(chunk['%s_cc' % db3.objid],
                                                     3.0*self.controlArray['b'],
                                                     decimal=6)
 
@@ -341,52 +407,66 @@ class CompoundCatalogDBObjectTestCase(unittest.TestCase):
         """
         Verify that CompoundCatalogDBObject handles chunk_size correctly
         """
-        db1 = dbClass1(database=self.dbName, driver='sqlite')
-        db2 = dbClass2(database=self.dbName, driver='sqlite')
-        db3 = dbClass3(database=self.dbName, driver='sqlite')
+
+        class testDbClass17(dbClass1):
+            database = self.dbName
+            driver = 'sqlite'
+
+        class testDbClass18(dbClass2):
+            database = self.dbName
+            driver = 'sqlite'
+
+        class testDbClass19(dbClass3):
+            database = self.dbName
+            driver = 'sqlite'
+
+        db1 = testDbClass17
+        db2 = testDbClass18
+        db3 = testDbClass19
         dbList = [db1, db2, db3]
         compoundDb = CompoundCatalogDBObject(dbList)
 
         colNames = ['id',
-                    'class1_aa', 'class1_bb',
-                    'class2_aa', 'class2_bb',
-                    'class3_aa', 'class3_bb', 'class3_cc']
+                    '%s_aa' % db1.objid, '%s_bb' % db1.objid,
+                    '%s_aa' % db2.objid, '%s_bb' % db2.objid,
+                    '%s_aa' % db3.objid, '%s_bb' % db3.objid,
+                    '%s_cc' % db3.objid]
 
         results = compoundDb.query_columns(colnames=colNames, chunk_size=10)
 
         ct = 0
 
         for chunk in results:
-            ct += len(chunk['class1_aa'])
+            ct += len(chunk['%s_aa' % db1.objid])
             rows = chunk['id']
             self.assertTrue(len(rows)<=10)
 
-            numpy.testing.assert_array_almost_equal(chunk['class1_aa'],
+            numpy.testing.assert_array_almost_equal(chunk['%s_aa' % db1.objid],
                                                     self.controlArray['a'][rows],
                                                     decimal=6)
 
-            numpy.testing.assert_array_equal(chunk['class1_bb'],
+            numpy.testing.assert_array_equal(chunk['%s_bb' % db1.objid],
                                              self.controlArray['d'][rows])
 
-            numpy.testing.assert_array_almost_equal(chunk['class2_aa'],
+            numpy.testing.assert_array_almost_equal(chunk['%s_aa' % db2.objid],
                                                     2.0*self.controlArray['b'][rows],
                                                     decimal=6)
 
-            numpy.testing.assert_array_almost_equal(chunk['class2_bb'],
+            numpy.testing.assert_array_almost_equal(chunk['%s_bb' % db2.objid],
                                                     self.controlArray['a'][rows],
                                                     decimal=6)
 
 
-            numpy.testing.assert_array_almost_equal(chunk['class3_aa'],
+            numpy.testing.assert_array_almost_equal(chunk['%s_aa' % db3.objid],
                                                     self.controlArray['c'][rows]-3.0,
                                                     decimal=6)
 
 
-            numpy.testing.assert_array_almost_equal(chunk['class3_bb'],
+            numpy.testing.assert_array_almost_equal(chunk['%s_bb' % db3.objid],
                                                     self.controlArray['a'][rows],
                                                     decimal=6)
 
-            numpy.testing.assert_array_almost_equal(chunk['class3_cc'],
+            numpy.testing.assert_array_almost_equal(chunk['%s_cc' % db3.objid],
                                                     3.0*self.controlArray['b'][rows],
                                                     decimal=6)
 
@@ -398,24 +478,36 @@ class CompoundCatalogDBObjectTestCase(unittest.TestCase):
         Test that Nones are handled correctly in the CatalogDBObject
         column mappings
         """
-        db1 = dbClass1(database=self.dbName, driver='sqlite')
-        db2 = dbClass6(database=self.dbName, driver='sqlite')
-        colNames = ['class1_aa', 'class1_bb', 'class6_a', 'class6_b']
+
+        class testDbClass20(dbClass1):
+            database = self.dbName
+            driver = 'sqlite'
+
+        class testDbClass21(dbClass6):
+            database = self.dbName
+            driver = 'sqlite'
+
+        db1 = testDbClass20
+        db2 = testDbClass21
+        colNames = ['%s_aa' % db1.objid, '%s_bb' % db1.objid,
+                    '%s_a' % db2.objid, '%s_b' % db2.objid]
+
         compoundDb = CompoundCatalogDBObject([db1, db2])
         results = compoundDb.query_columns(colnames=colNames)
+
         for chunk in results:
-            numpy.testing.assert_array_almost_equal(chunk['class1_aa'],
+            numpy.testing.assert_array_almost_equal(chunk['%s_aa' % db1.objid],
                                                     self.controlArray['a'],
                                                     decimal=6)
 
-            numpy.testing.assert_array_equal(chunk['class1_bb'],
+            numpy.testing.assert_array_equal(chunk['%s_bb' % db1.objid],
                                              self.controlArray['d'])
 
-            numpy.testing.assert_array_almost_equal(chunk['class6_a'],
+            numpy.testing.assert_array_almost_equal(chunk['%s_a' % db2.objid],
                                                     self.controlArray['a'],
                                                     decimal=6)
 
-            numpy.testing.assert_array_almost_equal(chunk['class6_b'],
+            numpy.testing.assert_array_almost_equal(chunk['%s_b' % db2.objid],
                                                     self.controlArray['b'],
                                                     decimal=6)
 
@@ -517,14 +609,25 @@ class CompoundWithObsMetaData(unittest.TestCase):
                                   boundLength = (80.0, 25.0),
                                   mjd=53580.0)
 
-        db1 = testStarDB1(database=self.dbName, driver='sqlite')
-        db2 = testStarDB2(database=self.dbName, driver='sqlite')
+
+        class testDbClass22(testStarDB1):
+            database = self.dbName
+            driver = 'sqlite'
+
+        class testDbClass23(testStarDB2):
+            database = self.dbName
+            driver = 'sqlite'
+
+        db1 = testDbClass22
+        db2 = testDbClass23
 
         compoundDb = CompoundCatalogDBObject([db1, db2])
 
-        colnames = ['testStar1_id',
-                    'testStar1_raJ2000', 'testStar1_decJ2000', 'testStar1_magMod',
-                    'testStar2_raJ2000', 'testStar2_decJ2000', 'testStar2_magMod']
+        colnames = ['%s_id' % db1.objid,
+                    '%s_raJ2000' % db1.objid, '%s_decJ2000' % db1.objid,
+                    '%s_magMod' % db1.objid,
+                    '%s_raJ2000' % db2.objid, '%s_decJ2000' % db2.objid,
+                    '%s_magMod' % db2.objid]
 
         results = compoundDb.query_columns(colnames=colnames,
                                            obs_metadata=obs)
@@ -534,12 +637,12 @@ class CompoundWithObsMetaData(unittest.TestCase):
             for line in chunk:
                 ix = line['id']
                 good_rows.append(ix)
-                self.assertAlmostEqual(line['testStar1_raJ2000'], self.controlArray['ra'][ix], 10)
-                self.assertAlmostEqual(line['testStar1_decJ2000'], self.controlArray['dec'][ix], 10)
-                self.assertAlmostEqual(line['testStar1_magMod'], self.controlArray['mag'][ix], 10)
-                self.assertAlmostEqual(line['testStar2_raJ2000'], 2.0*self.controlArray['ra'][ix], 10)
-                self.assertAlmostEqual(line['testStar2_decJ2000'], 2.0*self.controlArray['dec'][ix], 10)
-                self.assertAlmostEqual(line['testStar2_magMod'], 2.0*self.controlArray['mag'][ix], 10)
+                self.assertAlmostEqual(line['%s_raJ2000' % db1.objid], self.controlArray['ra'][ix], 10)
+                self.assertAlmostEqual(line['%s_decJ2000' % db1.objid], self.controlArray['dec'][ix], 10)
+                self.assertAlmostEqual(line['%s_magMod' % db1.objid], self.controlArray['mag'][ix], 10)
+                self.assertAlmostEqual(line['%s_raJ2000' % db2.objid], 2.0*self.controlArray['ra'][ix], 10)
+                self.assertAlmostEqual(line['%s_decJ2000' % db2.objid], 2.0*self.controlArray['dec'][ix], 10)
+                self.assertAlmostEqual(line['%s_magMod' % db2.objid], 2.0*self.controlArray['mag'][ix], 10)
                 self.assertTrue(self.controlArray['ra'][ix]>100.0)
                 self.assertTrue(self.controlArray['ra'][ix]<260.0)
                 self.assertTrue(self.controlArray['dec'][ix]>-25.0)
@@ -560,14 +663,25 @@ class CompoundWithObsMetaData(unittest.TestCase):
         """
         Test that CompoundCatalogDBObject runs correctly with a constraint
         """
-        db1 = testStarDB1(database=self.dbName, driver='sqlite')
-        db2 = testStarDB2(database=self.dbName, driver='sqlite')
+
+        class testDbClass24(testStarDB1):
+            database = self.dbName
+            driver = 'sqlite'
+
+        class testDbClass25(testStarDB2):
+            database = self.dbName
+            driver = 'sqlite'
+
+        db1 = testDbClass24
+        db2 = testDbClass25
 
         compoundDb = CompoundCatalogDBObject([db1, db2])
 
-        colnames = ['testStar1_id',
-                    'testStar1_raJ2000', 'testStar1_decJ2000', 'testStar1_magMod',
-                    'testStar2_raJ2000', 'testStar2_decJ2000', 'testStar2_magMod']
+        colnames = ['%s_id' % db1.objid,
+                    '%s_raJ2000' % db1.objid, '%s_decJ2000' % db1.objid,
+                    '%s_magMod' % db1.objid,
+                    '%s_raJ2000' % db2.objid, '%s_decJ2000' % db2.objid,
+                    '%s_magMod' % db2.objid]
 
         results = compoundDb.query_columns(colnames=colnames,
                                            constraint='mag<11.0')
@@ -577,12 +691,12 @@ class CompoundWithObsMetaData(unittest.TestCase):
             for line in chunk:
                 ix = line['id']
                 good_rows.append(ix)
-                self.assertAlmostEqual(line['testStar1_raJ2000'], self.controlArray['ra'][ix], 10)
-                self.assertAlmostEqual(line['testStar1_decJ2000'], self.controlArray['dec'][ix], 10)
-                self.assertAlmostEqual(line['testStar1_magMod'], self.controlArray['mag'][ix], 10)
-                self.assertAlmostEqual(line['testStar2_raJ2000'], 2.0*self.controlArray['ra'][ix], 10)
-                self.assertAlmostEqual(line['testStar2_decJ2000'], 2.0*self.controlArray['dec'][ix], 10)
-                self.assertAlmostEqual(line['testStar2_magMod'], 2.0*self.controlArray['mag'][ix], 10)
+                self.assertAlmostEqual(line['%s_raJ2000' % db1.objid], self.controlArray['ra'][ix], 10)
+                self.assertAlmostEqual(line['%s_decJ2000' % db1.objid], self.controlArray['dec'][ix], 10)
+                self.assertAlmostEqual(line['%s_magMod' % db1.objid], self.controlArray['mag'][ix], 10)
+                self.assertAlmostEqual(line['%s_raJ2000' % db2.objid], 2.0*self.controlArray['ra'][ix], 10)
+                self.assertAlmostEqual(line['%s_decJ2000' % db2.objid], 2.0*self.controlArray['dec'][ix], 10)
+                self.assertAlmostEqual(line['%s_magMod' % db2.objid], 2.0*self.controlArray['mag'][ix], 10)
                 self.assertTrue(self.controlArray['mag'][ix]<11.0)
 
 
@@ -607,14 +721,24 @@ class CompoundWithObsMetaData(unittest.TestCase):
                                   boundLength = (80.0, 25.0),
                                   mjd=53580.0)
 
-        db1 = testStarDB1(database=self.dbName, driver='sqlite')
-        db2 = testStarDB2(database=self.dbName, driver='sqlite')
+        class testDbClass26(testStarDB1):
+            database = self.dbName
+            driver = 'sqlite'
+
+        class testDbClass27(testStarDB2):
+            database = self.dbName
+            driver = 'sqlite'
+
+        db1 = testDbClass26
+        db2 = testDbClass27
 
         compoundDb = CompoundCatalogDBObject([db1, db2])
 
-        colnames = ['testStar1_id',
-                    'testStar1_raJ2000', 'testStar1_decJ2000', 'testStar1_magMod',
-                    'testStar2_raJ2000', 'testStar2_decJ2000', 'testStar2_magMod']
+        colnames = ['%s_id' % db1.objid,
+                    '%s_raJ2000' % db1.objid, '%s_decJ2000' % db1.objid,
+                    '%s_magMod' % db1.objid,
+                    '%s_raJ2000' % db2.objid, '%s_decJ2000' % db2.objid,
+                    '%s_magMod' % db2.objid]
 
         results = compoundDb.query_columns(colnames=colnames,
                                            obs_metadata=obs,
@@ -625,12 +749,12 @@ class CompoundWithObsMetaData(unittest.TestCase):
             for line in chunk:
                 ix = line['id']
                 good_rows.append(ix)
-                self.assertAlmostEqual(line['testStar1_raJ2000'], self.controlArray['ra'][ix], 10)
-                self.assertAlmostEqual(line['testStar1_decJ2000'], self.controlArray['dec'][ix], 10)
-                self.assertAlmostEqual(line['testStar1_magMod'], self.controlArray['mag'][ix], 10)
-                self.assertAlmostEqual(line['testStar2_raJ2000'], 2.0*self.controlArray['ra'][ix], 10)
-                self.assertAlmostEqual(line['testStar2_decJ2000'], 2.0*self.controlArray['dec'][ix], 10)
-                self.assertAlmostEqual(line['testStar2_magMod'], 2.0*self.controlArray['mag'][ix], 10)
+                self.assertAlmostEqual(line['%s_raJ2000' % db1.objid], self.controlArray['ra'][ix], 10)
+                self.assertAlmostEqual(line['%s_decJ2000' % db1.objid], self.controlArray['dec'][ix], 10)
+                self.assertAlmostEqual(line['%s_magMod' % db1.objid], self.controlArray['mag'][ix], 10)
+                self.assertAlmostEqual(line['%s_raJ2000' % db2.objid], 2.0*self.controlArray['ra'][ix], 10)
+                self.assertAlmostEqual(line['%s_decJ2000' % db2.objid], 2.0*self.controlArray['dec'][ix], 10)
+                self.assertAlmostEqual(line['%s_magMod' % db2.objid], 2.0*self.controlArray['mag'][ix], 10)
                 self.assertTrue(self.controlArray['ra'][ix]>100.0)
                 self.assertTrue(self.controlArray['ra'][ix]<260.0)
                 self.assertTrue(self.controlArray['dec'][ix]>-25.0)

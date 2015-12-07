@@ -52,7 +52,7 @@ class ChunkIterator(object):
     """Iterator for query chunks"""
     def __init__(self, dbobj, query, chunk_size, arbitrarySQL = False):
         self.dbobj = dbobj
-        self.exec_query = dbobj.session.execute(query)
+        self.exec_query = dbobj.connection.session.execute(query)
         self.chunk_size = chunk_size
 
         #arbitrarySQL exists in case a CatalogDBObject calls
@@ -82,27 +82,69 @@ class ChunkIterator(object):
         else:
             return self.dbobj._postprocess_results(chunk)
 
-class DBObject(object):
+
+class DBConnection(object):
+    """
+    This is a class that will hold the engine, session, and metadata for a
+    DBObject.  This will allow multiple DBObjects to share the same
+    sqlalchemy connection, when appropriate.
+    """
 
     def __init__(self, database=None, driver=None, host=None, port=None, verbose=False):
-        """Initialize DBObject.
         """
-        #Explicit constructor to DBObject preferred
-        kwargDict = dict(database=database,
-                         driver=driver,
-                         host=host,
-                         port=port,
-                         verbose=verbose)
+        @param [in] database is the name of the database file being connected to
 
-        for key, value in kwargDict.iteritems():
-            if value is not None:
-                setattr(self, key, value)
+        @param [in] driver is the dialect of the database (e.g. 'sqlite', 'mssql', etc.)
 
-        self.dtype = None
-        #this is a cache for the query, so that any one query does not have to guess dtype multiple times
+        @param [in] host is the URL of the remote host, if appropriate
+
+        @param [in] port is the port on the remote host to connect to, if appropriate
+
+        @param [in] verbose is a boolean controlling sqlalchemy's verbosity
+        """
+
+        self._database = database
+        self._driver = driver
+        self._host = host
+        self._port = port
+        self._verbose = verbose
 
         self._validate_conn_params()
         self._connect_to_engine()
+
+
+    def _connect_to_engine(self):
+
+        #DbAuth will not look up hosts that are None, '' or 0
+        if self._host:
+            try:
+                authDict = {'username': DbAuth.username(self._host, str(self._port)),
+                            'password': DbAuth.password(self._host, str(self._port))}
+            except:
+                if driver == 'mssql+pymssql':
+                    print("\nFor more information on database authentication using the db-auth.paf"
+                          " policy file see: "
+                          "https://confluence.lsstcorp.org/display/SIM/Accessing+the+UW+CATSIM+Database\n")
+                raise
+
+            dbUrl = url.URL(self._driver,
+                            host=self._host,
+                            port=self._port,
+                            database=self._database,
+                            **authDict)
+        else:
+            dbUrl = url.URL(self._driver,
+                            database=self._database)
+
+
+        self._engine = create_engine(dbUrl, echo=self._verbose)
+
+        if self._engine.dialect.name == 'sqlite':
+            event.listen(self._engine, 'checkout', declareTrigFunctions)
+
+        self._session = scoped_session(sessionmaker(autoflush=True,
+                                                    bind=self._engine))
+        self._metadata = MetaData(bind=self._engine)
 
 
     def _validate_conn_params(self):
@@ -112,75 +154,137 @@ class DBObject(object):
         - Check that required connection paramters are present
         - Replace default host/port if driver is 'sqlite'
         """
-        if '//' in self.database:
+
+        if self._database is None:
+            raise AttributeError("Cannot instantiate DBConnection; database is 'None'")
+
+        if '//' in self._database:
             warnings.warn("Database name '%s' is invalid but looks like a dbAddress. "
                           "Attempting to convert to database, driver, host, "
                           "and port parameters. Any usernames and passwords are ignored and must "
                           "be in the db-auth.paf policy file. "%(self.database), FutureWarning)
 
-            dbUrl = url.make_url(self.database)
+            dbUrl = url.make_url(self._database)
             dialect = dbUrl.get_dialect()
-            self.driver = dialect.name + '+' + dialect.driver if dialect.driver else dialect.name
+            self._driver = dialect.name + '+' + dialect.driver if dialect.driver else dialect.name
             for key, value in dbUrl.translate_connect_args().iteritems():
                 if value is not None:
-                    setattr(self, key, value)
+                    setattr(self, '_'+key, value)
 
         errMessage = "Please supply a 'driver' kwarg to the constructor or in class definition. "
         errMessage += "'driver' is formatted as dialect+driver, such as 'sqlite' or 'mssql+pymssql'."
-        if not hasattr(self, 'driver'):
+        if not hasattr(self, '_driver'):
             raise AttributeError("%s has no attribute 'driver'. "%(self.__class__.__name__) + errMessage)
-        elif self.driver is None:
+        elif self._driver is None:
             raise AttributeError("%s.driver is None. "%(self.__class__.__name__) + errMessage)
 
         errMessage = "Please supply a 'database' kwarg to the constructor or in class definition. "
         errMessage += " 'database' is the database name or the filename path if driver is 'sqlite'. "
-        if not hasattr(self, 'database'):
+        if not hasattr(self, '_database'):
             raise AttributeError("%s has no attribute 'database'. "%(self.__class__.__name__) + errMessage)
-        elif self.database is None:
+        elif self._database is None:
             raise AttributeError("%s.database is None. "%(self.__class__.__name__) + errMessage)
 
-        if 'sqlite' in self.driver:
+        if 'sqlite' in self._driver:
             #When passed sqlite database, override default host/port
-            self.host = None
-            self.port = None
+            self._host = None
+            self._port = None
 
 
-    def _connect_to_engine(self):
-        """create and connect to a database engine"""
+    def __eq__(self, other):
+        return (self._database is other._database) and \
+               (self._driver is other._driver) and \
+               (self._host is other._host) and \
+               (self._port is other._port) and \
+               (self._verbose is other._verbose)
 
-        #DbAuth will not look up hosts that are None, '' or 0
-        if self.host:
-            try:
-                authDict = {'username': DbAuth.username(self.host, str(self.port)),
-                            'password': DbAuth.password(self.host, str(self.port))}
-            except:
-                if self.driver == 'mssql+pymssql':
-                    print("\nFor more information on database authentication using the db-auth.paf"
-                          " policy file see: "
-                          "https://confluence.lsstcorp.org/display/SIM/Accessing+the+UW+CATSIM+Database\n")
-                raise
 
-            dbUrl = url.URL(self.driver,
-                            host=self.host,
-                            port=self.port,
-                            database=self.database,
-                            **authDict)
+    @property
+    def engine(self):
+        return self._engine
+
+    @property
+    def session(self):
+        return self._session
+
+
+    @property
+    def metadata(self):
+        return self._metadata
+
+    @property
+    def database(self):
+        return self._database
+
+    @property
+    def driver(self):
+        return self._driver
+
+    @property
+    def host(self):
+        return self._host
+
+    @property
+    def port(self):
+        return self._port
+
+    @property
+    def verbose(self):
+        return self._verbose
+
+
+class DBObject(object):
+
+    def __init__(self, database=None, driver=None, host=None, port=None, verbose=False,
+                 connection=None):
+        """
+        Initialize DBObject.
+
+        @param [in] database is the name of the database file being connected to
+
+        @param [in] driver is the dialect of the database (e.g. 'sqlite', 'mssql', etc.)
+
+        @param [in] host is the URL of the remote host, if appropriate
+
+        @param [in] port is the port on the remote host to connect to, if appropriate
+
+        @param [in] verbose is a boolean controlling sqlalchemy's verbosity (default False)
+
+        @param [in] connection is an optional instance of DBConnection, in the event that
+        this DBObject can share a database connection with another DBObject.  This is only
+        necessary or even possible in a few specialized cases and should be used carefully.
+        """
+
+        self.dtype = None
+        #this is a cache for the query, so that any one query does not have to guess dtype multiple times
+
+        if connection is None:
+            #Explicit constructor to DBObject preferred
+            kwargDict = dict(database=database,
+                         driver=driver,
+                         host=host,
+                         port=port,
+                         verbose=verbose)
+
+            for key, value in kwargDict.iteritems():
+                if value is not None or not hasattr(self, key):
+                    setattr(self, key, value)
+
+            self.connection = DBConnection(database=self.database, driver=self.driver, host=self.host,
+                                           port=self.port, verbose=self.verbose)
         else:
-            dbUrl = url.URL(self.driver,
-                            database=self.database)
+            self.connection = connection
+            self.database = connection.database
+            self.driver = connection.driver
+            self.host = connection.host
+            self.port = connection.port
+            self.verbose = connection.verbose
 
-        self.engine = create_engine(dbUrl, echo=self.verbose)
 
-        if self.engine.dialect.name == 'sqlite':
-            event.listen(self.engine,'checkout',declareTrigFunctions)
-
-        self.session = scoped_session(sessionmaker(autoflush=True,
-                                                   bind=self.engine))
-        self.metadata = MetaData(bind=self.engine)
 
     def get_table_names(self):
         """Return a list of the names of the tables in the database"""
-        return [str(xx) for xx in reflection.Inspector.from_engine(self.engine).get_table_names()]
+        return [str(xx) for xx in reflection.Inspector.from_engine(self.connection.engine).get_table_names()]
 
     def get_column_names(self, tableName=None):
         """
@@ -193,11 +297,11 @@ class DBObject(object):
             if tableName not in tableNameList:
                 return []
             else:
-                return [str(xx['name']) for xx in reflection.Inspector.from_engine(self.engine).get_columns(tableName)]
+                return [str(xx['name']) for xx in reflection.Inspector.from_engine(self.connection.engine).get_columns(tableName)]
         else:
             columnDict = {}
             for name in tableNameList:
-                columnList = [str(xx['name']) for xx in reflection.Inspector.from_engine(self.engine).get_columns(name)]
+                columnList = [str(xx['name']) for xx in reflection.Inspector.from_engine(self.connection.engine).get_columns(name)]
                 columnDict[name] = columnList
             return columnDict
 
@@ -261,7 +365,7 @@ class DBObject(object):
                 raise RuntimeError("query made to DBObject execute contained %s " % badCommand)
 
         self.dtype = dtype
-        retresults = self._postprocess_arbitrary_results(self.session.execute(query).fetchall())
+        retresults = self._postprocess_arbitrary_results(self.connection.session.execute(query).fetchall())
         return retresults
 
     def get_arbitrary_chunk_iterator(self, query, chunk_size = None, dtype =None):
@@ -393,7 +497,7 @@ class CatalogDBObject(DBObject):
         return cls(*args, **kwargs)
 
     def __init__(self, database=None, driver=None, host=None, port=None, verbose=False,
-                 table=None, objid=None, idColKey=None):
+                 table=None, objid=None, idColKey=None, connection=None):
         if not verbose:
             with warnings.catch_warnings():
                 warnings.simplefilter("ignore", category=sa_exc.SAWarning)
@@ -431,7 +535,7 @@ class CatalogDBObject(DBObject):
                           "possible.")
 
         super(CatalogDBObject, self).__init__(database=database, driver=driver, host=host, port=port,
-                                              verbose=verbose)
+                                              verbose=verbose, connection=connection)
 
         try:
             self._get_table()
@@ -444,7 +548,7 @@ class CatalogDBObject(DBObject):
                 message += " https://confluence.lsstcorp.org/display/SIM/Accessing+the+UW+CATSIM+Database "
             else:
                 message = ''
-            raise RuntimeError("Failed to connect to %s: sqlalchemy.%s %s" % (self.engine, e.message, message))
+            raise RuntimeError("Failed to connect to %s: sqlalchemy.%s %s" % (self.connection.engine, e.message, message))
 
         #Need to do this after the table is instantiated so that
         #the default columns can be filled from the table object.
@@ -478,7 +582,7 @@ class CatalogDBObject(DBObject):
         return self.objectTypeId
 
     def _get_table(self):
-        self.table = Table(self.tableid, self.metadata,
+        self.table = Table(self.tableid, self.connection.metadata,
                            autoload=True)
 
     def _make_column_map(self):
@@ -530,7 +634,7 @@ class CatalogDBObject(DBObject):
         else:
             idLabel = idColName
 
-        query = self.session.query(self.table.c[idColName].label(idLabel))
+        query = self.connection.session.query(self.table.c[idColName].label(idLabel))
 
         for col, val in zip(colnames, vals):
             if val is idColName:
@@ -671,9 +775,11 @@ class fileDBObject(CatalogDBObject):
             self.host = host
             self.port = port
             self.database = database
-            self._connect_to_engine()
+            self.connection = DBConnection(database=self.database, driver=self.driver, host=self.host,
+                                           port=self.port, verbose=verbose)
             self.tableid = loadData(dataLocatorString, dtype, delimiter, runtable, self.idColKey,
-                                    self.engine, self.metadata, numGuess, indexCols=self.indexCols, **kwargs)
+                                    self.connection.engine, self.connection.metadata, numGuess,
+                                    indexCols=self.indexCols, **kwargs)
             self._get_table()
         else:
             raise ValueError("Could not locate file %s."%(dataLocatorString))
