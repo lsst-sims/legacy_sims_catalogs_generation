@@ -221,10 +221,7 @@ class CatalogDBObjectTestCase(unittest.TestCase):
                 ct += 1
                 distance = haversine(raCenter, decCenter, row[1], row[2])
 
-                # the 0.01 degree offset is because ObservationMetaData may have had
-                # to adjust boundLength to account for the transformation from
-                # observed to ICRS coordinates
-                self.assertLess(distance, radius+numpy.radians(0.01))
+                self.assertLess(distance, radius)
 
                 dex = numpy.where(self.baselineData['id'] == row[0])[0][0]
 
@@ -598,10 +595,7 @@ class CatalogDBObjectTestCase(unittest.TestCase):
                 ct += 1
                 distance = haversine(raCenter, decCenter, row[1], row[2])
 
-                # the 0.01 degree offset is because ObservationMetaData may have had
-                # to adjust boundLength to account for the transformation from
-                # observed to ICRS coordinates
-                self.assertLess(distance, radius+numpy.radians(0.01))
+                self.assertLess(distance, radius)
 
                 dex = numpy.where(self.baselineData['id'] == row[0])[0][0]
 
@@ -923,10 +917,7 @@ class fileDBObjectTestCase(unittest.TestCase):
                 ct += 1
                 distance = haversine(raCenter, decCenter, row[1], row[2])
 
-                # The 0.01 degree offset is because ObservationMetaData may have had
-                # to adjust the boundLength to account for the observed to ICRS
-                # coordinate transformation
-                self.assertLess(distance, radius+numpy.radians(0.01))
+                self.assertLess(distance, radius)
 
                 dex = numpy.where(self.baselineData['id'] == row[0])[0][0]
 
