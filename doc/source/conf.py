@@ -16,9 +16,9 @@ import sys
 import os
 import shlex
 
- # modification from
- # http://stackoverflow.com/questions/10861463/omit-or-format-the-value-of-a-variable-when-documenting-with-sphinx
- # to prevent registries from getting printed in the docs
+# modification from
+# http://stackoverflow.com/questions/10861463/omit-or-format-the-value-of-a-variable-when-documenting-with-sphinx
+# to prevent registries from getting printed in the docs
 
 from sphinx.ext.autodoc import ClassLevelDocumenter, AttributeDocumenter
 
