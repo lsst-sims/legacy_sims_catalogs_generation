@@ -7,7 +7,6 @@ import numpy, json
 from lsst.sims.utils import ObservationMetaData
 from lsst.sims.catalogs.generation.db import CatalogDBObject
 from lsst.sims.utils import _raDecFromAltAz, calcObsDefaults, _getRotTelPos, Site
-from lsst.sims.utils import _icrsFromObserved
 
 __all__ = ["getOneChunk", "writeResult", "sampleSphere", "myTestGals",
            "makeGalTestDB", "myTestStars", "makeStarTestDB", "makePhoSimTestDB"]
@@ -320,8 +319,9 @@ def makePhoSimTestDB(filename='PhoSimTestDatabase.db', size=1000, seedVal=32, ra
     az = 0.0
     band = 'r'
     testSite = Site()
-    centerRA, centerDec = _raDecFromAltAz(alt,az,testSite.longitude,testSite.latitude,mjd)
-    rotTel = _getRotTelPos(centerRA, centerDec, testSite.longitude, testSite.latitude, mjd, 0.0)
+    obsTemp = ObservationMetaData(mjd=mjd, site=testSite)
+    centerRA, centerDec = _raDecFromAltAz(alt, az, obsTemp)
+    rotTel = _getRotTelPos(centerRA, centerDec, obsTemp, 0.0)
 
     obsDict = calcObsDefaults(centerRA, centerDec, alt, az, rotTel, mjd, band,
                  testSite.longitude, testSite.latitude)
@@ -335,12 +335,6 @@ def makePhoSimTestDB(filename='PhoSimTestDatabase.db', size=1000, seedVal=32, ra
                                        phoSimMetaData=phoSimMetaData, site=testSite,
                                        bandpassName=bandpass, m5=m5, seeing=seeing)
 
-    ra_icrs, dec_icrs = _icrsFromObserved(numpy.array([centerRA]),
-                                          numpy.array([centerDec]),
-                                          obs_metadata=obs_metadata, epoch=2000.0)
-
-    centerRA = ra_icrs[0] # because the actual database needs to be in ICRS coordinates,
-    centerDec = dec_icrs[0] # not observed coordinates
     #Now begin building the database.
     #First create the tables.
     conn = sqlite3.connect(filename)
