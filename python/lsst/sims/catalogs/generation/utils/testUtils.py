@@ -324,7 +324,7 @@ def makePhoSimTestDB(filename='PhoSimTestDatabase.db', size=1000, seedVal=32, ra
     rotTel = _getRotTelPos(centerRA, centerDec, obsTemp, 0.0)
 
     obsDict = calcObsDefaults(centerRA, centerDec, alt, az, rotTel, mjd, band,
-                 testSite.longitude, testSite.latitude)
+                 testSite.longitude_rad, testSite.latitude_rad)
 
     obsDict['Opsim_expmjd'] = mjd
     phoSimMetaData = OrderedDict([
