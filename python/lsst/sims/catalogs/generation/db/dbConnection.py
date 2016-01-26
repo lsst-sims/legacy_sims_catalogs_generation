@@ -121,7 +121,7 @@ class DBConnection(object):
                 authDict = {'username': DbAuth.username(self._host, str(self._port)),
                             'password': DbAuth.password(self._host, str(self._port))}
             except:
-                if driver == 'mssql+pymssql':
+                if self._driver == 'mssql+pymssql':
                     print("\nFor more information on database authentication using the db-auth.paf"
                           " policy file see: "
                           "https://confluence.lsstcorp.org/display/SIM/Accessing+the+UW+CATSIM+Database\n")
