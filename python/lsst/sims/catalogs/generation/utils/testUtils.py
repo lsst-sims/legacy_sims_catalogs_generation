@@ -6,7 +6,8 @@ import numpy, json
 
 from lsst.sims.utils import ObservationMetaData
 from lsst.sims.catalogs.generation.db import CatalogDBObject
-from lsst.sims.utils import _raDecFromAltAz, calcObsDefaults, _getRotTelPos, Site
+from lsst.sims.utils import _raDecFromAltAz, calcObsDefaults, \
+                            _getRotSkyPos, _getRotTelPos, Site
 
 __all__ = ["getOneChunk", "writeResult", "sampleSphere", "myTestGals",
            "makeGalTestDB", "myTestStars", "makeStarTestDB", "makePhoSimTestDB"]
@@ -322,18 +323,20 @@ def makePhoSimTestDB(filename='PhoSimTestDatabase.db', size=1000, seedVal=32, ra
     obsTemp = ObservationMetaData(mjd=mjd, site=testSite)
     centerRA, centerDec = _raDecFromAltAz(alt, az, obsTemp)
     rotTel = _getRotTelPos(centerRA, centerDec, obsTemp, 0.0)
-
+    rotSkyPos = _getRotSkyPos(centerRA, centerDec, obsTemp, rotTel)
     obsDict = calcObsDefaults(centerRA, centerDec, alt, az, rotTel, mjd, bandpass,
                  testSite.longitude_rad, testSite.latitude_rad)
 
-    obs_metadata = ObservationMetaData(pointingRA=numpy.degrees(obsDict['pointingRA']),
-                                       pointingDec=numpy.degrees(obsDict['pointingDec']),
-                                       rotSkyPos=numpy.degrees(obsDict['Opsim_rotskypos']),
-                                       bandpassName=obsDict['Opsim_filter'],
+    obs_metadata = ObservationMetaData(pointingRA=numpy.degrees(centerRA),
+                                       pointingDec=numpy.degrees(centerDec),
+                                       rotSkyPos=numpy.degrees(rotSkyPos),
+                                       bandpassName=bandpass,
                                        mjd=mjd,
                                        boundType = 'circle', boundLength = 2.0*radius,
                                        site=testSite,
                                        m5=m5, seeing=seeing)
+
+    obs_metadata.phoSimMetaData = obsDict
 
     #Now begin building the database.
     #First create the tables.
