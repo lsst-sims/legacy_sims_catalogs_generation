@@ -6,8 +6,8 @@ import numpy, json
 
 from lsst.sims.utils import ObservationMetaData
 from lsst.sims.catalogs.generation.db import CatalogDBObject
-from lsst.sims.utils import _raDecFromAltAz, calcObsDefaults, \
-                            _getRotSkyPos, _getRotTelPos, Site
+from lsst.sims.utils import _raDecFromAltAz, _getRotSkyPos, _getRotTelPos, Site, \
+                            raDecFromAltAz, haversine
 
 __all__ = ["getOneChunk", "writeResult", "sampleSphere", "myTestGals",
            "makeGalTestDB", "myTestStars", "makeStarTestDB", "makePhoSimTestDB"]
@@ -324,8 +324,6 @@ def makePhoSimTestDB(filename='PhoSimTestDatabase.db', size=1000, seedVal=32, ra
     centerRA, centerDec = _raDecFromAltAz(alt, az, obsTemp)
     rotTel = _getRotTelPos(centerRA, centerDec, obsTemp, 0.0)
     rotSkyPos = _getRotSkyPos(centerRA, centerDec, obsTemp, rotTel)
-    obsDict = calcObsDefaults(centerRA, centerDec, alt, az, rotTel, mjd, bandpass,
-                 testSite.longitude_rad, testSite.latitude_rad)
 
     obs_metadata = ObservationMetaData(pointingRA=numpy.degrees(centerRA),
                                        pointingDec=numpy.degrees(centerDec),
@@ -336,7 +334,19 @@ def makePhoSimTestDB(filename='PhoSimTestDatabase.db', size=1000, seedVal=32, ra
                                        site=testSite,
                                        m5=m5, seeing=seeing)
 
-    obs_metadata.phoSimMetaData = obsDict
+    moon_alt = -90.0
+    sun_alt = -90.0
+
+    moon_ra, moon_dec = raDecFromAltAz(moon_alt, 0.0, obs_metadata)
+    dist2moon = haversine(numpy.radians(moon_ra), numpy.radians(moon_dec),
+                          obs_metadata._pointingRA, obs_metadata._pointingDec)
+
+    obs_metadata.phoSimMetaData = {'Opsim_moonra': moon_ra,
+                                   'Opsim_moondec': moon_dec,
+                                   'Opsim_moonalt': moon_alt,
+                                   'Opsim_sunalt': sun_alt,
+                                   'Opsim_dist2moon': dist2moon,
+                                   'Opsim_rottelpos': numpy.degrees(rotTel)}
 
     #Now begin building the database.
     #First create the tables.
