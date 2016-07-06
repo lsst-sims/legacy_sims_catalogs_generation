@@ -263,7 +263,7 @@ def makeStarTestDB(filename='testDatabase.db', size=1000, seedVal=None,
 
 def makePhoSimTestDB(filename='PhoSimTestDatabase.db', size=1000, seedVal=32, radius=0.1,
                      displacedRA=None, displacedDec=None,
-                     bandpass=None, m5=None, seeing=None, **kwargs):
+                     bandpass='r', m5=None, seeing=None, **kwargs):
     """
     Make a test database to storing cartoon information for the test phoSim input
     catalog to use.
@@ -317,23 +317,23 @@ def makePhoSimTestDB(filename='PhoSimTestDatabase.db', size=1000, seedVal=32, ra
     mjd = 52000.0
     alt = numpy.pi/2.0
     az = 0.0
-    band = 'r'
+
     testSite = Site(name='LSST')
     obsTemp = ObservationMetaData(mjd=mjd, site=testSite)
     centerRA, centerDec = _raDecFromAltAz(alt, az, obsTemp)
     rotTel = _getRotTelPos(centerRA, centerDec, obsTemp, 0.0)
 
-    obsDict = calcObsDefaults(centerRA, centerDec, alt, az, rotTel, mjd, band,
+    obsDict = calcObsDefaults(centerRA, centerDec, alt, az, rotTel, mjd, bandpass,
                  testSite.longitude_rad, testSite.latitude_rad)
 
-    obsDict['Opsim_expmjd'] = mjd
-    phoSimMetaData = OrderedDict([
-                      (k, (obsDict[k],numpy.dtype(type(obsDict[k])))) for k in obsDict
-                                                                   if k!='Opsim_filter' or bandpass is None ])
-
-    obs_metadata = ObservationMetaData(boundType = 'circle', boundLength = 2.0*radius,
-                                       phoSimMetaData=phoSimMetaData, site=testSite,
-                                       bandpassName=bandpass, m5=m5, seeing=seeing)
+    obs_metadata = ObservationMetaData(pointingRA=numpy.degrees(obsDict['pointingRA']),
+                                       pointingDec=numpy.degrees(obsDict['pointingDec']),
+                                       rotSkyPos=numpy.degrees(obsDict['Opsim_rotskypos']),
+                                       bandpassName=obsDict['Opsim_filter'],
+                                       mjd=mjd,
+                                       boundType = 'circle', boundLength = 2.0*radius,
+                                       site=testSite,
+                                       m5=m5, seeing=seeing)
 
     #Now begin building the database.
     #First create the tables.
