@@ -6,7 +6,8 @@ import numpy, json
 
 from lsst.sims.utils import ObservationMetaData
 from lsst.sims.catalogs.generation.db import CatalogDBObject
-from lsst.sims.utils import _raDecFromAltAz, calcObsDefaults, _getRotTelPos, Site
+from lsst.sims.utils import _raDecFromAltAz, _getRotSkyPos, _getRotTelPos, Site, \
+                            raDecFromAltAz, haversine
 
 __all__ = ["getOneChunk", "writeResult", "sampleSphere", "myTestGals",
            "makeGalTestDB", "myTestStars", "makeStarTestDB", "makePhoSimTestDB"]
@@ -263,7 +264,7 @@ def makeStarTestDB(filename='testDatabase.db', size=1000, seedVal=None,
 
 def makePhoSimTestDB(filename='PhoSimTestDatabase.db', size=1000, seedVal=32, radius=0.1,
                      displacedRA=None, displacedDec=None,
-                     bandpass=None, m5=None, seeing=None, **kwargs):
+                     bandpass='r', m5=None, seeing=None, **kwargs):
     """
     Make a test database to storing cartoon information for the test phoSim input
     catalog to use.
@@ -317,23 +318,35 @@ def makePhoSimTestDB(filename='PhoSimTestDatabase.db', size=1000, seedVal=32, ra
     mjd = 52000.0
     alt = numpy.pi/2.0
     az = 0.0
-    band = 'r'
+
     testSite = Site(name='LSST')
     obsTemp = ObservationMetaData(mjd=mjd, site=testSite)
     centerRA, centerDec = _raDecFromAltAz(alt, az, obsTemp)
     rotTel = _getRotTelPos(centerRA, centerDec, obsTemp, 0.0)
+    rotSkyPos = _getRotSkyPos(centerRA, centerDec, obsTemp, rotTel)
 
-    obsDict = calcObsDefaults(centerRA, centerDec, alt, az, rotTel, mjd, band,
-                 testSite.longitude_rad, testSite.latitude_rad)
+    obs_metadata = ObservationMetaData(pointingRA=numpy.degrees(centerRA),
+                                       pointingDec=numpy.degrees(centerDec),
+                                       rotSkyPos=numpy.degrees(rotSkyPos),
+                                       bandpassName=bandpass,
+                                       mjd=mjd,
+                                       boundType = 'circle', boundLength = 2.0*radius,
+                                       site=testSite,
+                                       m5=m5, seeing=seeing)
 
-    obsDict['Opsim_expmjd'] = mjd
-    phoSimMetaData = OrderedDict([
-                      (k, (obsDict[k],numpy.dtype(type(obsDict[k])))) for k in obsDict
-                                                                   if k!='Opsim_filter' or bandpass is None ])
+    moon_alt = -90.0
+    sun_alt = -90.0
 
-    obs_metadata = ObservationMetaData(boundType = 'circle', boundLength = 2.0*radius,
-                                       phoSimMetaData=phoSimMetaData, site=testSite,
-                                       bandpassName=bandpass, m5=m5, seeing=seeing)
+    moon_ra, moon_dec = raDecFromAltAz(moon_alt, 0.0, obs_metadata)
+    dist2moon = haversine(numpy.radians(moon_ra), numpy.radians(moon_dec),
+                          obs_metadata._pointingRA, obs_metadata._pointingDec)
+
+    obs_metadata.phoSimMetaData = {'Opsim_moonra': moon_ra,
+                                   'Opsim_moondec': moon_dec,
+                                   'Opsim_moonalt': moon_alt,
+                                   'Opsim_sunalt': sun_alt,
+                                   'Opsim_dist2moon': dist2moon,
+                                   'Opsim_rottelpos': numpy.degrees(rotTel)}
 
     #Now begin building the database.
     #First create the tables.
