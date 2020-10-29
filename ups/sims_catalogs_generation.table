@@ -1,4 +1,4 @@
-setupRequired(daf_persistence)
+setupRequired(daf_butler)
 setupRequired(mysqlpython)
 setupRequired(pymssql)
 setupRequired(python)
